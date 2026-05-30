@@ -41,7 +41,7 @@ Create the RAM disk and recordings directory if your system does not already do 
 
 ```bash
 sudo mkdir -p /mnt/ramdisk /home/pi/Recordings
-sudo chown -R pi:pi /home/pi/Recordings
+sudo chown -R pi:pi /home/pi/Recordings /mnt/ramdisk
 ```
 
 On a Raspberry Pi, create the RAM disk persistently by adding this line to `/etc/fstab`:
@@ -85,6 +85,8 @@ Optional health and sync timers:
 sudo systemctl enable --now train-recorder-health.timer
 sudo systemctl enable --now sync.timer
 ```
+
+The VOX recorder services and sync service run as the `pi` user. This keeps generated recordings and rclone/OneDrive credentials in the same user context, so root-owned recordings and recursive `chmod 777` cron workarounds should not be needed.
 
 Check status and logs:
 

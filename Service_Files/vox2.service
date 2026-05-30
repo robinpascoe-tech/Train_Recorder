@@ -5,6 +5,9 @@ Requires=pulseaudio.service
 
 [Service]
 Type=simple
+User=pi
+Group=pi
+UMask=0002
 WorkingDirectory=/opt/train-recorder
 EnvironmentFile=/etc/train-recorder/common.env
 EnvironmentFile=/etc/train-recorder/freq161265.env

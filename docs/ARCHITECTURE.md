@@ -33,6 +33,8 @@ PulseAudio monitor sources
 
 `sync.service` and `sync.timer` provide an optional systemd-native rclone move job.
 
+The recorder and sync services run as `pi:pi`. This keeps PulseAudio access, generated MP3 ownership, and rclone credentials in one user context.
+
 ## Configuration
 
 Recorder settings live in environment files under `/etc/train-recorder`:
