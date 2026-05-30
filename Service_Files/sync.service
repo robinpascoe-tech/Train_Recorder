@@ -1,0 +1,9 @@
+[Unit]
+Description=Move completed train recorder MP3 files with rclone
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/train-recorder/sync.env
+ExecStart=/opt/train-recorder/Scripts/sync.sh

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Train Recorder health check periodically
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+Unit=train-recorder-health.service
+
+[Install]
+WantedBy=timers.target

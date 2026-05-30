@@ -29,6 +29,23 @@ PulseAudio monitor sources
 
 `sync.sh` is a small rclone helper for moving completed recordings to a configured remote.
 
+`train-recorder-health.service` runs `Scripts/health_check.sh` as a one-shot check. The optional timer can run it periodically and write results to the journal.
+
+`sync.service` and `sync.timer` provide an optional systemd-native rclone move job.
+
+## Configuration
+
+Recorder settings live in environment files under `/etc/train-recorder`:
+
+```text
+common.env       Shared output, temp, SOX, and silence settings.
+freq160545.env   First recorder channel settings.
+freq161265.env   Second recorder channel settings.
+sync.env         Optional rclone settings.
+```
+
+The wrapper scripts still provide defaults, but the environment files are the preferred place to tune a live install.
+
 ## Adding Another Channel
 
 1. Add another `module-null-sink` entry to `Config/system.pa`.

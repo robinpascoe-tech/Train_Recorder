@@ -8,6 +8,7 @@ AUDIO_FORMAT="${AUDIO_FORMAT:-mp3}"
 MIN_BYTES="${MIN_BYTES:-700}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-/home/pi/Recordings}"
 OUTPUT_SUFFIX="${OUTPUT_SUFFIX:-_$CHANNEL_NAME}"
+RECORDING_UMASK="${RECORDING_UMASK:-0022}"
 SOX_VOLUME="${SOX_VOLUME:-5}"
 START_DURATION="${START_DURATION:-0.2}"
 START_THRESHOLD="${START_THRESHOLD:-0.1%}"
@@ -16,6 +17,7 @@ STOP_THRESHOLD="${STOP_THRESHOLD:-0.1%}"
 TEMP_DIR="${TEMP_DIR:-/mnt/ramdisk}"
 
 temp_file=""
+umask "$RECORDING_UMASK"
 
 cleanup() {
   if [[ -n "$temp_file" ]]; then
@@ -46,7 +48,9 @@ while true; do
       name="$(date +%Y-%m-%d_%H-%M-%S)"
       rec_path="$OUTPUT_ROOT/$(date +%Y)/$(date +%m-%b)/$(date +%d-%a)"
       mkdir -p "$rec_path"
-      mv -- "$temp_file" "$rec_path/${name}${OUTPUT_SUFFIX}.${AUDIO_FORMAT}"
+      final_file="$rec_path/${name}${OUTPUT_SUFFIX}.${AUDIO_FORMAT}"
+      mv -- "$temp_file" "$final_file"
+      echo "Saved $final_file ($bytes bytes)"
       temp_file=""
     else
       echo "Discarded short recording from $PULSE_MONITOR ($bytes bytes)"

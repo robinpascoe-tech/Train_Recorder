@@ -6,8 +6,8 @@ Requires=pulseaudio.service
 [Service]
 Type=simple
 WorkingDirectory=/opt/train-recorder
-Environment=OUTPUT_ROOT=/home/pi/Recordings
-Environment=TEMP_DIR=/mnt/ramdisk
+EnvironmentFile=/etc/train-recorder/common.env
+EnvironmentFile=/etc/train-recorder/freq161265.env
 ExecStart=/opt/train-recorder/Scripts/vox2.sh
 Restart=on-failure
 RestartSec=30s

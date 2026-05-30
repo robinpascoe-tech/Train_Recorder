@@ -1,0 +1,7 @@
+[Unit]
+Description=Train Recorder health check
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/train-recorder/common.env
+ExecStart=/opt/train-recorder/Scripts/health_check.sh

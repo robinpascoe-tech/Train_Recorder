@@ -44,6 +44,17 @@ sudo mkdir -p /mnt/ramdisk /home/pi/Recordings
 sudo chown -R pi:pi /home/pi/Recordings
 ```
 
+Install recorder environment files:
+
+```bash
+sudo mkdir -p /etc/train-recorder
+sudo cp /opt/train-recorder/Config/common.env.example /etc/train-recorder/common.env
+sudo cp /opt/train-recorder/Config/freq160545.env.example /etc/train-recorder/freq160545.env
+sudo cp /opt/train-recorder/Config/freq161265.env.example /etc/train-recorder/freq161265.env
+sudo cp /opt/train-recorder/Config/sync.env.example /etc/train-recorder/sync.env
+sudo nano /etc/train-recorder/common.env
+```
+
 ## Install Services
 
 ```bash
@@ -55,11 +66,19 @@ sudo systemctl start rtl_airband.service
 sudo systemctl start vox.service vox2.service
 ```
 
+Optional health and sync timers:
+
+```bash
+sudo systemctl enable --now train-recorder-health.timer
+sudo systemctl enable --now sync.timer
+```
+
 Check status and logs:
 
 ```bash
 systemctl status pulseaudio.service rtl_airband.service vox.service vox2.service
 journalctl -u rtl_airband.service -u vox.service -u vox2.service -f
+/opt/train-recorder/Scripts/health_check.sh
 ```
 
 ## Optional rclone Offload
@@ -67,10 +86,11 @@ journalctl -u rtl_airband.service -u vox.service -u vox2.service -f
 Configure rclone for your destination, then override `RCLONE_REMOTE` if the default does not match your setup:
 
 ```bash
-RCLONE_REMOTE='onedrive:ONR/ONR_Tower3_NewLiskeard' /opt/train-recorder/Scripts/sync.sh
+sudo nano /etc/train-recorder/sync.env
+systemctl start sync.service
 ```
 
-For unattended operation, create a timer or cron job that runs `Scripts/sync.sh`.
+For unattended operation, enable `sync.timer`.
 
 ## Publishing Safely
 
