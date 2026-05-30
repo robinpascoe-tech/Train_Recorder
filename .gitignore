@@ -1,0 +1,18 @@
+# Local RTL-Airband config with Broadcastify/Icecast secrets.
+Config/rtl_airband.conf
+
+# Local recordings and temporary audio.
+Recordings/
+*.mp3
+*.wav
+*.flac
+
+# Local environment overrides.
+.env
+*.local
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

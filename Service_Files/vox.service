@@ -1,0 +1,16 @@
+[Unit]
+Description=VOX Voice Activated Recorder using SOX
+After=pulseaudio.service rtl_airband.service
+Requires=pulseaudio.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/train-recorder
+Environment=OUTPUT_ROOT=/home/pi/Recordings
+Environment=TEMP_DIR=/mnt/ramdisk
+ExecStart=/opt/train-recorder/Scripts/vox.sh
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
