@@ -44,6 +44,19 @@ sudo mkdir -p /mnt/ramdisk /home/pi/Recordings
 sudo chown -R pi:pi /home/pi/Recordings
 ```
 
+On a Raspberry Pi, create the RAM disk persistently by adding this line to `/etc/fstab`:
+
+```fstab
+tmpfs /mnt/ramdisk tmpfs nodev,nosuid,size=50M 0 0
+```
+
+Then mount and verify it:
+
+```bash
+sudo mount /mnt/ramdisk
+df -h /mnt/ramdisk
+```
+
 Install recorder environment files:
 
 ```bash
