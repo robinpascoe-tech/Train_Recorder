@@ -26,6 +26,7 @@ Service_Files/
 docs/
   INSTALL.md                 Raspberry Pi setup notes.
   ARCHITECTURE.md            Signal flow and operational model.
+  NATIVE_RECORDING_TEST.md   Test plan for RTLSDR-Airband native MP3 recording.
   ROADMAP.md                 Follow-up ideas for continued development.
 ```
 

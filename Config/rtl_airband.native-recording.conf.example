@@ -1,0 +1,87 @@
+# Native-recording RTLSDR-Airband configuration for the two-channel
+# Ontario Northland Railway recorder.
+#
+# This test configuration removes the PulseAudio/SOX recording path and lets
+# RTLSDR-Airband write one MP3 per squelch-open transmission.
+#
+# Copy this file to your live rtl_airband config path, usually:
+#   /usr/local/etc/rtl_airband.conf
+#
+# Fill in your own Broadcastify/Icecast connection details before use.
+# Do not commit the real config file with live passwords or mountpoints.
+
+localtime = true;
+log_scan_activity = true;
+
+mixers: {
+  mixer1: {
+    outputs: (
+      {
+        disable = false;
+        type = "icecast";
+        server = "audio9.broadcastify.com";
+        port = 80;
+        mountpoint = "YOUR_MOUNTPOINT";
+        name = "Ontario Northland Railway - New Liskeard Tower";
+        genre = "RAIL";
+        username = "source";
+        password = "YOUR_BROADCASTIFY_PASSWORD";
+        send_scan_freq_tags = false;
+        description = "Ontario Northland Railway";
+      }
+    );
+  }
+};
+
+devices:
+({
+  type = "rtlsdr";
+  index = 0;
+  gain = 48;
+  centerfreq = 160.4;
+  correction = 0;
+  mode = "multichannel";
+
+  channels:
+  (
+    {
+      freq = 160.545;
+      modulation = "nfm";
+      afc = 1;
+      outputs: (
+        {
+          type = "file";
+          directory = "/home/pi/Recordings";
+          filename_template = "";
+          continuous = false;
+          split_on_transmission = true;
+          include_freq = true;
+          append = false;
+          dated_subdirectories = true;
+        },
+        {
+          type = "mixer";
+          name = "mixer1";
+          ampfactor = 1.5;
+        }
+      );
+    },
+    {
+      freq = 161.265;
+      modulation = "nfm";
+      afc = 0;
+      outputs: (
+        {
+          type = "file";
+          directory = "/home/pi/Recordings";
+          filename_template = "";
+          continuous = false;
+          split_on_transmission = true;
+          include_freq = true;
+          append = false;
+          dated_subdirectories = true;
+        }
+      );
+    }
+  );
+});

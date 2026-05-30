@@ -29,6 +29,12 @@ PulseAudio monitor sources
 
 `sync.sh` is a small rclone helper for moving completed recordings to a configured remote.
 
+## Native Recording Branch
+
+The `feature/native-rtl-airband-recording` branch tests removing PulseAudio and SOX from the recording path. In that architecture, RTLSDR-Airband keeps streaming the 160.545 MHz mixer output to Broadcastify and writes MP3 files directly for both 160.545 MHz and 161.265 MHz using `split_on_transmission = true`.
+
+See `docs/NATIVE_RECORDING_TEST.md` for the test procedure.
+
 ## Adding Another Channel
 
 1. Add another `module-null-sink` entry to `Config/system.pa`.
