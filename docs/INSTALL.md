@@ -105,7 +105,7 @@ sudo nano /etc/train-recorder/sync.env
 systemctl start sync.service
 ```
 
-For unattended operation, enable `sync.timer`.
+For unattended operation, enable `sync.timer`. It runs `sync.service` every 5 minutes, matching the original cron cadence.
 
 ## Publishing Safely
 
