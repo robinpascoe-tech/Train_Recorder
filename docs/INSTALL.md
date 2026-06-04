@@ -42,6 +42,7 @@ Create the RAM disk and recordings directory if your system does not already do 
 ```bash
 sudo mkdir -p /mnt/ramdisk /home/pi/Recordings
 sudo chown -R pi:pi /home/pi/Recordings /mnt/ramdisk
+sudo chmod 775 /home/pi/Recordings
 ```
 
 On a Raspberry Pi, create the RAM disk persistently by adding this line to `/etc/fstab`:
