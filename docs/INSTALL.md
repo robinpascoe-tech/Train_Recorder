@@ -83,7 +83,7 @@ Optional health and sync timers:
 
 ```bash
 sudo systemctl enable --now train-recorder-health.timer
-sudo systemctl enable --now sync.timer
+sudo systemctl enable --now train-recorder-sync.timer
 ```
 
 The VOX recorder services and sync service run as the `pi` user. This keeps generated recordings and rclone/OneDrive credentials in the same user context, so root-owned recordings and recursive `chmod 777` cron workarounds should not be needed.
@@ -102,10 +102,10 @@ Configure rclone for your destination, then override `RCLONE_REMOTE` if the defa
 
 ```bash
 sudo nano /etc/train-recorder/sync.env
-systemctl start sync.service
+systemctl start train-recorder-sync.service
 ```
 
-For unattended operation, enable `sync.timer`. It runs `sync.service` every 5 minutes, matching the original cron cadence.
+For unattended operation, enable `train-recorder-sync.timer`. It runs `train-recorder-sync.service` every 5 minutes, matching the original cron cadence.
 
 ## Publishing Safely
 

@@ -70,7 +70,7 @@ Useful variables:
 | `MIN_BYTES` | `700` | Discard files smaller than this threshold. |
 | `START_DURATION` | `0.2` | SOX leading-silence trigger duration. |
 | `STOP_DURATION` | `13.0` | SOX trailing-silence duration before closing a file. |
-| `RECORDING_UMASK` | `0022` | Permissions mask for generated folders and MP3s. |
+| `RECORDING_UMASK` | `0002` | Permissions mask for generated folders and MP3s. |
 
 ## Public Release Checklist
 

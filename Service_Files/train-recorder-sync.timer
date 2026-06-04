@@ -5,7 +5,7 @@ Description=Run train recorder rclone sync periodically
 OnBootSec=10min
 OnUnitActiveSec=5min
 Persistent=true
-Unit=sync.service
+Unit=train-recorder-sync.service
 
 [Install]
 WantedBy=timers.target

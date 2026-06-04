@@ -31,7 +31,7 @@ PulseAudio monitor sources
 
 `train-recorder-health.service` runs `Scripts/health_check.sh` as a one-shot check. The optional timer can run it periodically and write results to the journal.
 
-`sync.service` and `sync.timer` provide an optional systemd-native rclone move job.
+`train-recorder-sync.service` and `train-recorder-sync.timer` provide an optional systemd-native rclone move job.
 
 The recorder and sync services run as `pi:pi`. This keeps PulseAudio access, generated MP3 ownership, and rclone credentials in one user context.
 
