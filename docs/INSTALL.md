@@ -73,6 +73,7 @@ sudo nano /etc/train-recorder/common.env
 
 ```bash
 sudo cp /opt/train-recorder/Service_Files/*.service /etc/systemd/system/
+sudo cp /opt/train-recorder/Service_Files/*.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable pulseaudio.service rtl_airband.service vox.service vox2.service
 sudo systemctl start pulseaudio.service
@@ -97,6 +98,13 @@ journalctl -u rtl_airband.service -u vox.service -u vox2.service -f
 /opt/train-recorder/Scripts/health_check.sh
 ```
 
+Check the systemd timers:
+
+```bash
+systemctl list-timers --all | grep train-recorder
+journalctl -u train-recorder-sync.service -u train-recorder-health.service --since today
+```
+
 ## Optional rclone Offload
 
 Configure rclone for your destination, then override `RCLONE_REMOTE` if the default does not match your setup:
@@ -107,6 +115,12 @@ systemctl start train-recorder-sync.service
 ```
 
 For unattended operation, enable `train-recorder-sync.timer`. It runs `train-recorder-sync.service` every 5 minutes, matching the original cron cadence.
+
+If migrating from the old cron-based setup, comment out the previous `pi` crontab line after the timer is active:
+
+```cron
+# */5 * * * * /home/pi/sync.sh # replaced by train-recorder-sync.timer
+```
 
 ## Publishing Safely
 

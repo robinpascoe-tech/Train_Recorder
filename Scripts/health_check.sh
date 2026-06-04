@@ -49,6 +49,8 @@ check_path "$TEMP_DIR"
 check_pulse_source myfreq1sink.monitor
 check_pulse_source myfreq2sink.monitor
 
+# A missing recent local MP3 can be normal when rclone is moving files quickly,
+# so this is a warning rather than a failing health condition.
 if find "$OUTPUT_ROOT" -type f -name '*.mp3' -mmin "-$MAX_RECORDING_AGE_MINUTES" -print -quit | grep -q .; then
   echo "ok recent recording within ${MAX_RECORDING_AGE_MINUTES} minutes"
 else

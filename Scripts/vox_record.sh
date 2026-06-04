@@ -8,7 +8,7 @@ AUDIO_FORMAT="${AUDIO_FORMAT:-mp3}"
 MIN_BYTES="${MIN_BYTES:-700}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-/home/pi/Recordings}"
 OUTPUT_SUFFIX="${OUTPUT_SUFFIX:-_$CHANNEL_NAME}"
-RECORDING_UMASK="${RECORDING_UMASK:-0022}"
+RECORDING_UMASK="${RECORDING_UMASK:-0002}"
 SOX_VOLUME="${SOX_VOLUME:-5}"
 START_DURATION="${START_DURATION:-0.2}"
 START_THRESHOLD="${START_THRESHOLD:-0.1%}"
@@ -30,9 +30,13 @@ trap 'cleanup; exit 0' INT TERM
 mkdir -p "$TEMP_DIR" "$OUTPUT_ROOT"
 
 while true; do
+  # Use a channel-specific temp name so multiple recorder services can run the
+  # same script against the same RAM disk without colliding.
   temp_file="$(mktemp "$TEMP_DIR/${CHANNEL_NAME}.XXXXXX.${AUDIO_FORMAT}")"
   rm -f -- "$temp_file"
 
+  # SOX blocks until it sees leading audio and then closes after trailing
+  # silence. This preserves the long-proven behavior of the original recorder.
   if sox -q -v "$SOX_VOLUME" -t pulseaudio "$PULSE_MONITOR" -t "$AUDIO_FORMAT" "$temp_file" \
     silence -l 1 "$START_DURATION" "$START_THRESHOLD" 1 "$STOP_DURATION" "$STOP_THRESHOLD"; then
 
@@ -46,6 +50,7 @@ while true; do
     bytes="$(stat -c %s "$temp_file")"
     if [[ "$bytes" -ge "$MIN_BYTES" ]]; then
       name="$(date +%Y-%m-%d_%H-%M-%S)"
+      # Keep the historical folder layout consumed by the OneDrive archive.
       rec_path="$OUTPUT_ROOT/$(date +%Y)/$(date +%m-%b)/$(date +%d-%a)"
       mkdir -p "$rec_path"
       final_file="$rec_path/${name}${OUTPUT_SUFFIX}.${AUDIO_FORMAT}"

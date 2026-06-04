@@ -33,13 +33,12 @@ docs/
   INSTALL.md                 Raspberry Pi setup notes.
   ARCHITECTURE.md            Signal flow and operational model.
   ROADMAP.md                 Follow-up ideas for continued development.
+AGENTS.md                    Context for future coding agents and maintainers.
 ```
 
 ## Secret Handling
 
 Do not commit your real Broadcastify/Icecast password, mountpoint, or rclone credentials. Keep your live `rtl_airband.conf` outside git or copy it to `Config/rtl_airband.conf`, which is ignored by this repository.
-
-The first local commit in this repo included a live Broadcastify password. Before publishing publicly, rotate that password and rewrite/remove the old git history.
 
 ## Quick Start
 
@@ -74,8 +73,8 @@ Useful variables:
 
 ## Public Release Checklist
 
-- Rotate the Broadcastify/Icecast password that was previously committed locally.
-- Rewrite or recreate git history so no real credentials remain.
+- Rotate any credential that was ever committed to a local or private copy.
+- Verify git history contains no real credentials before pushing publicly.
 - Choose a license before publishing.
 - Add hardware notes for the exact Raspberry Pi, RTL-SDR dongle, antenna, and power setup.
 - Add screenshots or sample sanitized logs if useful for troubleshooting.
