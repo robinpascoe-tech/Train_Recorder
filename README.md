@@ -22,13 +22,14 @@ Config/
   system.pa                  PulseAudio system-mode config with two null sinks.
 Scripts/
   health_check.sh            Basic service, PulseAudio, storage, and recording checks.
+  cleanup_empty_dirs.sh      Daily cleanup for empty local recording directories.
   vox_record.sh              Shared configurable VOX recorder.
   vox.sh                     160.545 MHz recorder wrapper.
   vox2.sh                    161.265 MHz recorder wrapper.
   sync.sh                    Optional rclone move script.
 Service_Files/
-  *.service                  systemd units for PulseAudio, RTLSDR-Airband, VOX recorders, health, and sync.
-  *.timer                    Optional systemd timers for health checks and rclone sync.
+  *.service                  systemd units for PulseAudio, RTLSDR-Airband, VOX recorders, health, sync, and cleanup.
+  *.timer                    Optional systemd timers for health checks, rclone sync, and cleanup.
 docs/
   INSTALL.md                 Raspberry Pi setup notes.
   ARCHITECTURE.md            Signal flow and operational model.
@@ -66,10 +67,13 @@ Useful variables:
 | `OUTPUT_ROOT` | `/home/pi/Recordings` | Root folder for dated recording directories. |
 | `TEMP_DIR` | `/mnt/ramdisk` | Temporary recording location. |
 | `PULSE_SERVER` | `unix:/run/pulse/native` | PulseAudio server socket used by health checks. |
+| `SOX_VOLUME` | `4` | SOX input gain applied before silence detection and MP3 encoding. |
 | `MIN_BYTES` | `700` | Discard files smaller than this threshold. |
 | `START_DURATION` | `0.2` | SOX leading-silence trigger duration. |
 | `STOP_DURATION` | `13.0` | SOX trailing-silence duration before closing a file. |
 | `RECORDING_UMASK` | `0002` | Permissions mask for generated folders and MP3s. |
+| `CHECK_RECENT_LOCAL_RECORDINGS` | `false` | Enables an optional warning when no recent MP3s remain under `OUTPUT_ROOT`; keep disabled when rclone moves files away quickly. |
+| `RCLONE_MIN_AGE` | `15s` | Minimum file age before `sync.sh` allows rclone to move a completed MP3. |
 
 ## Public Release Checklist
 

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run train recorder local directory cleanup daily
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+Unit=train-recorder-cleanup.service
+
+[Install]
+WantedBy=timers.target

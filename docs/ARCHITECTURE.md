@@ -32,13 +32,15 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `vox2.service` records from `myfreq2sink.monitor` and names files with `_161.265`.
 
-`sync.sh` is a small rclone helper for moving completed recordings to a configured remote. It runs as `pi` so it can reuse the existing rclone/OneDrive tokens under `/home/pi/.config/rclone`.
+`sync.sh` is a small rclone helper for moving completed recordings to a configured remote. It runs as `pi` so it can reuse the existing rclone/OneDrive tokens under `/home/pi/.config/rclone`. It uses a short minimum-age guard before moving files so rclone does not race a just-closed SOX recording.
 
-`train-recorder-health.service` runs `Scripts/health_check.sh` as a one-shot check. The optional timer can run it periodically and write results to the journal.
+`train-recorder-health.service` runs `Scripts/health_check.sh` as a one-shot check. The optional timer can run it periodically and write results to the journal. The local recent-recording check is disabled by default because rclone normally drains `/home/pi/Recordings` shortly after files are created.
 
 `train-recorder-sync.service` and `train-recorder-sync.timer` provide an optional systemd-native rclone move job.
 
-The recorder and sync services run as `pi:pi`. This keeps PulseAudio access, generated MP3 ownership, and rclone credentials in one user context.
+`train-recorder-cleanup.service` and `train-recorder-cleanup.timer` remove empty local date directories once a day. Empty directory cleanup is kept separate from the 5-minute rclone move job to avoid repeatedly deleting and recreating the current day's folder tree. Cleanup walks deepest-first, so an empty `Year/Month/Day` branch can be removed in one run.
+
+The recorder, sync, and cleanup services run as `pi:pi`. This keeps PulseAudio access, generated MP3 ownership, and rclone credentials in one user context.
 
 ## Configuration
 

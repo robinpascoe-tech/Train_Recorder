@@ -63,11 +63,12 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 ## Operational Notes
 
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
+- Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run.
 - The old recursive `chmod 777 /home/pi/Recordings` workaround was retired.
 - `/home/pi/Recordings` should be `pi:pi` and `775`.
 - Generated MP3s should be `pi:pi` and group writable.
-- The health check may warn about no recent local recordings because rclone moves files away quickly. Treat that as a warning unless recordings are also missing from OneDrive.
-- SOX clipping warnings have been observed. A future tuning pass should test lowering `SOX_VOLUME`.
+- The health check local-recency warning is disabled by default because rclone moves files away quickly. Re-enable it only when troubleshooting a setup that keeps local MP3s.
+- SOX clipping warnings have been observed. Production tuning was moved from `SOX_VOLUME=5` toward `SOX_VOLUME=4`; compare clipping warnings and intelligibility after a soak.
 
 ## Safe Deployment Pattern
 

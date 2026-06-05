@@ -1,0 +1,9 @@
+[Unit]
+Description=Clean empty train recorder local directories
+
+[Service]
+Type=oneshot
+User=pi
+Group=pi
+EnvironmentFile=-/etc/train-recorder/sync.env
+ExecStart=/opt/train-recorder/Scripts/cleanup_empty_dirs.sh

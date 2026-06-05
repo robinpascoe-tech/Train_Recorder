@@ -5,6 +5,7 @@ OUTPUT_ROOT="${OUTPUT_ROOT:-/home/pi/Recordings}"
 PULSE_SERVER="${PULSE_SERVER:-unix:/run/pulse/native}"
 TEMP_DIR="${TEMP_DIR:-/mnt/ramdisk}"
 MAX_RECORDING_AGE_MINUTES="${MAX_RECORDING_AGE_MINUTES:-1440}"
+CHECK_RECENT_LOCAL_RECORDINGS="${CHECK_RECENT_LOCAL_RECORDINGS:-false}"
 
 status=0
 
@@ -49,13 +50,21 @@ check_path "$TEMP_DIR"
 check_pulse_source myfreq1sink.monitor
 check_pulse_source myfreq2sink.monitor
 
-# A missing recent local MP3 can be normal when rclone is moving files quickly,
-# so this is a warning rather than a failing health condition.
-if find "$OUTPUT_ROOT" -type f -name '*.mp3' -mmin "-$MAX_RECORDING_AGE_MINUTES" -print -quit | grep -q .; then
-  echo "ok recent recording within ${MAX_RECORDING_AGE_MINUTES} minutes"
-else
-  echo "warn no recent recordings within ${MAX_RECORDING_AGE_MINUTES} minutes" >&2
-fi
+# In the production layout, rclone moves completed files out of OUTPUT_ROOT every
+# few minutes. Keep the local-recency check opt-in so normal sync behavior does
+# not look like a recorder problem.
+case "$CHECK_RECENT_LOCAL_RECORDINGS" in
+  true|TRUE|1|yes|YES)
+    if find "$OUTPUT_ROOT" -type f -name '*.mp3' -mmin "-$MAX_RECORDING_AGE_MINUTES" -print -quit | grep -q .; then
+      echo "ok recent local recording within ${MAX_RECORDING_AGE_MINUTES} minutes"
+    else
+      echo "warn no recent local recordings within ${MAX_RECORDING_AGE_MINUTES} minutes" >&2
+    fi
+    ;;
+  *)
+    echo "ok recent local recording check disabled"
+    ;;
+esac
 
 df -h "$OUTPUT_ROOT" "$TEMP_DIR"
 

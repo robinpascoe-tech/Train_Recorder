@@ -86,6 +86,7 @@ Optional health and sync timers:
 ```bash
 sudo systemctl enable --now train-recorder-health.timer
 sudo systemctl enable --now train-recorder-sync.timer
+sudo systemctl enable --now train-recorder-cleanup.timer
 ```
 
 The VOX recorder services and sync service run as the `pi` user. This keeps generated recordings and rclone/OneDrive credentials in the same user context, so root-owned recordings and recursive `chmod 777` cron workarounds should not be needed.
@@ -114,7 +115,9 @@ sudo nano /etc/train-recorder/sync.env
 systemctl start train-recorder-sync.service
 ```
 
-For unattended operation, enable `train-recorder-sync.timer`. It runs `train-recorder-sync.service` every 5 minutes, matching the original cron cadence.
+For unattended operation, enable `train-recorder-sync.timer`. It runs `train-recorder-sync.service` every 5 minutes, matching the original cron cadence. The default `RCLONE_MIN_AGE=15s` keeps rclone from moving a file immediately after SOX closes it.
+
+Enable `train-recorder-cleanup.timer` to remove empty local date directories once a day. This keeps the local spool tidy without making the 5-minute sync job delete and recreate the current date folder tree. The cleanup walks deepest-first, so empty day, month, and year folders are removed together when no files remain below them.
 
 If migrating from the old cron-based setup, comment out the previous `pi` crontab line after the timer is active:
 
