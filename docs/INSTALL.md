@@ -44,6 +44,39 @@ sudo /opt/train-recorder/Scripts/site_config.sh apply
 
 The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `apply` backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, reconciles `vox@...` services, and restarts the affected services. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
 
+### Wizard Prompt Reference
+
+The wizard prompts are intentionally short. Use this reference when deciding what each value should be.
+
+| Prompt | Meaning |
+| --- | --- |
+| Site name | Human-friendly name for this recorder site. Used as the default feed name and in generated config metadata. |
+| How many frequencies should be recorded | Number of NFM channels to receive and record. All configured frequencies must fit within the usable bandwidth of the selected SDR. |
+| Frequency N in MHz | Radio frequency for this channel, in MHz, for example `160.545`. |
+| Channel env name | Short service/config identifier for the channel, for example `freq160545`. This becomes `/etc/train-recorder/<name>.env` and `vox@<name>.service`, so use letters, numbers, dots, underscores, or dashes only. |
+| PulseAudio sink name | Name of the PulseAudio null sink RTLSDR-Airband should write this channel to. SOX records from the matching `<sink>.monitor` source. |
+| Output filename suffix | Suffix added to each MP3 filename so recordings identify the channel, for example `_160.545`. |
+| SOX start duration | Amount of audio, in seconds, SOX must hear above the start threshold before it begins saving a transmission. Larger values can ignore short noise bursts, but may clip the beginning of short transmissions. |
+| Minimum recording bytes | Small-file guard. Recordings smaller than this are discarded as likely noise or false starts. |
+| Require recent-save health warning for this channel | Whether health checks should warn when this channel has not saved a recording recently. Enable it for active channels; disable it for quiet channels that may go a day or two without traffic. |
+| Max save age minutes | Age threshold used when recent-save health warnings are enabled for the channel. |
+| Enable RTLSDR-Airband AFC for this channel | Enables RTLSDR-Airband automatic frequency correction for the channel. This can help track small tuning offsets; leave disabled if it causes unstable tuning on a quiet or adjacent channel. |
+| Stream one channel to Broadcastify/Icecast | Enables an Icecast/Broadcastify stream output in addition to local recording. |
+| Channel to stream | Channel env name to send to the Icecast/Broadcastify mixer. Usually the primary road or dispatch channel. |
+| Icecast server | Hostname supplied by Broadcastify or another Icecast provider. |
+| Icecast port | Port supplied by the stream provider. Broadcastify often uses `80` or `8000`, depending on the feed assignment. |
+| Icecast mountpoint | Provider-assigned mountpoint for the stream. This is sensitive feed information; the wizard preserves an existing value without printing it. |
+| Icecast username | Stream source username. Broadcastify commonly uses `source`. |
+| Icecast password | Stream source password. This is secret; the wizard preserves an existing value without printing it. |
+| Feed name | Public stream/feed display name sent to Icecast/Broadcastify metadata. |
+| Genre | Stream genre metadata. `RAIL` is appropriate for Broadcastify rail feeds. |
+| Description | Stream description metadata sent to Icecast/Broadcastify. |
+| Recording output root | Local spool root for completed MP3 recordings before rclone moves them, normally `/home/pi/Recordings`. |
+| RAM disk/temp dir | Temporary directory where SOX writes recordings before moving completed files into the dated output tree, normally `/mnt/ramdisk`. |
+| rclone remote, blank to skip | Destination remote path for offloading completed recordings, for example `onedrive:ONR/ONR_Tower3_NewLiskeard`. Leave blank if this site should not generate sync config. |
+| RTL-SDR gain | RTLSDR-Airband tuner gain. Higher gain can improve weak signals but may increase overload or clipping. |
+| Usable SDR bandwidth MHz | Approximate usable tuner bandwidth for checking whether all requested frequencies fit on one RTL-SDR. A common conservative value is `2.4`. |
+
 Copy the example RTL-Airband config and edit the local copy:
 
 ```bash
