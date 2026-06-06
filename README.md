@@ -66,6 +66,7 @@ AGENTS.md                    Context for future coding agents and maintainers.
    ```bash
    sudo /opt/train-recorder/Scripts/site_config.sh generate
    sudo /opt/train-recorder/Scripts/site_config.sh plan
+   sudo /opt/train-recorder/Scripts/site_config.sh diff
    sudo /opt/train-recorder/Scripts/site_config.sh apply
    ```
 
@@ -97,10 +98,11 @@ For reusable installs, keep site-specific settings in `/etc/train-recorder/site.
 sudo /opt/train-recorder/Scripts/site_config.sh wizard
 sudo /opt/train-recorder/Scripts/site_config.sh generate
 sudo /opt/train-recorder/Scripts/site_config.sh plan
+sudo /opt/train-recorder/Scripts/site_config.sh diff
 sudo /opt/train-recorder/Scripts/site_config.sh apply
 ```
 
-`generate` writes a preview to `/tmp/train-recorder-generated` by default. `apply` backs up replaced files, reconciles `vox@...` services, and restarts the affected recorder services.
+`generate` writes a preview to `/tmp/train-recorder-generated` by default. `diff` compares generated files with live files and redacts Broadcastify secrets in RTLSDR-Airband diffs. `apply` runs preflight checks, backs up replaced files, reconciles `vox@...` services, and restarts the affected recorder services.
 
 If `site.yaml` already exists, the wizard loads it and uses the current values as defaults. Sensitive Broadcastify values are preserved without printing them in the prompt.
 

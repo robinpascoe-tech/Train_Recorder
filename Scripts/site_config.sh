@@ -10,6 +10,7 @@ trap cleanup EXIT
 cat > "$tmp_script" <<'PY'
 import argparse
 import datetime as dt
+import difflib
 import os
 import re
 import shutil
@@ -279,6 +280,61 @@ def generated_paths(outdir, data):
     return paths
 
 
+def target_mapping(data, config_dir=DEFAULT_CONFIG_DIR):
+    mapping = {
+        "common.env": Path(config_dir) / "common.env",
+        "sync.env": Path(config_dir) / "sync.env",
+        "rtl_airband.conf": RTL_AIRBAND_CONF,
+        "system.pa": PULSE_SYSTEM_PA,
+    }
+    for channel in data["channels"]:
+        mapping[f"{channel_name(channel)}.env"] = Path(config_dir) / f"{channel_name(channel)}.env"
+    return mapping
+
+
+def redact_sensitive_line(path, line):
+    if Path(path).name == "rtl_airband.conf":
+        line = re.sub(r'(password\s*=\s*)"[^"]*"', r'\1"REDACTED"', line)
+        line = re.sub(r'(mountpoint\s*=\s*)"[^"]*"', r'\1"REDACTED"', line)
+    return line
+
+
+def read_redacted_lines(path):
+    path = Path(path)
+    lines = path.read_text().splitlines(keepends=True)
+    return [redact_sensitive_line(path, line) for line in lines]
+
+
+def show_file_diff(src, dest):
+    src = Path(src)
+    dest = Path(dest)
+    if not src.exists():
+        print(f"- missing generated file: {src}")
+        return
+    if not dest.exists():
+        print(f"- would create {dest}")
+        return
+    old = read_redacted_lines(dest)
+    new = read_redacted_lines(src)
+    if old == new:
+        print(f"- unchanged {dest}")
+        return
+    print(f"- would update {dest}")
+    for line in difflib.unified_diff(old, new, fromfile=str(dest), tofile=str(src), lineterm=""):
+        sys.stdout.write(line)
+        if not line.endswith("\n"):
+            sys.stdout.write("\n")
+
+
+def show_diff(data, generated, config_dir=DEFAULT_CONFIG_DIR):
+    generated = Path(generated)
+    print("Diff:")
+    for name, dest in target_mapping(data, config_dir).items():
+        src = generated / name
+        if src.exists():
+            show_file_diff(src, dest)
+
+
 def q(value):
     return '"' + str(value).replace("\\", "\\\\").replace('"', '\\"') + '"'
 
@@ -468,6 +524,61 @@ def generate_files(data, outdir):
     return outdir
 
 
+def require_path(path, kind):
+    path = Path(path)
+    if kind == "file" and not path.is_file():
+        raise SystemExit(f"preflight failed: required file missing: {path}")
+    if kind == "dir" and not path.is_dir():
+        raise SystemExit(f"preflight failed: required directory missing: {path}")
+
+
+def validate_broadcastify_for_apply(data):
+    broadcastify = data.get("broadcastify", {})
+    if not bool_value(broadcastify.get("enabled"), False):
+        return
+
+    channels = set(new_channels(data))
+    stream_channel = str(broadcastify.get("channel", ""))
+    if stream_channel not in channels:
+        raise SystemExit(f"preflight failed: broadcastify channel is not configured: {stream_channel}")
+
+    placeholders = {
+        "mountpoint": {"", "YOUR_MOUNTPOINT"},
+        "password": {"", "YOUR_PASSWORD", "YOUR_BROADCASTIFY_PASSWORD"},
+        "server": {"", "YOUR_SERVER"},
+        "username": {""},
+    }
+    for key, bad_values in placeholders.items():
+        value = str(broadcastify.get(key, ""))
+        if value in bad_values:
+            raise SystemExit(f"preflight failed: broadcastify {key} is not set")
+
+
+def validate_generated_files(data, generated, install_dir=DEFAULT_INSTALL_DIR):
+    generated = Path(generated)
+    require_path(generated, "dir")
+    for path in generated_paths(generated, data):
+        require_path(path, "file")
+
+    repo_template = Path(install_dir) / "Service_Files" / "vox@.service"
+    installed_template = SYSTEMD_DIR / "vox@.service"
+    if not repo_template.is_file() and not installed_template.is_file():
+        raise SystemExit(
+            "preflight failed: required vox@.service template missing from "
+            f"{repo_template} and {installed_template}"
+        )
+
+    site = data.get("site", {})
+    output_root = site.get("output_root", "/home/pi/Recordings")
+    temp_dir = site.get("temp_dir", "/mnt/ramdisk")
+    for path in [output_root, temp_dir]:
+        if str(path).startswith("/"):
+            require_path(path, "dir")
+
+    validate_broadcastify_for_apply(data)
+    print("Preflight: generated files, service template, runtime paths, and stream settings look usable.")
+
+
 def old_channels(config_dir):
     common = Path(config_dir) / "common.env"
     if not common.exists():
@@ -518,10 +629,25 @@ def copy_with_backup(src, dest, backup_dir):
     shutil.copy2(src, dest)
 
 
+def print_restore_notes(backup_root, mapping):
+    backup_root = Path(backup_root)
+    print(f"Backups written to {backup_root}")
+    print("Restore notes:")
+    print("- Stop affected services before restoring live configs.")
+    print("- Copy the needed files from the backup directory back to their live paths.")
+    print("- Then run: systemctl daemon-reload && systemctl restart pulseaudio.service rtl_airband.service")
+    print("Backed-up target paths:")
+    for _name, dest in mapping.items():
+        backup = backup_root / Path(dest).name
+        if backup.exists():
+            print(f"- {dest} <= {backup}")
+
+
 def apply_config(data, generated, yes=False, config_dir=DEFAULT_CONFIG_DIR, install_dir=DEFAULT_INSTALL_DIR):
     generated = Path(generated)
     if not generated.exists():
         raise SystemExit(f"generated directory does not exist: {generated}")
+    validate_generated_files(data, generated, install_dir)
     show_plan(data, config_dir)
     if not yes:
         answer = input("Apply this plan? [y/N] ").strip().lower()
@@ -541,14 +667,7 @@ def apply_config(data, generated, yes=False, config_dir=DEFAULT_CONFIG_DIR, inst
         if path.exists():
             shutil.copy2(path, temp_apply / path.name)
 
-    mapping = {
-        "common.env": Path(config_dir) / "common.env",
-        "sync.env": Path(config_dir) / "sync.env",
-        "rtl_airband.conf": RTL_AIRBAND_CONF,
-        "system.pa": PULSE_SYSTEM_PA,
-    }
-    for channel in data["channels"]:
-        mapping[f"{channel_name(channel)}.env"] = Path(config_dir) / f"{channel_name(channel)}.env"
+    mapping = target_mapping(data, config_dir)
 
     for name, dest in mapping.items():
         src = temp_apply / name
@@ -568,7 +687,7 @@ def apply_config(data, generated, yes=False, config_dir=DEFAULT_CONFIG_DIR, inst
     run(sudo + ["systemctl", "restart", "rtl_airband.service"])
     for channel in sorted(new):
         run(sudo + ["systemctl", "enable", "--now", f"vox@{channel}.service"])
-    print(f"Backups written to {backup_root}")
+    print_restore_notes(backup_root, mapping)
 
 
 def prompt(prompt_text, default=None):
@@ -724,6 +843,14 @@ def cmd_plan(args):
     show_plan(data)
 
 
+def cmd_diff(args):
+    data = load_site(args.site)
+    outdir = Path(args.output)
+    generate_files(data, outdir)
+    show_diff(data, outdir)
+    print("Sensitive Broadcastify mountpoint/password values are redacted in rtl_airband.conf diffs.")
+
+
 def cmd_apply(args):
     if os.geteuid() != 0:
         raise SystemExit("apply must be run as root, for example: sudo ./site_config.sh apply")
@@ -762,6 +889,11 @@ def main():
     p = sub.add_parser("plan", help="show changes needed to apply site.yaml")
     p.add_argument("--site", default=str(DEFAULT_SITE))
     p.set_defaults(func=cmd_plan)
+
+    p = sub.add_parser("diff", help="show generated file differences without applying them")
+    p.add_argument("--site", default=str(DEFAULT_SITE))
+    p.add_argument("--output", default=str(DEFAULT_OUTPUT))
+    p.set_defaults(func=cmd_diff)
 
     p = sub.add_parser("apply", help="generate and apply site.yaml to the live system")
     p.add_argument("--site", default=str(DEFAULT_SITE))
