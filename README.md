@@ -40,6 +40,7 @@ Service_Files/
 docs/
   INSTALL.md                 Raspberry Pi setup notes.
   ARCHITECTURE.md            Signal flow and operational model.
+  OPERATIONS.md              Log, retention, and long-running install notes.
   ROADMAP.md                 Follow-up ideas for continued development.
 AGENTS.md                    Context for future coding agents and maintainers.
 ```
@@ -77,6 +78,8 @@ AGENTS.md                    Context for future coding agents and maintainers.
    ```
 
 See [docs/INSTALL.md](docs/INSTALL.md) for a fuller checklist.
+
+See [docs/OPERATIONS.md](docs/OPERATIONS.md) for log and retention guidance.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
 

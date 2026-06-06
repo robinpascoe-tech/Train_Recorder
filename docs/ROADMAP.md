@@ -10,12 +10,12 @@ Completed:
 - Wizard defaults sourced from existing `/etc/train-recorder/site.yaml`, with sensitive Broadcastify values masked in prompts.
 - Daily empty-directory cleanup service with summarized journal output.
 - Documentation refresh for the current generated-config workflow.
+- Log and retention policy notes for long-running installs.
 
 Near-term ideas for continued development:
 
 - Soak-test and harden `site_config.sh apply` with real frequency add/remove changes.
 - Continue monitoring SOX clipping warnings after longer soaks and adjust per-channel gain if needed.
-- Add log rotation and retention policy notes for long-running installs.
 - Add hardware documentation for antenna, RTL-SDR model, Raspberry Pi model, cooling, and power.
 - Add a sanitized sample recording directory tree for documentation.
 - Add automated shell linting once the project has a Linux CI runner.

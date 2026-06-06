@@ -172,6 +172,8 @@ journalctl -u train-recorder-sync.service -u train-recorder-health.service --sin
 
 The health check reads `VOX_CHANNELS` from `common.env` and then sources each channel env file. A channel can set `HEALTH_CHECK_RECENT_SAVE=true` and `MAX_SAVE_AGE_MINUTES=1440` to warn when no recent save appears, or set `HEALTH_CHECK_RECENT_SAVE=false` for quieter channels. The sync check fails if `train-recorder-sync.service` has not completed within `MAX_SYNC_SUCCESS_AGE_MINUTES`.
 
+For long-running installs, configure journal retention so service logs cannot slowly fill the SD card. See [OPERATIONS.md](OPERATIONS.md).
+
 ## Optional rclone Offload
 
 Configure rclone for your destination, then override `RCLONE_REMOTE` if the default does not match your setup:
