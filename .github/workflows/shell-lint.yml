@@ -1,0 +1,27 @@
+name: Shell lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Check shell syntax
+        run: bash -n Scripts/*.sh
+
+      - name: Run ShellCheck
+        run: shellcheck --external-sources --exclude=SC1090,SC1091 Scripts/*.sh

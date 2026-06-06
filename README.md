@@ -108,6 +108,15 @@ If `site.yaml` already exists, the wizard loads it and uses the current values a
 
 The VOX recorder is intentionally parameterized with environment variables so additional channels can be added without duplicating the recording loop. `vox@.service` starts one recorder instance per channel env file while `Scripts/vox_record.sh` holds the shared behavior. Each recorder service loads `common.env` first and its channel-specific env file second, so values such as `SOX_VOLUME` can be tuned per channel.
 
+GitHub Actions runs a shell lint workflow on pushes to `main` and pull requests. To run the same checks on a Linux host:
+
+```bash
+bash -n Scripts/*.sh
+shellcheck --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
+```
+
+`SC1090` and `SC1091` are excluded because several scripts intentionally source runtime env files from `/etc/train-recorder`.
+
 Useful variables:
 
 | Variable | Default | Purpose |
