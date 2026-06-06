@@ -22,6 +22,15 @@ sudo chown -R pi:pi /opt/train-recorder
 chmod +x /opt/train-recorder/Scripts/*.sh
 ```
 
+For a guided, conservative install on a fresh Raspberry Pi, run:
+
+```bash
+cd /opt/train-recorder
+sudo Scripts/install.sh
+```
+
+The installer can optionally install SOX, PulseAudio, rclone, RTL-SDR packages, and build RTLSDR-Airband from source with RTL-SDR, NFM, PulseAudio, libshout, and LAME support. The source build defaults to the project-tested `RTL_AIRBAND_REF=v5.2.0`; override that environment variable if you want another tag or branch. It does not overwrite existing env files, live RTLSDR-Airband config, PulseAudio config, or rclone credentials without prompting.
+
 Copy the example RTL-Airband config and edit the local copy:
 
 ```bash

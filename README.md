@@ -21,6 +21,7 @@ Config/
   sync.env.example           Optional rclone sync settings.
   system.pa                  PulseAudio system-mode config with two null sinks.
 Scripts/
+  install.sh                 Conservative Raspberry Pi installer.
   health_check.sh            Basic service, PulseAudio, storage, and recording checks.
   cleanup_empty_dirs.sh      Daily cleanup for empty local recording directories.
   vox_record.sh              Shared configurable VOX recorder.

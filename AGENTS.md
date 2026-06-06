@@ -62,6 +62,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 
 ## Operational Notes
 
+- `Scripts/install.sh` is intentionally conservative. It can install packages and seed missing configs, but it must not overwrite live env files, `/usr/local/etc/rtl_airband.conf`, `/etc/pulse/system.pa`, or rclone credentials without prompting. Its optional RTLSDR-Airband source build defaults to `RTL_AIRBAND_REF=v5.2.0`.
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
 - Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run. The cleanup script logs a summary count instead of every deleted path.
 - The old recursive `chmod 777 /home/pi/Recordings` workaround was retired.

@@ -24,6 +24,8 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 ## Runtime Pieces
 
+`install.sh` is a conservative Raspberry Pi installer. It can install prerequisite packages, optionally build RTLSDR-Airband from source, copy project files, seed missing local configs, install systemd units, and prompt before enabling or starting services.
+
 `rtl_airband.service` starts RTLSDR-Airband and reads the installed RTL-Airband config.
 
 `pulseaudio.service` starts PulseAudio in system mode. The included `system.pa` creates two null sinks named `myfreq1sink` and `myfreq2sink`; their `.monitor` sources are used by SOX.
