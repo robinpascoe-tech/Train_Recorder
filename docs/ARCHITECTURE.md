@@ -34,7 +34,7 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `sync.sh` is a small rclone helper for moving completed recordings to a configured remote. It runs as `pi` so it can reuse the existing rclone/OneDrive tokens under `/home/pi/.config/rclone`. It uses a short minimum-age guard before moving files so rclone does not race a just-closed SOX recording.
 
-`train-recorder-health.service` runs `Scripts/health_check.sh` as a one-shot check. The optional timer can run it periodically and write results to the journal. Health checks verify services, writable paths, PulseAudio sources, recent primary-channel saves, and recent successful sync runs. The local recent-recording check is disabled by default because rclone normally drains `/home/pi/Recordings` shortly after files are created. The quieter `161.265` recent-save check is disabled by default to avoid false warnings during normal quiet periods.
+`train-recorder-health.service` runs `Scripts/health_check.sh` as a one-shot check. The optional timer can run it periodically and write results to the journal. Health checks verify shared services, writable paths, each configured `vox@...` service, each channel's PulseAudio source, per-channel recent-save policy, and recent successful sync runs. The local recent-recording check is disabled by default because rclone normally drains `/home/pi/Recordings` shortly after files are created. Quiet channels can set `HEALTH_CHECK_RECENT_SAVE=false` in their channel env file.
 
 `train-recorder-sync.service` and `train-recorder-sync.timer` provide an optional systemd-native rclone move job.
 
@@ -56,6 +56,8 @@ sync.env         Optional rclone settings.
 ```
 
 The legacy wrapper scripts still provide defaults for the original two channels, but the environment files and `vox@.service` are the preferred path for new installs. Each recorder service loads `common.env` first and its channel-specific env file second, so channel files can override shared values such as `SOX_VOLUME`.
+
+`health_check.sh` and `status_summary.sh` read `VOX_CHANNELS` and then source each channel env file, so they do not need to be regenerated when channels are added or removed.
 
 ## Deployed Layout
 

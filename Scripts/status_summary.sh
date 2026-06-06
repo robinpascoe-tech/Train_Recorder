@@ -1,24 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+CONFIG_DIR="${CONFIG_DIR:-/etc/train-recorder}"
+
+if [[ -f "$CONFIG_DIR/common.env" ]]; then
+  # shellcheck disable=SC1091
+  source "$CONFIG_DIR/common.env"
+fi
+
+if [[ -f "$CONFIG_DIR/sync.env" ]]; then
+  # shellcheck disable=SC1091
+  source "$CONFIG_DIR/sync.env"
+fi
+
 OUTPUT_ROOT="${OUTPUT_ROOT:-/home/pi/Recordings}"
 TEMP_DIR="${TEMP_DIR:-/mnt/ramdisk}"
+VOX_CHANNELS="${VOX_CHANNELS:-freq160545,freq161265}"
 CLIPPING_WINDOW_MINUTES="${CLIPPING_WINDOW_MINUTES:-1440}"
 JOURNAL_WINDOW_MINUTES="${JOURNAL_WINDOW_MINUTES:-10080}"
-VOX1_SERVICE="${VOX1_SERVICE:-vox@freq160545.service}"
-VOX2_SERVICE="${VOX2_SERVICE:-vox@freq161265.service}"
-VOX1_JOURNAL_UNITS="${VOX1_JOURNAL_UNITS:-$VOX1_SERVICE vox.service}"
-VOX2_JOURNAL_UNITS="${VOX2_JOURNAL_UNITS:-$VOX2_SERVICE vox2.service}"
-
-if [[ -f /etc/train-recorder/common.env ]]; then
-  # shellcheck disable=SC1091
-  source /etc/train-recorder/common.env
-fi
-
-if [[ -f /etc/train-recorder/sync.env ]]; then
-  # shellcheck disable=SC1091
-  source /etc/train-recorder/sync.env
-fi
 
 now_epoch="$(date +%s)"
 
@@ -76,14 +75,17 @@ service_summary() {
   local services=(
     pulseaudio.service
     rtl_airband.service
-    "$VOX1_SERVICE"
-    "$VOX2_SERVICE"
     train-recorder-sync.timer
     train-recorder-health.timer
     train-recorder-cleanup.timer
   )
   local failures=()
   local service state
+  local channel
+
+  for channel in $(channels_list); do
+    services+=("vox@${channel}.service")
+  done
 
   for service in "${services[@]}"; do
     state="$(systemctl is-active "$service" 2>/dev/null || true)"
@@ -97,6 +99,52 @@ service_summary() {
   else
     echo "Services:          attention ${failures[*]}"
   fi
+}
+
+regex_escape() {
+  sed -E 's/[][(){}.^$*+?|\\]/\\&/g' <<<"$1"
+}
+
+channels_list() {
+  local channels="${VOX_CHANNELS//,/ }"
+  printf '%s\n' $channels
+}
+
+legacy_journal_units() {
+  local channel="$1"
+  local service="$2"
+
+  case "$channel" in
+    freq160545) printf '%s vox.service\n' "$service" ;;
+    freq161265) printf '%s vox2.service\n' "$service" ;;
+    *) printf '%s\n' "$service" ;;
+  esac
+}
+
+channel_summary() {
+  local channel="$1"
+  local CHANNEL_NAME="$channel"
+  local OUTPUT_SUFFIX="_$channel"
+  local FREQUENCY_MHZ=""
+  local JOURNAL_UNITS=""
+  local env_file="$CONFIG_DIR/$channel.env"
+  local service="vox@${channel}.service"
+  local label pattern
+
+  if [[ -f "$env_file" ]]; then
+    # shellcheck disable=SC1090
+    source "$env_file"
+  else
+    printf '%-18s missing %s\n' "$channel:" "$env_file"
+    return
+  fi
+
+  label="${FREQUENCY_MHZ:-${OUTPUT_SUFFIX#_}}"
+  JOURNAL_UNITS="${JOURNAL_UNITS:-$(legacy_journal_units "$channel" "$service")}"
+  pattern="Saved .*$(regex_escape "$OUTPUT_SUFFIX")\\.mp3"
+
+  last_event_summary "Last $label save" "$JOURNAL_UNITS" "$pattern"
+  clipping_summary "Clipping $label" "$JOURNAL_UNITS"
 }
 
 pending_recordings_summary() {
@@ -142,11 +190,10 @@ echo "Train Recorder Status"
 echo "Generated:         $(date)"
 echo
 service_summary
-last_event_summary "Last 160.545 save" "$VOX1_JOURNAL_UNITS" 'Saved .*_160\.545\.mp3'
-last_event_summary "Last 161.265 save" "$VOX2_JOURNAL_UNITS" 'Saved .*_161\.265\.mp3'
+while IFS= read -r channel; do
+  [[ -n "$channel" ]] && channel_summary "$channel"
+done < <(channels_list)
 last_event_summary "Last sync" train-recorder-sync.service 'Finished train-recorder-sync\.service'
 last_event_summary "Last cleanup" train-recorder-cleanup.service 'Finished train-recorder-cleanup\.service'
 pending_recordings_summary
-clipping_summary "Clipping 160.545" "$VOX1_JOURNAL_UNITS"
-clipping_summary "Clipping 161.265" "$VOX2_JOURNAL_UNITS"
 disk_summary

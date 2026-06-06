@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+CONFIG_DIR="${CONFIG_DIR:-/etc/train-recorder}"
+
+if [[ -f "$CONFIG_DIR/common.env" ]]; then
+  # shellcheck disable=SC1091
+  source "$CONFIG_DIR/common.env"
+fi
+
 OUTPUT_ROOT="${OUTPUT_ROOT:-/home/pi/Recordings}"
 PULSE_SERVER="${PULSE_SERVER:-unix:/run/pulse/native}"
 TEMP_DIR="${TEMP_DIR:-/mnt/ramdisk}"
+VOX_CHANNELS="${VOX_CHANNELS:-freq160545,freq161265}"
 MAX_RECORDING_AGE_MINUTES="${MAX_RECORDING_AGE_MINUTES:-1440}"
 CHECK_RECENT_LOCAL_RECORDINGS="${CHECK_RECENT_LOCAL_RECORDINGS:-false}"
-CHECK_VOX1_RECENT_SAVE="${CHECK_VOX1_RECENT_SAVE:-true}"
-MAX_VOX1_SAVE_AGE_MINUTES="${MAX_VOX1_SAVE_AGE_MINUTES:-1440}"
-CHECK_VOX2_RECENT_SAVE="${CHECK_VOX2_RECENT_SAVE:-false}"
-MAX_VOX2_SAVE_AGE_MINUTES="${MAX_VOX2_SAVE_AGE_MINUTES:-4320}"
 CHECK_RECENT_SYNC_SUCCESS="${CHECK_RECENT_SYNC_SUCCESS:-true}"
 MAX_SYNC_SUCCESS_AGE_MINUTES="${MAX_SYNC_SUCCESS_AGE_MINUTES:-30}"
-VOX1_SERVICE="${VOX1_SERVICE:-vox@freq160545.service}"
-VOX2_SERVICE="${VOX2_SERVICE:-vox@freq161265.service}"
-VOX1_JOURNAL_UNITS="${VOX1_JOURNAL_UNITS:-$VOX1_SERVICE vox.service}"
-VOX2_JOURNAL_UNITS="${VOX2_JOURNAL_UNITS:-$VOX2_SERVICE vox2.service}"
 
 status=0
 
@@ -56,6 +56,10 @@ check_pulse_source() {
   fi
 }
 
+regex_escape() {
+  sed -E 's/[][(){}.^$*+?|\\]/\\&/g' <<<"$1"
+}
+
 check_recent_journal() {
   local units="$1"
   local minutes="$2"
@@ -79,28 +83,95 @@ check_recent_journal() {
   fi
 }
 
+channels_list() {
+  local channels="${VOX_CHANNELS//,/ }"
+  printf '%s\n' $channels
+}
+
+legacy_recent_save_default() {
+  local channel="$1"
+
+  case "$channel" in
+    freq160545) printf '%s\n' "${CHECK_VOX1_RECENT_SAVE:-true}" ;;
+    freq161265) printf '%s\n' "${CHECK_VOX2_RECENT_SAVE:-false}" ;;
+    *) printf 'true\n' ;;
+  esac
+}
+
+legacy_max_save_age_default() {
+  local channel="$1"
+
+  case "$channel" in
+    freq160545) printf '%s\n' "${MAX_VOX1_SAVE_AGE_MINUTES:-1440}" ;;
+    freq161265) printf '%s\n' "${MAX_VOX2_SAVE_AGE_MINUTES:-4320}" ;;
+    *) printf '1440\n' ;;
+  esac
+}
+
+legacy_journal_units() {
+  local channel="$1"
+  local service="$2"
+
+  case "$channel" in
+    freq160545) printf '%s vox.service\n' "$service" ;;
+    freq161265) printf '%s vox2.service\n' "$service" ;;
+    *) printf '%s\n' "$service" ;;
+  esac
+}
+
+check_channel() {
+  local channel="$1"
+  local CHANNEL_NAME="$channel"
+  local PULSE_MONITOR=""
+  local OUTPUT_SUFFIX="_$channel"
+  local FREQUENCY_MHZ=""
+  local HEALTH_CHECK_RECENT_SAVE=""
+  local MAX_SAVE_AGE_MINUTES=""
+  local JOURNAL_UNITS=""
+  local env_file="$CONFIG_DIR/$channel.env"
+  local service="vox@${channel}.service"
+  local label pattern
+
+  if [[ -f "$env_file" ]]; then
+    # shellcheck disable=SC1090
+    source "$env_file"
+  else
+    echo "fail channel env file missing: $env_file" >&2
+    status=1
+    return
+  fi
+
+  label="${FREQUENCY_MHZ:-${OUTPUT_SUFFIX#_}}"
+  HEALTH_CHECK_RECENT_SAVE="${HEALTH_CHECK_RECENT_SAVE:-$(legacy_recent_save_default "$channel")}"
+  MAX_SAVE_AGE_MINUTES="${MAX_SAVE_AGE_MINUTES:-$(legacy_max_save_age_default "$channel")}"
+  JOURNAL_UNITS="${JOURNAL_UNITS:-$(legacy_journal_units "$channel" "$service")}"
+
+  check_service "$service"
+
+  if [[ -n "$PULSE_MONITOR" ]]; then
+    check_pulse_source "$PULSE_MONITOR"
+  else
+    echo "fail $channel has no PULSE_MONITOR" >&2
+    status=1
+  fi
+
+  if is_true "$HEALTH_CHECK_RECENT_SAVE"; then
+    pattern="Saved .*$(regex_escape "$OUTPUT_SUFFIX")\\.mp3"
+    check_recent_journal "$JOURNAL_UNITS" "$MAX_SAVE_AGE_MINUTES" "$pattern" "$label recording save"
+  else
+    echo "ok recent $label recording save check disabled"
+  fi
+}
+
 check_service pulseaudio.service
 check_service rtl_airband.service
-check_service "$VOX1_SERVICE"
-check_service "$VOX2_SERVICE"
 
 check_path "$OUTPUT_ROOT"
 check_path "$TEMP_DIR"
 
-check_pulse_source myfreq1sink.monitor
-check_pulse_source myfreq2sink.monitor
-
-if is_true "$CHECK_VOX1_RECENT_SAVE"; then
-  check_recent_journal "$VOX1_JOURNAL_UNITS" "$MAX_VOX1_SAVE_AGE_MINUTES" 'Saved .*_160\.545\.mp3' '160.545 recording save'
-else
-  echo "ok recent 160.545 recording save check disabled"
-fi
-
-if is_true "$CHECK_VOX2_RECENT_SAVE"; then
-  check_recent_journal "$VOX2_JOURNAL_UNITS" "$MAX_VOX2_SAVE_AGE_MINUTES" 'Saved .*_161\.265\.mp3' '161.265 recording save'
-else
-  echo "ok recent 161.265 recording save check disabled"
-fi
+while IFS= read -r channel; do
+  [[ -n "$channel" ]] && check_channel "$channel"
+done < <(channels_list)
 
 if is_true "$CHECK_RECENT_SYNC_SUCCESS"; then
   check_recent_journal train-recorder-sync.service "$MAX_SYNC_SUCCESS_AGE_MINUTES" 'Finished train-recorder-sync\.service' 'sync service success' fail

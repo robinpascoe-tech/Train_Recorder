@@ -118,7 +118,7 @@ systemctl list-timers --all | grep train-recorder
 journalctl -u train-recorder-sync.service -u train-recorder-health.service --since today
 ```
 
-The health check warns if the primary `160.545` channel has not saved a recording within `MAX_VOX1_SAVE_AGE_MINUTES`, and fails if `train-recorder-sync.service` has not completed within `MAX_SYNC_SUCCESS_AGE_MINUTES`. The `161.265` recent-save check is disabled by default because that channel can be quiet for a day or more.
+The health check reads `VOX_CHANNELS` from `common.env` and then sources each channel env file. A channel can set `HEALTH_CHECK_RECENT_SAVE=true` and `MAX_SAVE_AGE_MINUTES=1440` to warn when no recent save appears, or set `HEALTH_CHECK_RECENT_SAVE=false` for quieter channels. The sync check fails if `train-recorder-sync.service` has not completed within `MAX_SYNC_SUCCESS_AGE_MINUTES`.
 
 ## Optional rclone Offload
 

@@ -77,15 +77,20 @@ Useful variables:
 | `STOP_DURATION` | `13.0` | SOX trailing-silence duration before closing a file. |
 | `RECORDING_UMASK` | `0002` | Permissions mask for generated folders and MP3s. |
 | `CHECK_RECENT_LOCAL_RECORDINGS` | `false` | Enables an optional warning when no recent MP3s remain under `OUTPUT_ROOT`; keep disabled when rclone moves files away quickly. |
-| `CHECK_VOX1_RECENT_SAVE` | `true` | Warn when no recent `160.545` save appears in the `vox.service` journal. |
-| `MAX_VOX1_SAVE_AGE_MINUTES` | `1440` | Recent-save window for the primary `160.545` channel. |
-| `CHECK_VOX2_RECENT_SAVE` | `false` | Optional recent-save check for the quieter `161.265` channel. |
-| `MAX_VOX2_SAVE_AGE_MINUTES` | `4320` | Recent-save window for the optional `161.265` check. |
 | `CHECK_RECENT_SYNC_SUCCESS` | `true` | Fail health checks when `train-recorder-sync.service` has not finished recently. |
 | `MAX_SYNC_SUCCESS_AGE_MINUTES` | `30` | Recent-success window for the rclone sync service. |
 | `RCLONE_MIN_AGE` | `15s` | Minimum file age before `sync.sh` allows rclone to move a completed MP3. |
 | `CLIPPING_WINDOW_MINUTES` | `1440` | Journal lookback window used by `status_summary.sh` for clipping warnings. |
 | `JOURNAL_WINDOW_MINUTES` | `10080` | Journal lookback window used by `status_summary.sh` for last-event summaries. |
+
+Channel env files also support:
+
+| Variable | Purpose |
+| --- | --- |
+| `FREQUENCY_MHZ` | Human-readable channel frequency for reports. |
+| `HEALTH_CHECK_RECENT_SAVE` | Enables or disables recent-save health warnings for that channel. |
+| `MAX_SAVE_AGE_MINUTES` | Recent-save lookback window for that channel. |
+| `JOURNAL_UNITS` | Optional space-separated journal units to search for that channel, useful during migrations. |
 
 ## Public Release Checklist
 
