@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-python3 - "$@" <<'PY'
+tmp_script="$(mktemp /tmp/train-recorder-site-config.XXXXXX.py)"
+cleanup() {
+  rm -f "$tmp_script"
+}
+trap cleanup EXIT
+
+cat > "$tmp_script" <<'PY'
 import argparse
 import datetime as dt
 import os
@@ -110,7 +116,12 @@ def yaml_quote(value):
     if value is None:
         return ""
     text = str(value)
-    if text == "" or any(ch in text for ch in [":", "#", '"', "'"]) or text.lower() in ("true", "false", "null"):
+    if (
+        text == ""
+        or any(ch in text for ch in [":", "#", '"', "'"])
+        or text.lower() in ("true", "false", "null")
+        or re.match(r"^0\d+$", text)
+    ):
         return '"' + text.replace('"', '\\"') + '"'
     return text
 
@@ -661,7 +672,7 @@ def cmd_plan(args):
 
 def cmd_apply(args):
     if os.geteuid() != 0:
-        raise SystemExit("apply must be run as root, for example: sudo Scripts/site_config.sh apply")
+        raise SystemExit("apply must be run as root, for example: sudo ./site_config.sh apply")
     data = load_site(args.site)
     outdir = Path(args.output)
     generate_files(data, outdir)
@@ -674,7 +685,10 @@ def cmd_status(_args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Train Recorder site configuration tool")
+    parser = argparse.ArgumentParser(
+        prog="site_config.sh",
+        description="Train Recorder site configuration tool",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("wizard", help="interactively write a site.yaml")
@@ -682,7 +696,7 @@ def main():
     def wizard_command(args):
         path = Path(args.site)
         if str(path).startswith("/etc/") and os.geteuid() != 0:
-            raise SystemExit("writing to /etc requires root, for example: sudo Scripts/site_config.sh wizard")
+            raise SystemExit("writing to /etc requires root, for example: sudo ./site_config.sh wizard")
         wizard(path)
     p.set_defaults(func=wizard_command)
 
@@ -711,3 +725,5 @@ def main():
 if __name__ == "__main__":
     main()
 PY
+
+python3 "$tmp_script" "$@"
