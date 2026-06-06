@@ -63,7 +63,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 ## Operational Notes
 
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
-- Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run.
+- Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run. The cleanup script logs a summary count instead of every deleted path.
 - The old recursive `chmod 777 /home/pi/Recordings` workaround was retired.
 - `/home/pi/Recordings` should be `pi:pi` and `775`.
 - Generated MP3s should be `pi:pi` and group writable.

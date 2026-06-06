@@ -117,7 +117,7 @@ systemctl start train-recorder-sync.service
 
 For unattended operation, enable `train-recorder-sync.timer`. It runs `train-recorder-sync.service` every 5 minutes, matching the original cron cadence. The default `RCLONE_MIN_AGE=15s` keeps rclone from moving a file immediately after SOX closes it.
 
-Enable `train-recorder-cleanup.timer` to remove empty local date directories once a day. This keeps the local spool tidy without making the 5-minute sync job delete and recreate the current date folder tree. The cleanup walks deepest-first, so empty day, month, and year folders are removed together when no files remain below them.
+Enable `train-recorder-cleanup.timer` to remove empty local date directories once a day. This keeps the local spool tidy without making the 5-minute sync job delete and recreate the current date folder tree. The cleanup walks deepest-first, so empty day, month, and year folders are removed together when no files remain below them. It logs only a summary count to keep journal output readable.
 
 If migrating from the old cron-based setup, comment out the previous `pi` crontab line after the timer is active:
 

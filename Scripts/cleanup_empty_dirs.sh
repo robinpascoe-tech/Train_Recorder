@@ -12,4 +12,6 @@ fi
 # Clean empty folders separately so the frequent sync job does not churn the
 # current day's directories after every transmission. Walk deepest-first so an
 # empty day/month/year branch can be removed in one cleanup run.
-find "$RECORDINGS_DIR" -mindepth 1 -depth -type d -empty -print -delete
+mapfile -d '' deleted_dirs < <(find "$RECORDINGS_DIR" -mindepth 1 -depth -type d -empty -print0 -delete)
+
+echo "ok cleanup removed ${#deleted_dirs[@]} empty directories under $RECORDINGS_DIR"
