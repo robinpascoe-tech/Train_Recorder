@@ -34,7 +34,7 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `sync.sh` is a small rclone helper for moving completed recordings to a configured remote. It runs as `pi` so it can reuse the existing rclone/OneDrive tokens under `/home/pi/.config/rclone`. It uses a short minimum-age guard before moving files so rclone does not race a just-closed SOX recording.
 
-`train-recorder-health.service` runs `Scripts/health_check.sh` as a one-shot check. The optional timer can run it periodically and write results to the journal. The local recent-recording check is disabled by default because rclone normally drains `/home/pi/Recordings` shortly after files are created.
+`train-recorder-health.service` runs `Scripts/health_check.sh` as a one-shot check. The optional timer can run it periodically and write results to the journal. Health checks verify services, writable paths, PulseAudio sources, recent primary-channel saves, and recent successful sync runs. The local recent-recording check is disabled by default because rclone normally drains `/home/pi/Recordings` shortly after files are created. The quieter `161.265` recent-save check is disabled by default to avoid false warnings during normal quiet periods.
 
 `train-recorder-sync.service` and `train-recorder-sync.timer` provide an optional systemd-native rclone move job.
 

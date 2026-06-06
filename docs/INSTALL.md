@@ -96,7 +96,7 @@ Check status and logs:
 ```bash
 systemctl status pulseaudio.service rtl_airband.service vox.service vox2.service
 journalctl -u rtl_airband.service -u vox.service -u vox2.service -f
-/opt/train-recorder/Scripts/health_check.sh
+sudo /opt/train-recorder/Scripts/health_check.sh
 ```
 
 Check the systemd timers:
@@ -105,6 +105,8 @@ Check the systemd timers:
 systemctl list-timers --all | grep train-recorder
 journalctl -u train-recorder-sync.service -u train-recorder-health.service --since today
 ```
+
+The health check warns if the primary `160.545` channel has not saved a recording within `MAX_VOX1_SAVE_AGE_MINUTES`, and fails if `train-recorder-sync.service` has not completed within `MAX_SYNC_SUCCESS_AGE_MINUTES`. The `161.265` recent-save check is disabled by default because that channel can be quiet for a day or more.
 
 ## Optional rclone Offload
 
