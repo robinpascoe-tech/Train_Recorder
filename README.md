@@ -20,8 +20,10 @@ Config/
   rtl_airband.conf.example   Example RTLSDR-Airband config. Copy and add secrets locally.
   sync.env.example           Optional rclone sync settings.
   system.pa                  PulseAudio system-mode config with two null sinks.
+  site.example.yaml          Example site definition for generated configs.
 Scripts/
   install.sh                 Conservative Raspberry Pi installer.
+  site_config.sh             Wizard/generator/apply tool for site-specific configs.
   health_check.sh            Basic service, PulseAudio, storage, and recording checks.
   cleanup_empty_dirs.sh      Daily cleanup for empty local recording directories.
   vox_record.sh              Shared configurable VOX recorder.
@@ -57,6 +59,19 @@ Do not commit your real Broadcastify/Icecast password, mountpoint, or rclone cre
 See [docs/INSTALL.md](docs/INSTALL.md) for a fuller checklist.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
+
+## Site Configuration
+
+For reusable installs, keep site-specific settings in `/etc/train-recorder/site.yaml`. Start from `Config/site.example.yaml` or run:
+
+```bash
+sudo /opt/train-recorder/Scripts/site_config.sh wizard
+sudo /opt/train-recorder/Scripts/site_config.sh generate
+sudo /opt/train-recorder/Scripts/site_config.sh plan
+sudo /opt/train-recorder/Scripts/site_config.sh apply
+```
+
+`generate` writes a preview to `/tmp/train-recorder-generated` by default. `apply` backs up replaced files, reconciles `vox@...` services, and restarts the affected recorder services.
 
 ## Development Notes
 

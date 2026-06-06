@@ -31,6 +31,19 @@ sudo Scripts/install.sh
 
 The installer can optionally install SOX, PulseAudio, rclone, RTL-SDR packages, and build RTLSDR-Airband from source with RTL-SDR, NFM, PulseAudio, libshout, and LAME support. The source build defaults to the project-tested `RTL_AIRBAND_REF=v5.2.0`; override that environment variable if you want another tag or branch. It does not overwrite existing env files, live RTLSDR-Airband config, PulseAudio config, or rclone credentials without prompting.
 
+## Generate Site Config
+
+For a site-specific install, use `site_config.sh` instead of hand-editing every generated file:
+
+```bash
+sudo /opt/train-recorder/Scripts/site_config.sh wizard
+sudo /opt/train-recorder/Scripts/site_config.sh generate
+sudo /opt/train-recorder/Scripts/site_config.sh plan
+sudo /opt/train-recorder/Scripts/site_config.sh apply
+```
+
+The wizard writes `/etc/train-recorder/site.yaml`. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `apply` backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, reconciles `vox@...` services, and restarts the affected services. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
+
 Copy the example RTL-Airband config and edit the local copy:
 
 ```bash

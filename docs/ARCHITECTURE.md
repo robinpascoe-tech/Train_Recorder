@@ -26,6 +26,8 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `install.sh` is a conservative Raspberry Pi installer. It can install prerequisite packages, optionally build RTLSDR-Airband from source, copy project files, seed missing local configs, install systemd units, and prompt before enabling or starting services.
 
+`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, and reconcile live `vox@...` services. The YAML file is the desired state; generated files are artifacts.
+
 `rtl_airband.service` starts RTLSDR-Airband and reads the installed RTL-Airband config.
 
 `pulseaudio.service` starts PulseAudio in system mode. The included `system.pa` creates two null sinks named `myfreq1sink` and `myfreq2sink`; their `.monitor` sources are used by SOX.
@@ -46,9 +48,10 @@ The recorder, sync, and cleanup services run as `pi:pi`. This keeps PulseAudio a
 
 ## Configuration
 
-Recorder settings live in environment files under `/etc/train-recorder`:
+Recorder settings can be generated from `/etc/train-recorder/site.yaml` or edited directly in environment files under `/etc/train-recorder`:
 
 ```text
+site.yaml        Desired site configuration used by `site_config.sh`.
 common.env       Shared output, temp, SOX, silence, and channel-list settings.
 freq160545.env   First recorder channel settings.
 freq161265.env   Second recorder channel settings.

@@ -63,6 +63,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 ## Operational Notes
 
 - `Scripts/install.sh` is intentionally conservative. It can install packages and seed missing configs, but it must not overwrite live env files, `/usr/local/etc/rtl_airband.conf`, `/etc/pulse/system.pa`, or rclone credentials without prompting. Its optional RTLSDR-Airband source build defaults to `RTL_AIRBAND_REF=v5.2.0`.
+- `Scripts/site_config.sh` is the desired-state configuration tool. `site.yaml` is source-of-truth; generated env files, `system.pa`, and `rtl_airband.conf` are artifacts. Use `generate` and `plan` before `apply`.
 - New recorder services should use the templated `vox@.service` naming convention. Legacy `vox.service` and `vox2.service` existed for the original two-channel install, but new/generated configs should enable `vox@<channel-env-name>.service`.
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
 - Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run. The cleanup script logs a summary count instead of every deleted path.

@@ -2,7 +2,7 @@
 
 Near-term ideas for continued development:
 
-- Add a single channel definition file that can generate RTL-Airband snippets, VOX wrappers, and service files.
+- Soak-test and harden `site_config.sh apply` with real frequency add/remove changes.
 - Tune SOX volume to reduce clipping warnings while preserving intelligibility.
 - Soak-test `RCLONE_MIN_AGE=15s` and the daily empty-directory cleanup timer.
 - Add log rotation and retention policy notes for long-running installs.

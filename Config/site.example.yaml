@@ -1,0 +1,63 @@
+# Example Train Recorder site definition.
+#
+# Copy to /etc/train-recorder/site.yaml and edit, or create it with:
+#   sudo /opt/train-recorder/Scripts/site_config.sh wizard
+#
+# The generator supports this small YAML subset without external Python modules.
+site:
+  name: Ontario Northland Railway - New Liskeard
+  output_root: /home/pi/Recordings
+  temp_dir: /mnt/ramdisk
+  pulse_server: unix:/run/pulse/native
+  audio_format: mp3
+  sox_volume: 4
+  stop_duration: 13.0
+  stop_threshold: 0.1%
+  recording_umask: "0002"
+  check_recent_local_recordings: false
+  check_recent_sync_success: true
+  max_sync_success_age_minutes: 30
+  rclone_remote: onedrive:ONR/ONR_Tower3_NewLiskeard
+  rclone_min_age: 15s
+
+sdr:
+  type: rtlsdr
+  index: 0
+  gain: 48
+  correction: 0
+  bandwidth_mhz: 2.4
+
+broadcastify:
+  enabled: true
+  channel: freq160545
+  server: audio9.broadcastify.com
+  port: 80
+  mountpoint: YOUR_MOUNTPOINT
+  username: source
+  password: YOUR_BROADCASTIFY_PASSWORD
+  name: Ontario Northland Railway - New Liskeard Tower
+  genre: RAIL
+  description: Ontario Northland Railway
+  send_scan_freq_tags: false
+
+channels:
+  - name: freq160545
+    frequency_mhz: 160.545
+    pulse_sink: myfreq1sink
+    output_suffix: _160.545
+    sox_volume: 3
+    start_duration: 0.2
+    min_bytes: 700
+    health_check_recent_save: true
+    max_save_age_minutes: 1440
+    afc: true
+    stream_ampfactor: 1.5
+  - name: freq161265
+    frequency_mhz: 161.265
+    pulse_sink: myfreq2sink
+    output_suffix: _161.265
+    start_duration: 0.5
+    min_bytes: 800
+    health_check_recent_save: false
+    max_save_age_minutes: 4320
+    afc: false
