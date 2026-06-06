@@ -27,6 +27,7 @@ Scripts/
   vox.sh                     160.545 MHz recorder wrapper.
   vox2.sh                    161.265 MHz recorder wrapper.
   sync.sh                    Optional rclone move script.
+  status_summary.sh          Read-only operator status summary.
 Service_Files/
   *.service                  systemd units for PulseAudio, RTLSDR-Airband, VOX recorders, health, sync, and cleanup.
   *.timer                    Optional systemd timers for health checks, rclone sync, and cleanup.
@@ -80,6 +81,8 @@ Useful variables:
 | `CHECK_RECENT_SYNC_SUCCESS` | `true` | Fail health checks when `train-recorder-sync.service` has not finished recently. |
 | `MAX_SYNC_SUCCESS_AGE_MINUTES` | `30` | Recent-success window for the rclone sync service. |
 | `RCLONE_MIN_AGE` | `15s` | Minimum file age before `sync.sh` allows rclone to move a completed MP3. |
+| `CLIPPING_WINDOW_MINUTES` | `1440` | Journal lookback window used by `status_summary.sh` for clipping warnings. |
+| `JOURNAL_WINDOW_MINUTES` | `10080` | Journal lookback window used by `status_summary.sh` for last-event summaries. |
 
 ## Public Release Checklist
 

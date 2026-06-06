@@ -69,6 +69,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 - Generated MP3s should be `pi:pi` and group writable.
 - The health check local-recency warning is disabled by default because rclone moves files away quickly. Re-enable it only when troubleshooting a setup that keeps local MP3s.
 - The health check watches recent `160.545` saves and recent sync service completions. The `161.265` recent-save check is disabled by default because that channel can be quiet for a day or more.
+- Use `sudo /opt/train-recorder/Scripts/status_summary.sh` for a quick read-only operator summary before pulling detailed logs.
 - SOX clipping warnings have been observed. Production tuning was moved from `SOX_VOLUME=5` toward `SOX_VOLUME=4`; compare clipping warnings and intelligibility after a soak.
 - Channel env files load after `common.env`, so `SOX_VOLUME` can be tuned per channel. Current production direction is lowering `freq160545.env` one notch below the shared default to reduce channel 1 clipping.
 

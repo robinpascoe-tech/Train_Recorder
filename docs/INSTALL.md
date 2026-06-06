@@ -99,6 +99,7 @@ Check status and logs:
 systemctl status pulseaudio.service rtl_airband.service vox.service vox2.service
 journalctl -u rtl_airband.service -u vox.service -u vox2.service -f
 sudo /opt/train-recorder/Scripts/health_check.sh
+sudo /opt/train-recorder/Scripts/status_summary.sh
 ```
 
 Check the systemd timers:
