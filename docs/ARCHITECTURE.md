@@ -30,9 +30,7 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `pulseaudio.service` starts PulseAudio in system mode. The included `system.pa` creates two null sinks named `myfreq1sink` and `myfreq2sink`; their `.monitor` sources are used by SOX.
 
-`vox.service` records from `myfreq1sink.monitor` and names files with `_160.545`.
-
-`vox2.service` records from `myfreq2sink.monitor` and names files with `_161.265`.
+`vox@.service` is the templated recorder unit. Each instance loads `common.env` and `/etc/train-recorder/%i.env`, then runs `vox_record.sh`. For example, `vox@freq160545.service` records from `myfreq1sink.monitor` and names files with `_160.545`.
 
 `sync.sh` is a small rclone helper for moving completed recordings to a configured remote. It runs as `pi` so it can reuse the existing rclone/OneDrive tokens under `/home/pi/.config/rclone`. It uses a short minimum-age guard before moving files so rclone does not race a just-closed SOX recording.
 
@@ -51,13 +49,13 @@ The recorder, sync, and cleanup services run as `pi:pi`. This keeps PulseAudio a
 Recorder settings live in environment files under `/etc/train-recorder`:
 
 ```text
-common.env       Shared output, temp, SOX, and silence settings.
+common.env       Shared output, temp, SOX, silence, and channel-list settings.
 freq160545.env   First recorder channel settings.
 freq161265.env   Second recorder channel settings.
 sync.env         Optional rclone settings.
 ```
 
-The wrapper scripts still provide defaults, but the environment files are the preferred place to tune a live install. Each recorder service loads `common.env` first and its channel-specific env file second, so channel files can override shared values such as `SOX_VOLUME`.
+The legacy wrapper scripts still provide defaults for the original two channels, but the environment files and `vox@.service` are the preferred path for new installs. Each recorder service loads `common.env` first and its channel-specific env file second, so channel files can override shared values such as `SOX_VOLUME`.
 
 ## Deployed Layout
 
@@ -75,5 +73,6 @@ The wrapper scripts still provide defaults, but the environment files are the pr
 
 1. Add another `module-null-sink` entry to `Config/system.pa`.
 2. Add another RTLSDR-Airband channel output pointed at that sink.
-3. Add a wrapper script or systemd unit that sets `PULSE_MONITOR`, `OUTPUT_SUFFIX`, and `MIN_BYTES`.
-4. Enable the new service with systemd.
+3. Add a channel env file under `/etc/train-recorder`, for example `freq160650.env`.
+4. Add the new env name to the comma-separated `VOX_CHANNELS` list in `common.env`.
+5. Enable the new service with systemd, for example `systemctl enable --now vox@freq160650.service`.

@@ -5,6 +5,10 @@ OUTPUT_ROOT="${OUTPUT_ROOT:-/home/pi/Recordings}"
 TEMP_DIR="${TEMP_DIR:-/mnt/ramdisk}"
 CLIPPING_WINDOW_MINUTES="${CLIPPING_WINDOW_MINUTES:-1440}"
 JOURNAL_WINDOW_MINUTES="${JOURNAL_WINDOW_MINUTES:-10080}"
+VOX1_SERVICE="${VOX1_SERVICE:-vox@freq160545.service}"
+VOX2_SERVICE="${VOX2_SERVICE:-vox@freq161265.service}"
+VOX1_JOURNAL_UNITS="${VOX1_JOURNAL_UNITS:-$VOX1_SERVICE vox.service}"
+VOX2_JOURNAL_UNITS="${VOX2_JOURNAL_UNITS:-$VOX2_SERVICE vox2.service}"
 
 if [[ -f /etc/train-recorder/common.env ]]; then
   # shellcheck disable=SC1091
@@ -34,12 +38,16 @@ age_text() {
 }
 
 last_matching_journal() {
-  local unit="$1"
+  local units="$1"
   local pattern="$2"
-  local logs
+  local logs="" unit
 
-  logs="$(journalctl -u "$unit" --since "$JOURNAL_WINDOW_MINUTES minutes ago" --no-pager -o short-unix 2>/dev/null || true)"
-  grep -E "$pattern" <<<"$logs" | tail -1 || true
+  for unit in $units; do
+    logs+="$(journalctl -u "$unit" --since "$JOURNAL_WINDOW_MINUTES minutes ago" --no-pager -o short-unix 2>/dev/null || true)"
+    logs+=$'\n'
+  done
+
+  grep -E "$pattern" <<<"$logs" | sort -n | tail -1 || true
 }
 
 last_event_summary() {
@@ -68,8 +76,8 @@ service_summary() {
   local services=(
     pulseaudio.service
     rtl_airband.service
-    vox.service
-    vox2.service
+    "$VOX1_SERVICE"
+    "$VOX2_SERVICE"
     train-recorder-sync.timer
     train-recorder-health.timer
     train-recorder-cleanup.timer
@@ -102,10 +110,14 @@ pending_recordings_summary() {
 
 clipping_summary() {
   local label="$1"
-  local unit="$2"
-  local logs count max
+  local units="$2"
+  local logs="" unit count max
 
-  logs="$(journalctl -u "$unit" --since "$CLIPPING_WINDOW_MINUTES minutes ago" --no-pager 2>/dev/null || true)"
+  for unit in $units; do
+    logs+="$(journalctl -u "$unit" --since "$CLIPPING_WINDOW_MINUTES minutes ago" --no-pager 2>/dev/null || true)"
+    logs+=$'\n'
+  done
+
   count="$(grep -c 'balancing clipped' <<<"$logs" || true)"
   max="$(grep 'balancing clipped' <<<"$logs" \
     | sed -E 's/.*balancing clipped ([0-9]+) samples.*/\1/' \
@@ -130,11 +142,11 @@ echo "Train Recorder Status"
 echo "Generated:         $(date)"
 echo
 service_summary
-last_event_summary "Last 160.545 save" vox.service 'Saved .*_160\.545\.mp3'
-last_event_summary "Last 161.265 save" vox2.service 'Saved .*_161\.265\.mp3'
+last_event_summary "Last 160.545 save" "$VOX1_JOURNAL_UNITS" 'Saved .*_160\.545\.mp3'
+last_event_summary "Last 161.265 save" "$VOX2_JOURNAL_UNITS" 'Saved .*_161\.265\.mp3'
 last_event_summary "Last sync" train-recorder-sync.service 'Finished train-recorder-sync\.service'
 last_event_summary "Last cleanup" train-recorder-cleanup.service 'Finished train-recorder-cleanup\.service'
 pending_recordings_summary
-clipping_summary "Clipping 160.545" vox.service
-clipping_summary "Clipping 161.265" vox2.service
+clipping_summary "Clipping 160.545" "$VOX1_JOURNAL_UNITS"
+clipping_summary "Clipping 161.265" "$VOX2_JOURNAL_UNITS"
 disk_summary

@@ -26,7 +26,7 @@ PulseAudio monitor sources -> SOX VOX recorder scripts
                            -> rclone move to OneDrive
 ```
 
-`vox.service`, `vox2.service`, and `train-recorder-sync.service` run as `pi:pi`. This is intentional. The `pi` user can access the PulseAudio system-mode monitor sources, owns generated MP3s, and has the rclone OneDrive auth under `/home/pi/.config/rclone`.
+`vox@freq160545.service`, `vox@freq161265.service`, and `train-recorder-sync.service` run as `pi:pi`. This is intentional. The `pi` user can access the PulseAudio system-mode monitor sources, owns generated MP3s, and has the rclone OneDrive auth under `/home/pi/.config/rclone`.
 
 ## Important Paths
 
@@ -63,6 +63,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 ## Operational Notes
 
 - `Scripts/install.sh` is intentionally conservative. It can install packages and seed missing configs, but it must not overwrite live env files, `/usr/local/etc/rtl_airband.conf`, `/etc/pulse/system.pa`, or rclone credentials without prompting. Its optional RTLSDR-Airband source build defaults to `RTL_AIRBAND_REF=v5.2.0`.
+- New recorder services should use the templated `vox@.service` naming convention. Legacy `vox.service` and `vox2.service` existed for the original two-channel install, but new/generated configs should enable `vox@<channel-env-name>.service`.
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
 - Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run. The cleanup script logs a summary count instead of every deleted path.
 - The old recursive `chmod 777 /home/pi/Recordings` workaround was retired.
@@ -85,9 +86,9 @@ Before changing the live Pi:
 5. Verify with:
 
 ```bash
-systemctl is-active rtl_airband.service vox.service vox2.service
+systemctl is-active rtl_airband.service vox@freq160545.service vox@freq161265.service
 systemctl list-timers --all | grep train-recorder
-journalctl -u vox.service -u vox2.service -u train-recorder-sync.service --since today
+journalctl -u vox@freq160545.service -u vox@freq161265.service -u train-recorder-sync.service --since today
 ```
 
 Keep changes small and soak-test after service or permission changes.

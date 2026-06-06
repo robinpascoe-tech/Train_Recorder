@@ -7,7 +7,7 @@ This project currently targets an Ontario Northland Railway monitoring setup wit
 - RTLSDR-Airband receiving two NFM channels from one RTL-SDR dongle.
 - 160.545 MHz streamed to Broadcastify/Icecast and sent to a PulseAudio sink.
 - 161.265 MHz sent to a second PulseAudio sink.
-- Two SOX-based VOX recorder services that write one MP3 per transmission.
+- SOX-based VOX recorder services that write one MP3 per transmission.
 - Optional rclone sync/move of recordings to cloud storage.
 
 ## Repository Layout
@@ -30,7 +30,8 @@ Scripts/
   sync.sh                    Optional rclone move script.
   status_summary.sh          Read-only operator status summary.
 Service_Files/
-  *.service                  systemd units for PulseAudio, RTLSDR-Airband, VOX recorders, health, sync, and cleanup.
+  vox@.service               Templated VOX recorder unit, one instance per channel env file.
+  *.service                  systemd units for PulseAudio, RTLSDR-Airband, health, sync, and cleanup.
   *.timer                    Optional systemd timers for health checks, rclone sync, and cleanup.
 docs/
   INSTALL.md                 Raspberry Pi setup notes.
@@ -59,7 +60,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
 
 ## Development Notes
 
-The VOX recorder is intentionally parameterized with environment variables so additional channels can be added without duplicating the recording loop. The wrapper scripts keep the current two-channel setup readable while `Scripts/vox_record.sh` holds the shared behavior. Each recorder service loads `common.env` first and its channel-specific env file second, so values such as `SOX_VOLUME` can be tuned per channel.
+The VOX recorder is intentionally parameterized with environment variables so additional channels can be added without duplicating the recording loop. `vox@.service` starts one recorder instance per channel env file while `Scripts/vox_record.sh` holds the shared behavior. Each recorder service loads `common.env` first and its channel-specific env file second, so values such as `SOX_VOLUME` can be tuned per channel.
 
 Useful variables:
 
@@ -69,6 +70,7 @@ Useful variables:
 | `OUTPUT_ROOT` | `/home/pi/Recordings` | Root folder for dated recording directories. |
 | `TEMP_DIR` | `/mnt/ramdisk` | Temporary recording location. |
 | `PULSE_SERVER` | `unix:/run/pulse/native` | PulseAudio server socket used by health checks. |
+| `VOX_CHANNELS` | `freq160545,freq161265` | Comma-separated channel env names used by install/start helpers. |
 | `SOX_VOLUME` | `4` | SOX input gain applied before silence detection and MP3 encoding; may be overridden in a channel env file. |
 | `MIN_BYTES` | `700` | Discard files smaller than this threshold. |
 | `START_DURATION` | `0.2` | SOX leading-silence trigger duration. |

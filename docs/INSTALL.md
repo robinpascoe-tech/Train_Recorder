@@ -86,10 +86,10 @@ Channel-specific env files are loaded after `common.env`, so they can override s
 sudo cp /opt/train-recorder/Service_Files/*.service /etc/systemd/system/
 sudo cp /opt/train-recorder/Service_Files/*.timer /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable pulseaudio.service rtl_airband.service vox.service vox2.service
+sudo systemctl enable pulseaudio.service rtl_airband.service vox@freq160545.service vox@freq161265.service
 sudo systemctl start pulseaudio.service
 sudo systemctl start rtl_airband.service
-sudo systemctl start vox.service vox2.service
+sudo systemctl start vox@freq160545.service vox@freq161265.service
 ```
 
 Optional health and sync timers:
@@ -105,8 +105,8 @@ The VOX recorder services and sync service run as the `pi` user. This keeps gene
 Check status and logs:
 
 ```bash
-systemctl status pulseaudio.service rtl_airband.service vox.service vox2.service
-journalctl -u rtl_airband.service -u vox.service -u vox2.service -f
+systemctl status pulseaudio.service rtl_airband.service vox@freq160545.service vox@freq161265.service
+journalctl -u rtl_airband.service -u vox@freq160545.service -u vox@freq161265.service -f
 sudo /opt/train-recorder/Scripts/health_check.sh
 sudo /opt/train-recorder/Scripts/status_summary.sh
 ```

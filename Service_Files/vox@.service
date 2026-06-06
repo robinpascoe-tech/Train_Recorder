@@ -1,5 +1,5 @@
 [Unit]
-Description=VOX Voice Activated Recorder using SOX
+Description=VOX Voice Activated Recorder using SOX (%i)
 After=pulseaudio.service rtl_airband.service
 Requires=pulseaudio.service
 
@@ -10,8 +10,8 @@ Group=pi
 UMask=0002
 WorkingDirectory=/opt/train-recorder
 EnvironmentFile=/etc/train-recorder/common.env
-EnvironmentFile=/etc/train-recorder/freq160545.env
-ExecStart=/opt/train-recorder/Scripts/vox.sh
+EnvironmentFile=/etc/train-recorder/%i.env
+ExecStart=/opt/train-recorder/Scripts/vox_record.sh
 Restart=on-failure
 RestartSec=30s
 

@@ -12,6 +12,10 @@ CHECK_VOX2_RECENT_SAVE="${CHECK_VOX2_RECENT_SAVE:-false}"
 MAX_VOX2_SAVE_AGE_MINUTES="${MAX_VOX2_SAVE_AGE_MINUTES:-4320}"
 CHECK_RECENT_SYNC_SUCCESS="${CHECK_RECENT_SYNC_SUCCESS:-true}"
 MAX_SYNC_SUCCESS_AGE_MINUTES="${MAX_SYNC_SUCCESS_AGE_MINUTES:-30}"
+VOX1_SERVICE="${VOX1_SERVICE:-vox@freq160545.service}"
+VOX2_SERVICE="${VOX2_SERVICE:-vox@freq161265.service}"
+VOX1_JOURNAL_UNITS="${VOX1_JOURNAL_UNITS:-$VOX1_SERVICE vox.service}"
+VOX2_JOURNAL_UNITS="${VOX2_JOURNAL_UNITS:-$VOX2_SERVICE vox2.service}"
 
 status=0
 
@@ -53,14 +57,17 @@ check_pulse_source() {
 }
 
 check_recent_journal() {
-  local unit="$1"
+  local units="$1"
   local minutes="$2"
   local pattern="$3"
   local label="$4"
   local severity="${5:-warn}"
-  local logs
+  local logs="" unit
 
-  logs="$(journalctl -u "$unit" --since "$minutes minutes ago" --no-pager 2>/dev/null || true)"
+  for unit in $units; do
+    logs+="$(journalctl -u "$unit" --since "$minutes minutes ago" --no-pager 2>/dev/null || true)"
+    logs+=$'\n'
+  done
 
   if grep -Eq "$pattern" <<<"$logs"; then
     echo "ok recent $label within ${minutes} minutes"
@@ -74,8 +81,8 @@ check_recent_journal() {
 
 check_service pulseaudio.service
 check_service rtl_airband.service
-check_service vox.service
-check_service vox2.service
+check_service "$VOX1_SERVICE"
+check_service "$VOX2_SERVICE"
 
 check_path "$OUTPUT_ROOT"
 check_path "$TEMP_DIR"
@@ -84,13 +91,13 @@ check_pulse_source myfreq1sink.monitor
 check_pulse_source myfreq2sink.monitor
 
 if is_true "$CHECK_VOX1_RECENT_SAVE"; then
-  check_recent_journal vox.service "$MAX_VOX1_SAVE_AGE_MINUTES" 'Saved .*_160\.545\.mp3' '160.545 recording save'
+  check_recent_journal "$VOX1_JOURNAL_UNITS" "$MAX_VOX1_SAVE_AGE_MINUTES" 'Saved .*_160\.545\.mp3' '160.545 recording save'
 else
   echo "ok recent 160.545 recording save check disabled"
 fi
 
 if is_true "$CHECK_VOX2_RECENT_SAVE"; then
-  check_recent_journal vox2.service "$MAX_VOX2_SAVE_AGE_MINUTES" 'Saved .*_161\.265\.mp3' '161.265 recording save'
+  check_recent_journal "$VOX2_JOURNAL_UNITS" "$MAX_VOX2_SAVE_AGE_MINUTES" 'Saved .*_161\.265\.mp3' '161.265 recording save'
 else
   echo "ok recent 161.265 recording save check disabled"
 fi

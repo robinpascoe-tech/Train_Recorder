@@ -7,6 +7,7 @@ RECORDINGS_DIR="${RECORDINGS_DIR:-/home/pi/Recordings}"
 RAMDISK_DIR="${RAMDISK_DIR:-/mnt/ramdisk}"
 RUN_USER="${RUN_USER:-pi}"
 RUN_GROUP="${RUN_GROUP:-pi}"
+VOX_CHANNELS="${VOX_CHANNELS:-freq160545,freq161265}"
 RTL_AIRBAND_REPO="${RTL_AIRBAND_REPO:-https://github.com/rtl-airband/RTLSDR-Airband.git}"
 RTL_AIRBAND_REF="${RTL_AIRBAND_REF:-v5.2.0}"
 RTL_AIRBAND_PLATFORM="${RTL_AIRBAND_PLATFORM:-native}"
@@ -159,6 +160,19 @@ install_systemd_units() {
   "${SUDO[@]}" systemctl daemon-reload
 }
 
+configured_vox_channels() {
+  local channels="$VOX_CHANNELS"
+
+  if [[ -f "$CONFIG_DIR/common.env" ]]; then
+    # shellcheck disable=SC1090
+    source "$CONFIG_DIR/common.env"
+    channels="$VOX_CHANNELS"
+  fi
+
+  channels="${channels//,/ }"
+  printf '%s\n' $channels
+}
+
 install_sox() {
   install_packages sox libsox-fmt-mp3
 }
@@ -223,13 +237,24 @@ build_rtlsdr_airband() {
 }
 
 enable_core_services() {
-  "${SUDO[@]}" systemctl enable pulseaudio.service rtl_airband.service vox.service vox2.service
+  local channel
+
+  "${SUDO[@]}" systemctl enable pulseaudio.service rtl_airband.service
+
+  for channel in $(configured_vox_channels); do
+    "${SUDO[@]}" systemctl enable "vox@${channel}.service"
+  done
 }
 
 start_core_services() {
+  local channel
+
   "${SUDO[@]}" systemctl start pulseaudio.service
   "${SUDO[@]}" systemctl start rtl_airband.service
-  "${SUDO[@]}" systemctl start vox.service vox2.service
+
+  for channel in $(configured_vox_channels); do
+    "${SUDO[@]}" systemctl start "vox@${channel}.service"
+  done
 }
 
 enable_optional_timers() {
