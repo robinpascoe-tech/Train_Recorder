@@ -69,6 +69,8 @@ sudo cp /opt/train-recorder/Config/sync.env.example /etc/train-recorder/sync.env
 sudo nano /etc/train-recorder/common.env
 ```
 
+Channel-specific env files are loaded after `common.env`, so they can override shared values. For example, set `SOX_VOLUME=3` in `/etc/train-recorder/freq160545.env` to lower only the `160.545` recorder while leaving the other channel on the shared value.
+
 ## Install Services
 
 ```bash

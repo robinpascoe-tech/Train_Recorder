@@ -57,7 +57,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
 
 ## Development Notes
 
-The VOX recorder is intentionally parameterized with environment variables so additional channels can be added without duplicating the recording loop. The wrapper scripts keep the current two-channel setup readable while `Scripts/vox_record.sh` holds the shared behavior.
+The VOX recorder is intentionally parameterized with environment variables so additional channels can be added without duplicating the recording loop. The wrapper scripts keep the current two-channel setup readable while `Scripts/vox_record.sh` holds the shared behavior. Each recorder service loads `common.env` first and its channel-specific env file second, so values such as `SOX_VOLUME` can be tuned per channel.
 
 Useful variables:
 
@@ -67,7 +67,7 @@ Useful variables:
 | `OUTPUT_ROOT` | `/home/pi/Recordings` | Root folder for dated recording directories. |
 | `TEMP_DIR` | `/mnt/ramdisk` | Temporary recording location. |
 | `PULSE_SERVER` | `unix:/run/pulse/native` | PulseAudio server socket used by health checks. |
-| `SOX_VOLUME` | `4` | SOX input gain applied before silence detection and MP3 encoding. |
+| `SOX_VOLUME` | `4` | SOX input gain applied before silence detection and MP3 encoding; may be overridden in a channel env file. |
 | `MIN_BYTES` | `700` | Discard files smaller than this threshold. |
 | `START_DURATION` | `0.2` | SOX leading-silence trigger duration. |
 | `STOP_DURATION` | `13.0` | SOX trailing-silence duration before closing a file. |

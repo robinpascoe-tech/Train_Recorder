@@ -53,7 +53,7 @@ freq161265.env   Second recorder channel settings.
 sync.env         Optional rclone settings.
 ```
 
-The wrapper scripts still provide defaults, but the environment files are the preferred place to tune a live install.
+The wrapper scripts still provide defaults, but the environment files are the preferred place to tune a live install. Each recorder service loads `common.env` first and its channel-specific env file second, so channel files can override shared values such as `SOX_VOLUME`.
 
 ## Deployed Layout
 
