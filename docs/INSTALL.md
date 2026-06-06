@@ -42,7 +42,7 @@ sudo /opt/train-recorder/Scripts/site_config.sh plan
 sudo /opt/train-recorder/Scripts/site_config.sh apply
 ```
 
-The wizard writes `/etc/train-recorder/site.yaml`. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `apply` backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, reconciles `vox@...` services, and restarts the affected services. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
+The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `apply` backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, reconciles `vox@...` services, and restarts the affected services. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
 
 Copy the example RTL-Airband config and edit the local copy:
 

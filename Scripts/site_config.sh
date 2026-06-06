@@ -585,72 +585,126 @@ def prompt_bool(prompt_text, default=False):
     return answer in ("y", "yes", "true", "1")
 
 
+def prompt_secret(prompt_text, default=None):
+    suffix = " [current value]" if default not in (None, "") else ""
+    answer = input(f"{prompt_text}{suffix}: ").strip()
+    return answer if answer else default
+
+
+def read_existing_site(path):
+    path = Path(path)
+    if not path.exists():
+        return {}
+    data = load_site(path)
+    print(f"loaded existing defaults from {path}")
+    return data
+
+
+def section(data, key):
+    value = data.get(key, {})
+    return value if isinstance(value, dict) else {}
+
+
+def existing_channel(channels, idx):
+    return channels[idx] if idx < len(channels) and isinstance(channels[idx], dict) else {}
+
+
 def wizard(path):
+    existing = read_existing_site(path)
+    site_defaults = section(existing, "site")
+    sdr_defaults = section(existing, "sdr")
+    broadcastify_defaults = section(existing, "broadcastify")
+    channel_defaults = existing.get("channels", [])
+    if not isinstance(channel_defaults, list):
+        channel_defaults = []
+
     channels = []
-    site_name = prompt("Site name", "Train Recorder")
-    count = int(prompt("How many frequencies should be recorded", "2"))
+    site_name = prompt("Site name", site_defaults.get("name", "Train Recorder"))
+    count = int(prompt("How many frequencies should be recorded", str(len(channel_defaults) or 2)))
     for idx in range(count):
-        freq = float(prompt(f"Frequency {idx + 1} in MHz"))
-        name = prompt("Channel env name", env_name_for_frequency(freq))
-        sink = prompt("PulseAudio sink name", f"freq{idx + 1}sink")
-        channels.append(
-            {
-                "name": name,
-                "frequency_mhz": freq,
-                "pulse_sink": sink,
-                "output_suffix": f"_{freq:.3f}",
-                "start_duration": "0.2",
-                "min_bytes": 700,
-                "health_check_recent_save": prompt_bool("Require recent-save health warning for this channel", idx == 0),
-                "max_save_age_minutes": int(prompt("Max save age minutes", "1440" if idx == 0 else "4320")),
-                "afc": prompt_bool("Enable RTLSDR-Airband AFC for this channel", idx == 0),
-            }
-        )
-    stream_enabled = prompt_bool("Stream one channel to Broadcastify/Icecast", False)
+        defaults = existing_channel(channel_defaults, idx)
+        freq_default = defaults.get("frequency_mhz")
+        freq = float(prompt(f"Frequency {idx + 1} in MHz", freq_default))
+        name = prompt("Channel env name", defaults.get("name") or env_name_for_frequency(freq))
+        sink = prompt("PulseAudio sink name", defaults.get("pulse_sink") or f"freq{idx + 1}sink")
+        channel = {
+            "name": name,
+            "frequency_mhz": freq,
+            "pulse_sink": sink,
+            "output_suffix": prompt("Output filename suffix", defaults.get("output_suffix") or f"_{freq:.3f}"),
+            "start_duration": prompt("SOX start duration", defaults.get("start_duration", "0.2")),
+            "min_bytes": int(prompt("Minimum recording bytes", defaults.get("min_bytes", 700))),
+            "health_check_recent_save": prompt_bool(
+                "Require recent-save health warning for this channel",
+                bool_value(defaults.get("health_check_recent_save"), idx == 0),
+            ),
+            "max_save_age_minutes": int(
+                prompt("Max save age minutes", defaults.get("max_save_age_minutes", "1440" if idx == 0 else "4320"))
+            ),
+            "afc": prompt_bool(
+                "Enable RTLSDR-Airband AFC for this channel",
+                bool_value(defaults.get("afc"), idx == 0),
+            ),
+        }
+        for key in ["sox_volume", "stream_ampfactor"]:
+            if key in defaults:
+                channel[key] = defaults[key]
+        channels.append(channel)
+
+    stream_enabled = prompt_bool(
+        "Stream one channel to Broadcastify/Icecast",
+        bool_value(broadcastify_defaults.get("enabled"), False),
+    )
     broadcastify = {"enabled": stream_enabled}
     if stream_enabled:
-        default_channel = channels[0]["name"]
+        default_channel = broadcastify_defaults.get("channel") or channels[0]["name"]
         broadcastify.update(
             {
                 "channel": prompt("Channel to stream", default_channel),
-                "server": prompt("Icecast server", "audio9.broadcastify.com"),
-                "port": int(prompt("Icecast port", "80")),
-                "mountpoint": prompt("Icecast mountpoint", "YOUR_MOUNTPOINT"),
-                "username": prompt("Icecast username", "source"),
-                "password": prompt("Icecast password", "YOUR_PASSWORD"),
-                "name": prompt("Feed name", site_name),
-                "genre": prompt("Genre", "RAIL"),
-                "description": prompt("Description", site_name),
-                "send_scan_freq_tags": False,
+                "server": prompt("Icecast server", broadcastify_defaults.get("server", "audio9.broadcastify.com")),
+                "port": int(prompt("Icecast port", broadcastify_defaults.get("port", "80"))),
+                "mountpoint": prompt_secret(
+                    "Icecast mountpoint", broadcastify_defaults.get("mountpoint", "YOUR_MOUNTPOINT")
+                ),
+                "username": prompt("Icecast username", broadcastify_defaults.get("username", "source")),
+                "password": prompt_secret(
+                    "Icecast password", broadcastify_defaults.get("password", "YOUR_PASSWORD")
+                ),
+                "name": prompt("Feed name", broadcastify_defaults.get("name", site_name)),
+                "genre": prompt("Genre", broadcastify_defaults.get("genre", "RAIL")),
+                "description": prompt("Description", broadcastify_defaults.get("description", site_name)),
+                "send_scan_freq_tags": bool_value(broadcastify_defaults.get("send_scan_freq_tags"), False),
             }
         )
     data = {
         "site": {
             "name": site_name,
-            "output_root": prompt("Recording output root", "/home/pi/Recordings"),
-            "temp_dir": prompt("RAM disk/temp dir", "/mnt/ramdisk"),
-            "pulse_server": "unix:/run/pulse/native",
-            "audio_format": "mp3",
-            "sox_volume": 4,
-            "stop_duration": "13.0",
-            "stop_threshold": "0.1%",
-            "recording_umask": "0002",
-            "check_recent_local_recordings": False,
-            "check_recent_sync_success": True,
-            "max_sync_success_age_minutes": 30,
-            "rclone_remote": prompt("rclone remote, blank to skip", ""),
-            "rclone_min_age": "15s",
+            "output_root": prompt("Recording output root", site_defaults.get("output_root", "/home/pi/Recordings")),
+            "temp_dir": prompt("RAM disk/temp dir", site_defaults.get("temp_dir", "/mnt/ramdisk")),
+            "pulse_server": site_defaults.get("pulse_server", "unix:/run/pulse/native"),
+            "audio_format": site_defaults.get("audio_format", "mp3"),
+            "sox_volume": site_defaults.get("sox_volume", 4),
+            "stop_duration": site_defaults.get("stop_duration", "13.0"),
+            "stop_threshold": site_defaults.get("stop_threshold", "0.1%"),
+            "recording_umask": site_defaults.get("recording_umask", "0002"),
+            "check_recent_local_recordings": bool_value(site_defaults.get("check_recent_local_recordings"), False),
+            "check_recent_sync_success": bool_value(site_defaults.get("check_recent_sync_success"), True),
+            "max_sync_success_age_minutes": site_defaults.get("max_sync_success_age_minutes", 30),
+            "rclone_remote": prompt("rclone remote, blank to skip", site_defaults.get("rclone_remote", "")),
+            "rclone_min_age": site_defaults.get("rclone_min_age", "15s"),
         },
         "sdr": {
-            "type": "rtlsdr",
-            "index": 0,
-            "gain": prompt("RTL-SDR gain", "48"),
-            "correction": 0,
-            "bandwidth_mhz": float(prompt("Usable SDR bandwidth MHz", "2.4")),
+            "type": sdr_defaults.get("type", "rtlsdr"),
+            "index": sdr_defaults.get("index", 0),
+            "gain": prompt("RTL-SDR gain", sdr_defaults.get("gain", "48")),
+            "correction": sdr_defaults.get("correction", 0),
+            "bandwidth_mhz": float(prompt("Usable SDR bandwidth MHz", sdr_defaults.get("bandwidth_mhz", "2.4"))),
         },
         "broadcastify": broadcastify,
         "channels": channels,
     }
+    if sdr_defaults.get("center_frequency_mhz") not in (None, ""):
+        data["sdr"]["center_frequency_mhz"] = sdr_defaults["center_frequency_mhz"]
     validate_site(data)
     write_site_yaml(data, path)
     print(f"wrote {path}")
