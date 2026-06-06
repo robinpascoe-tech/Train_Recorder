@@ -26,7 +26,7 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `install.sh` is a conservative Raspberry Pi installer. It can install prerequisite packages, optionally build RTLSDR-Airband from source, copy project files, seed missing local configs, install systemd units, and prompt before enabling or starting services.
 
-`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, and reconcile live `vox@...` services. The YAML file is the desired state; generated files are artifacts.
+`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, and reconcile live `vox@...` services. The YAML file is the desired state; generated files are artifacts. If `site.yaml` already exists, the wizard uses it as the default source for prompts and preserves sensitive Broadcastify values without printing them.
 
 `rtl_airband.service` starts RTLSDR-Airband and reads the installed RTL-Airband config.
 
@@ -48,7 +48,7 @@ The recorder, sync, and cleanup services run as `pi:pi`. This keeps PulseAudio a
 
 ## Configuration
 
-Recorder settings can be generated from `/etc/train-recorder/site.yaml` or edited directly in environment files under `/etc/train-recorder`:
+Recorder settings should be generated from `/etc/train-recorder/site.yaml` for new installs. The generated environment files under `/etc/train-recorder` remain readable and can still be edited directly for quick troubleshooting:
 
 ```text
 site.yaml        Desired site configuration used by `site_config.sh`.
@@ -74,10 +74,17 @@ The legacy wrapper scripts still provide defaults for the original two channels,
 /home/pi/.config/rclone    pi user's OneDrive authentication.
 ```
 
-## Adding Another Channel
+## Changing Channels
 
-1. Add another `module-null-sink` entry to `Config/system.pa`.
-2. Add another RTLSDR-Airband channel output pointed at that sink.
-3. Add a channel env file under `/etc/train-recorder`, for example `freq160650.env`.
-4. Add the new env name to the comma-separated `VOX_CHANNELS` list in `common.env`.
-5. Enable the new service with systemd, for example `systemctl enable --now vox@freq160650.service`.
+Use `site_config.sh` for channel add, remove, or frequency changes:
+
+```bash
+sudo /opt/train-recorder/Scripts/site_config.sh wizard
+sudo /opt/train-recorder/Scripts/site_config.sh generate
+sudo /opt/train-recorder/Scripts/site_config.sh plan
+sudo /opt/train-recorder/Scripts/site_config.sh apply
+```
+
+The wizard updates `/etc/train-recorder/site.yaml`. `generate` writes a preview under `/tmp/train-recorder-generated`, `plan` shows which `vox@...` services would be enabled or disabled, and `apply` backs up replaced files before restarting PulseAudio, RTLSDR-Airband, and the configured recorder instances.
+
+Manual channel changes are still possible, but every layer must agree: PulseAudio null sinks, RTLSDR-Airband channel outputs, `common.env` `VOX_CHANNELS`, channel env files, and enabled `vox@...` units.

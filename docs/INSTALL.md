@@ -4,7 +4,7 @@ These notes assume a Raspberry Pi-style Linux host and an install path of `/opt/
 
 ## Dependencies
 
-Install and configure:
+The installer can offer to install these packages for you:
 
 - RTLSDR-Airband
 - RTL-SDR drivers and udev rules
@@ -12,12 +12,12 @@ Install and configure:
 - SOX with MP3 support
 - rclone, optional
 
-## Prepare Config
+## Install Project Files
 
 Clone or copy the repository to the Pi:
 
 ```bash
-sudo git clone https://github.com/YOUR_USER/train-recorder.git /opt/train-recorder
+sudo git clone https://github.com/robinpascoe-tech/Train_Recorder.git /opt/train-recorder
 sudo chown -R pi:pi /opt/train-recorder
 chmod +x /opt/train-recorder/Scripts/*.sh
 ```
@@ -77,6 +77,10 @@ The wizard prompts are intentionally short. Use this reference when deciding wha
 | RTL-SDR gain | RTLSDR-Airband tuner gain. Higher gain can improve weak signals but may increase overload or clipping. |
 | Usable SDR bandwidth MHz | Approximate usable tuner bandwidth for checking whether all requested frequencies fit on one RTL-SDR. A common conservative value is `2.4`. |
 
+## Manual Config Fallback
+
+The preferred path is `site_config.sh wizard`, `generate`, `plan`, and `apply`. If you are not using generated config yet, you can still seed and edit the individual files manually.
+
 Copy the example RTL-Airband config and edit the local copy:
 
 ```bash
@@ -127,6 +131,8 @@ sudo nano /etc/train-recorder/common.env
 Channel-specific env files are loaded after `common.env`, so they can override shared values. For example, set `SOX_VOLUME=3` in `/etc/train-recorder/freq160545.env` to lower only the `160.545` recorder while leaving the other channel on the shared value.
 
 ## Install Services
+
+`site_config.sh apply` installs generated config files and reconciles `vox@...` services, but it does not replace the full system installer. If you are setting up manually, install the systemd units:
 
 ```bash
 sudo cp /opt/train-recorder/Service_Files/*.service /etc/systemd/system/

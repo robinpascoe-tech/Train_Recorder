@@ -32,6 +32,7 @@ PulseAudio monitor sources -> SOX VOX recorder scripts
 
 ```text
 /opt/train-recorder                  deployed repo-backed app files
+/etc/train-recorder/site.yaml        desired site config with possible secrets
 /etc/train-recorder/common.env       shared recorder settings
 /etc/train-recorder/freq160545.env   first recorder channel settings
 /etc/train-recorder/freq161265.env   second recorder channel settings
@@ -63,7 +64,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 ## Operational Notes
 
 - `Scripts/install.sh` is intentionally conservative. It can install packages and seed missing configs, but it must not overwrite live env files, `/usr/local/etc/rtl_airband.conf`, `/etc/pulse/system.pa`, or rclone credentials without prompting. Its optional RTLSDR-Airband source build defaults to `RTL_AIRBAND_REF=v5.2.0`.
-- `Scripts/site_config.sh` is the desired-state configuration tool. `site.yaml` is source-of-truth; generated env files, `system.pa`, and `rtl_airband.conf` are artifacts. Use `generate` and `plan` before `apply`.
+- `Scripts/site_config.sh` is the desired-state configuration tool. `/etc/train-recorder/site.yaml` is source-of-truth and may contain Broadcastify secrets; generated env files, `system.pa`, and `rtl_airband.conf` are artifacts. Use `generate` and `plan` before `apply`. The wizard loads an existing `site.yaml` as prompt defaults and masks sensitive Broadcastify values in prompts.
 - New recorder services should use the templated `vox@.service` naming convention. Legacy `vox.service` and `vox2.service` existed for the original two-channel install, but new/generated configs should enable `vox@<channel-env-name>.service`.
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
 - Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run. The cleanup script logs a summary count instead of every deleted path.

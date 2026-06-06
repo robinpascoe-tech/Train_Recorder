@@ -1,6 +1,10 @@
 # Local RTL-Airband config with Broadcastify/Icecast secrets.
 Config/rtl_airband.conf
 
+# Local site configs may contain Broadcastify/Icecast secrets.
+site.yaml
+Config/site.yaml
+
 # Local recordings and temporary audio.
 Recordings/
 *.mp3

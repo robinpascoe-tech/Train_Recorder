@@ -2,7 +2,9 @@
 
 Raspberry Pi railway radio recorder using an RTL-SDR receiver, RTLSDR-Airband, PulseAudio null sinks, SOX voice-activated recording, and optional rclone offload.
 
-This project currently targets an Ontario Northland Railway monitoring setup with:
+The checked-in examples target an Ontario Northland Railway monitoring setup, but new installs should customize the site with `/etc/train-recorder/site.yaml`.
+
+The default example setup:
 
 - RTLSDR-Airband receiving two NFM channels from one RTL-SDR dongle.
 - 160.545 MHz streamed to Broadcastify/Icecast and sent to a PulseAudio sink.
@@ -24,11 +26,11 @@ Config/
 Scripts/
   install.sh                 Conservative Raspberry Pi installer.
   site_config.sh             Wizard/generator/apply tool for site-specific configs.
-  health_check.sh            Basic service, PulseAudio, storage, and recording checks.
+  health_check.sh            Dynamic service, PulseAudio, storage, sync, and channel checks.
   cleanup_empty_dirs.sh      Daily cleanup for empty local recording directories.
   vox_record.sh              Shared configurable VOX recorder.
-  vox.sh                     160.545 MHz recorder wrapper.
-  vox2.sh                    161.265 MHz recorder wrapper.
+  vox.sh                     Legacy 160.545 MHz recorder wrapper.
+  vox2.sh                    Legacy 161.265 MHz recorder wrapper.
   sync.sh                    Optional rclone move script.
   status_summary.sh          Read-only operator status summary.
 Service_Files/
@@ -42,23 +44,45 @@ docs/
 AGENTS.md                    Context for future coding agents and maintainers.
 ```
 
-## Secret Handling
-
-Do not commit your real Broadcastify/Icecast password, mountpoint, or rclone credentials. Keep your live `rtl_airband.conf` outside git or copy it to `Config/rtl_airband.conf`, which is ignored by this repository.
-
 ## Quick Start
 
-1. Install RTLSDR-Airband, PulseAudio, SOX with MP3 support, and rclone if you want cloud offload.
-2. Copy this repo to the Raspberry Pi, for example `/opt/train-recorder`.
-3. Copy `Config/rtl_airband.conf.example` to `/usr/local/etc/rtl_airband.conf` and fill in your own feed details.
-4. Copy `Config/system.pa` to the PulseAudio system config path used by your distribution.
-5. Copy `Config/*.env.example` to `/etc/train-recorder/*.env` and edit local settings.
-6. Copy the files in `Service_Files/` to `/etc/systemd/system/`.
-7. Enable and start the services.
+1. Copy or clone this repo to the Raspberry Pi, usually `/opt/train-recorder`.
+2. Run the conservative installer:
+
+   ```bash
+   cd /opt/train-recorder
+   sudo Scripts/install.sh
+   ```
+
+3. Create or edit `/etc/train-recorder/site.yaml`:
+
+   ```bash
+   sudo /opt/train-recorder/Scripts/site_config.sh wizard
+   ```
+
+4. Preview and apply the generated site configuration:
+
+   ```bash
+   sudo /opt/train-recorder/Scripts/site_config.sh generate
+   sudo /opt/train-recorder/Scripts/site_config.sh plan
+   sudo /opt/train-recorder/Scripts/site_config.sh apply
+   ```
+
+5. Configure rclone as the `pi` user if cloud offload is enabled.
+6. Verify the recorder:
+
+   ```bash
+   sudo /opt/train-recorder/Scripts/health_check.sh
+   sudo /opt/train-recorder/Scripts/status_summary.sh
+   ```
 
 See [docs/INSTALL.md](docs/INSTALL.md) for a fuller checklist.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
+
+## Secret Handling
+
+Do not commit real Broadcastify/Icecast passwords, mountpoints, rclone credentials, SSH keys, or generated recordings. Keep live configs under `/etc/train-recorder`, `/usr/local/etc`, and `/home/pi/.config/rclone`; the repository should contain examples only.
 
 ## Site Configuration
 
@@ -72,6 +96,8 @@ sudo /opt/train-recorder/Scripts/site_config.sh apply
 ```
 
 `generate` writes a preview to `/tmp/train-recorder-generated` by default. `apply` backs up replaced files, reconciles `vox@...` services, and restarts the affected recorder services.
+
+If `site.yaml` already exists, the wizard loads it and uses the current values as defaults. Sensitive Broadcastify values are preserved without printing them in the prompt.
 
 ## Development Notes
 
