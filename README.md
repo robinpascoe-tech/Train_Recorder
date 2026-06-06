@@ -83,6 +83,8 @@ See [docs/OPERATIONS.md](docs/OPERATIONS.md) for log and retention guidance.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
 
+The sanitized recording directory example in [docs/OPERATIONS.md](docs/OPERATIONS.md#recording-retention) shows the dated folder tree and MP3 filename format.
+
 ## Secret Handling
 
 Do not commit real Broadcastify/Icecast passwords, mountpoints, rclone credentials, SSH keys, or generated recordings. Keep live configs under `/etc/train-recorder`, `/usr/local/etc`, and `/home/pi/.config/rclone`; the repository should contain examples only.

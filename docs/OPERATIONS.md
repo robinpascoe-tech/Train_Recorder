@@ -86,6 +86,29 @@ Vacuuming removes old journal entries only. It does not affect recordings, rclon
 
 The local recording spool is usually short-lived because `train-recorder-sync.timer` runs rclone every 5 minutes and moves completed MP3 files to the configured remote. The local cleanup timer removes empty date directories once a day.
 
+Completed recordings are stored under `OUTPUT_ROOT` in a dated tree. A sanitized example:
+
+```text
+/home/pi/Recordings/
+`-- 2026/
+    `-- 06-Jun/
+        |-- 06-Sat/
+        |   |-- 2026-06-06_08-15-30_160.545.mp3
+        |   |-- 2026-06-06_10-42-18_160.545.mp3
+        |   `-- 2026-06-06_14-05-09_161.265.mp3
+        `-- 07-Sun/
+            |-- 2026-06-07_09-12-44_160.545.mp3
+            `-- 2026-06-07_11-33-02_160.545.mp3
+```
+
+The filename format is:
+
+```text
+YYYY-MM-DD_HH-MM-SS_<output_suffix>.mp3
+```
+
+`output_suffix` comes from the channel env file or `site.yaml`; the example channels use `_160.545` and `_161.265`. rclone preserves the same relative directory structure at the destination.
+
 Recording retention should normally be managed at the destination, for example in OneDrive or another rclone remote. Avoid deleting local files by age on the Pi unless you have intentionally disabled rclone offload or are using the Pi as the long-term archive.
 
 If the Pi is the long-term archive, define a separate retention policy before enabling deletion. At minimum, decide:
