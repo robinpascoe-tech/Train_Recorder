@@ -119,3 +119,44 @@ If the Pi is the long-term archive, define a separate retention policy before en
 - how much free space must remain on the SD card
 
 Do not add `--delete-empty-src-dirs` to the frequent rclone move job. The daily cleanup service already handles empty directories with less churn.
+
+## rclone Token Maintenance
+
+rclone stores OneDrive OAuth tokens in the `pi` user's config file:
+
+```text
+/home/pi/.config/rclone/rclone.conf
+```
+
+rclone normally refreshes OneDrive access automatically while using the remote. The config file timestamp may change during normal operation because rclone writes refreshed token data back to that file.
+
+If sync starts failing with authentication or expired-token errors, first confirm the failure is really from rclone:
+
+```bash
+journalctl -u train-recorder-sync.service --since today
+sudo -u pi rclone lsd onedrive:
+```
+
+If the remote cannot authenticate, reconnect it as the `pi` user:
+
+```bash
+sudo -u pi rclone config reconnect onedrive:
+```
+
+On a headless Pi, answer no when asked to use a web browser on the Pi. When prompted, run the authorize command on a Windows, Ubuntu, or other desktop machine with a browser:
+
+```bash
+rclone authorize "onedrive"
+```
+
+Log in to Microsoft, copy the returned token, and paste it back into the Pi's `config_token>` prompt.
+
+After reconnecting, test the remote and service:
+
+```bash
+sudo -u pi rclone lsd onedrive:
+sudo systemctl start train-recorder-sync.service
+journalctl -u train-recorder-sync.service --since "5 minutes ago"
+```
+
+Avoid `sudo rclone config reconnect ...` unless the sync service has intentionally been changed to run as root. A root-owned rclone token will not help `train-recorder-sync.service` when that service runs as `pi`.

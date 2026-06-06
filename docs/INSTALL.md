@@ -194,6 +194,87 @@ If migrating from the old cron-based setup, comment out the previous `pi` cronta
 # */5 * * * * /home/pi/sync.sh # replaced by train-recorder-sync.timer
 ```
 
+### Configure OneDrive on a Headless Pi
+
+`train-recorder-sync.service` runs as the `pi` user, so the rclone remote must be configured as `pi`, not as `root`. The token should live under:
+
+```text
+/home/pi/.config/rclone/rclone.conf
+```
+
+The examples below create a remote named `onedrive`. Use a different name if you also update `RCLONE_REMOTE` in `/etc/train-recorder/sync.env`.
+
+Start on the Pi over SSH:
+
+```bash
+sudo -u pi rclone config
+```
+
+In the interactive prompts:
+
+```text
+n) New remote
+name> onedrive
+Storage> onedrive
+client_id>            # press Enter for the default unless you have your own app registration
+client_secret>        # press Enter for the default unless you have your own app registration
+Edit advanced config? # usually n
+Use web browser to automatically authenticate rclone with remote? # n
+```
+
+When rclone tells you to run `rclone authorize "onedrive"` on another machine, keep the Pi prompt open.
+
+From a Windows machine with a browser, install rclone from <https://rclone.org/downloads/> or use an existing rclone install, then run this in PowerShell:
+
+```powershell
+rclone authorize "onedrive"
+```
+
+Log in to Microsoft in the browser window and approve access. PowerShell will print a long token between paste markers. Copy the whole token and paste it back into the waiting `config_token>` prompt on the Pi.
+
+From an Ubuntu or other Linux desktop with a browser:
+
+```bash
+sudo apt update
+sudo apt install rclone
+rclone authorize "onedrive"
+```
+
+Log in through the browser, copy the returned token, and paste it into the Pi's `config_token>` prompt.
+
+Back on the Pi, finish the remaining rclone prompts. For most OneDrive setups, choose the intended drive, confirm the remote, and quit config.
+
+Verify the remote as the same user that the sync service uses:
+
+```bash
+sudo -u pi rclone lsd onedrive:
+sudo -u pi rclone mkdir onedrive:TrainRecorderTest
+sudo -u pi rclone rmdir onedrive:TrainRecorderTest
+```
+
+Set the recorder destination:
+
+```bash
+sudo nano /etc/train-recorder/sync.env
+```
+
+Example:
+
+```bash
+RECORDINGS_DIR=/home/pi/Recordings
+RCLONE_REMOTE=onedrive:ONR/ONR_Tower3_NewLiskeard
+RCLONE_MIN_AGE=15s
+```
+
+Test the sync service:
+
+```bash
+sudo systemctl start train-recorder-sync.service
+journalctl -u train-recorder-sync.service --since "5 minutes ago"
+```
+
+Do not run `sudo rclone config` for this project unless you also intentionally change the sync service to run as root. Keeping rclone auth under the `pi` account avoids root-owned token files and matches the recorder service design.
+
 ## Publishing Safely
 
 Before pushing this repository to GitHub, rotate any credentials that were ever committed locally and remove them from history. The current public-facing config is an example file only; keep the real config ignored and private.
