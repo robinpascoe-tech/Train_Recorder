@@ -90,6 +90,10 @@ The sanitized recording directory example in [docs/OPERATIONS.md](docs/OPERATION
 
 Do not commit real Broadcastify/Icecast passwords, mountpoints, rclone credentials, SSH keys, or generated recordings. Keep live configs under `/etc/train-recorder`, `/usr/local/etc`, and `/home/pi/.config/rclone`; the repository should contain examples only.
 
+## License
+
+This repository's scripts, configuration templates, and documentation are licensed under the MIT License. Third-party tools such as RTLSDR-Airband, PulseAudio, SOX, rclone, and RTL-SDR libraries are not included in this repository and remain under their respective licenses.
+
 ## Site Configuration
 
 For reusable installs, keep site-specific settings in `/etc/train-recorder/site.yaml`. Start from `Config/site.example.yaml` or run:
