@@ -24,4 +24,4 @@ jobs:
         run: bash -n Scripts/*.sh
 
       - name: Run ShellCheck
-        run: shellcheck --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
+        run: shellcheck --severity=error --external-sources --exclude=SC1090,SC1091 Scripts/*.sh

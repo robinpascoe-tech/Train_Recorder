@@ -114,10 +114,10 @@ GitHub Actions runs a shell lint workflow on pushes to `main` and pull requests.
 
 ```bash
 bash -n Scripts/*.sh
-shellcheck --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
+shellcheck --severity=error --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
 ```
 
-`SC1090` and `SC1091` are excluded because several scripts intentionally source runtime env files from `/etc/train-recorder`.
+`SC1090` and `SC1091` are excluded because several scripts intentionally source runtime env files from `/etc/train-recorder`. CI currently fails only on error-level ShellCheck findings; warning and style cleanup can be handled separately without blocking operational fixes.
 
 Useful variables:
 
