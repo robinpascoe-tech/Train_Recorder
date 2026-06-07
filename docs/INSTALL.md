@@ -99,6 +99,39 @@ onedrive:ONR/ONR_Tower3_NewLiskeard
 
 Do not run `sudo rclone config` for this project unless you also intentionally change the sync service to run as root. Keeping rclone auth under the `pi` account avoids root-owned token files and matches the recorder service design.
 
+## Configure RAM Disk
+
+SOX writes each in-progress recording to a temporary file before moving the completed MP3 into the dated recording tree. The default temp directory is `/mnt/ramdisk`, which reduces SD card writes and keeps partial recordings out of the final archive path.
+
+Create the RAM disk mount point and recording spool:
+
+```bash
+sudo mkdir -p /mnt/ramdisk /home/pi/Recordings
+sudo chown -R pi:pi /home/pi/Recordings /mnt/ramdisk
+sudo chmod 775 /home/pi/Recordings
+```
+
+On a Raspberry Pi, create the RAM disk persistently by adding this line to `/etc/fstab`:
+
+```fstab
+tmpfs /mnt/ramdisk tmpfs nodev,nosuid,size=50M 0 0
+```
+
+Mount and verify it:
+
+```bash
+sudo mount /mnt/ramdisk
+df -h /mnt/ramdisk
+```
+
+The default `50M` size is enough for short railway voice transmissions. Increase it if your channels can produce long recordings or if you add more simultaneous recorder channels.
+
+When the site wizard asks for the RAM disk/temp dir, use:
+
+```text
+/mnt/ramdisk
+```
+
 ## Generate Site Config
 
 For a site-specific install, use `site_config.sh` instead of hand-editing every generated file:
@@ -163,27 +196,6 @@ Install the PulseAudio system config:
 
 ```bash
 sudo cp /opt/train-recorder/Config/system.pa /etc/pulse/system.pa
-```
-
-Create the RAM disk and recordings directory if your system does not already do this:
-
-```bash
-sudo mkdir -p /mnt/ramdisk /home/pi/Recordings
-sudo chown -R pi:pi /home/pi/Recordings /mnt/ramdisk
-sudo chmod 775 /home/pi/Recordings
-```
-
-On a Raspberry Pi, create the RAM disk persistently by adding this line to `/etc/fstab`:
-
-```fstab
-tmpfs /mnt/ramdisk tmpfs nodev,nosuid,size=50M 0 0
-```
-
-Then mount and verify it:
-
-```bash
-sudo mount /mnt/ramdisk
-df -h /mnt/ramdisk
 ```
 
 Install recorder environment files:
