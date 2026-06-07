@@ -85,7 +85,10 @@ check_recent_journal() {
 
 channels_list() {
   local channels="${VOX_CHANNELS//,/ }"
-  printf '%s\n' $channels
+  local channel_array=()
+
+  read -r -a channel_array <<<"$channels"
+  printf '%s\n' "${channel_array[@]}"
 }
 
 legacy_recent_save_default() {
@@ -121,7 +124,6 @@ legacy_journal_units() {
 
 check_channel() {
   local channel="$1"
-  local CHANNEL_NAME="$channel"
   local PULSE_MONITOR=""
   local OUTPUT_SUFFIX="_$channel"
   local FREQUENCY_MHZ=""

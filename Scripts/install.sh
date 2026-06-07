@@ -162,6 +162,7 @@ install_systemd_units() {
 
 configured_vox_channels() {
   local channels="$VOX_CHANNELS"
+  local channel_array=()
 
   if [[ -f "$CONFIG_DIR/common.env" ]]; then
     # shellcheck disable=SC1090
@@ -170,7 +171,8 @@ configured_vox_channels() {
   fi
 
   channels="${channels//,/ }"
-  printf '%s\n' $channels
+  read -r -a channel_array <<<"$channels"
+  printf '%s\n' "${channel_array[@]}"
 }
 
 install_sox() {

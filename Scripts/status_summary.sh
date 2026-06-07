@@ -107,7 +107,10 @@ regex_escape() {
 
 channels_list() {
   local channels="${VOX_CHANNELS//,/ }"
-  printf '%s\n' $channels
+  local channel_array=()
+
+  read -r -a channel_array <<<"$channels"
+  printf '%s\n' "${channel_array[@]}"
 }
 
 legacy_journal_units() {
@@ -123,7 +126,6 @@ legacy_journal_units() {
 
 channel_summary() {
   local channel="$1"
-  local CHANNEL_NAME="$channel"
   local OUTPUT_SUFFIX="_$channel"
   local FREQUENCY_MHZ=""
   local JOURNAL_UNITS=""
