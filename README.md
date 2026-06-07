@@ -1,5 +1,7 @@
 # Train Recorder
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Raspberry Pi railway radio recorder using an RTL-SDR receiver, RTLSDR-Airband, PulseAudio null sinks, SOX voice-activated recording, and optional rclone offload.
 
 The checked-in examples target an Ontario Northland Railway monitoring setup, but new installs should customize the site with `/etc/train-recorder/site.yaml`.
