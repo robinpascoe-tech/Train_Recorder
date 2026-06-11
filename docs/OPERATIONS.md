@@ -70,6 +70,47 @@ journalctl --disk-usage
 
 For very small cards, lower `SystemMaxUse` to `100M`. For troubleshooting-heavy sites, raise it to `500M` or remove `MaxRetentionSec` and rely on size limits only.
 
+## Log tmpfs and PCP
+
+Some Raspberry Pi installs mount `/var/log` as tmpfs to reduce SD card wear:
+
+```fstab
+tmpfs /var/log tmpfs defaults,noatime,nosuid,size=64m 0 0
+```
+
+This is a good fit for a recorder appliance, but it makes log volume more important because `/var/log` has a fixed RAM-backed size. Check it during soak tests:
+
+```bash
+df -h /var/log
+sudo du -h --max-depth=2 /var/log | sort -h | tail -40
+journalctl --disk-usage
+```
+
+If `/var/log` is full, first find the large writers before increasing the tmpfs size. On Raspberry Pi OS images that include Performance Co-Pilot, PCP can create large archives under:
+
+```text
+/var/log/pcp
+```
+
+PCP is not required for Train Recorder. Unless you intentionally use PCP metrics, disable it and remove its tmpfs logs:
+
+```bash
+sudo systemctl disable --now pmcd pmlogger pmie pmproxy
+sudo rm -rf /var/log/pcp
+sudo systemctl restart systemd-journald
+sudo systemctl restart rsyslog
+df -h /var/log
+```
+
+After cleanup, confirm the recorder stack stayed active:
+
+```bash
+systemctl is-active rtl_airband.service pulseaudio.service vox@freq160545.service vox@freq161265.service
+sudo /opt/train-recorder/Scripts/status_summary.sh
+```
+
+If `/var/log` still fills after PCP is disabled, inspect the largest files and tune the service that owns them. Increase the tmpfs size only after confirming the growth is expected.
+
 ## One-Time Cleanup
 
 If the journal is already too large, vacuum it after setting a policy:

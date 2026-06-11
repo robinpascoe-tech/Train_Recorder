@@ -132,6 +132,32 @@ When the site wizard asks for the RAM disk/temp dir, use:
 /mnt/ramdisk
 ```
 
+## Configure Log tmpfs
+
+For Raspberry Pi installs that run continuously, consider placing `/var/log` on tmpfs to reduce SD card writes. This keeps routine system logs in RAM instead of writing them constantly to the card.
+
+Add a line like this to `/etc/fstab`:
+
+```fstab
+tmpfs /var/log tmpfs defaults,noatime,nosuid,size=64m 0 0
+```
+
+Mount and verify it:
+
+```bash
+sudo mount /var/log
+df -h /var/log
+```
+
+The `64m` size is usually enough for this recorder when journald retention is capped and unnecessary high-volume logging services are disabled. If your image includes Performance Co-Pilot (`pcp`), disable it unless you intentionally use PCP performance archives:
+
+```bash
+sudo systemctl disable --now pmcd pmlogger pmie pmproxy
+sudo rm -rf /var/log/pcp
+```
+
+PCP can quickly fill a small `/var/log` tmpfs with performance archives. It is not required by Train Recorder, RTLSDR-Airband, PulseAudio, SOX, or rclone. See [OPERATIONS.md](OPERATIONS.md) for checking log usage during long soaks.
+
 ## Generate Site Config
 
 For a site-specific install, use `site_config.sh` instead of hand-editing every generated file:
