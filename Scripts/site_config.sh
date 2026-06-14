@@ -2,6 +2,7 @@
 set -euo pipefail
 
 tmp_script="$(mktemp /tmp/train-recorder-site-config.XXXXXX.py)"
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cleanup() {
   rm -f "$tmp_script"
 }
@@ -878,6 +879,22 @@ def cmd_status(_args):
     run(["systemctl", "list-units", "vox@*.service", "--no-pager"], check=False)
 
 
+def cmd_doctor(_args):
+    script_dir = Path(os.environ.get("TRAIN_RECORDER_SCRIPT_DIR", ""))
+    candidates = []
+    if script_dir:
+        candidates.append(script_dir / "doctor.sh")
+    candidates.append(DEFAULT_INSTALL_DIR / "Scripts" / "doctor.sh")
+
+    for doctor in candidates:
+        if doctor.is_file():
+            result = subprocess.run([str(doctor)], check=False)
+            raise SystemExit(result.returncode)
+
+    searched = ", ".join(str(path) for path in candidates)
+    raise SystemExit(f"doctor.sh not found; searched: {searched}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="site_config.sh",
@@ -917,6 +934,9 @@ def main():
     p = sub.add_parser("status", help="show current templated VOX unit state")
     p.set_defaults(func=cmd_status)
 
+    p = sub.add_parser("doctor", help="run read-only install and runtime sanity checks")
+    p.set_defaults(func=cmd_doctor)
+
     args = parser.parse_args()
     args.func(args)
 
@@ -925,4 +945,4 @@ if __name__ == "__main__":
     main()
 PY
 
-python3 "$tmp_script" "$@"
+TRAIN_RECORDER_SCRIPT_DIR="$script_dir" python3 "$tmp_script" "$@"

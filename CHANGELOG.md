@@ -10,6 +10,7 @@ This project follows a practical release process. Changes before the first publi
 
 - Diagnostics bundle collector for sanitized troubleshooting snapshots.
 - Read-only doctor command for common install and runtime checks.
+- `site_config.sh doctor` alias for the standalone doctor command.
 
 ## v1.0.0 - 2026-06-14
 

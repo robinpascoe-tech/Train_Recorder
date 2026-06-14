@@ -39,6 +39,12 @@ Set those in `/etc/train-recorder/common.env` if the default windows are too sho
 Run the doctor check when validating an install or investigating a recorder that looks unhealthy:
 
 ```bash
+sudo /opt/train-recorder/Scripts/site_config.sh doctor
+```
+
+The standalone script can also be run directly:
+
+```bash
 sudo /opt/train-recorder/Scripts/doctor.sh
 ```
 
