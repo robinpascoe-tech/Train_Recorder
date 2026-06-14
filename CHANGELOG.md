@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-This project follows a practical release process rather than strict semantic versioning history before v1. The first public release is planned as `v1.0.0` after the final release checklist is complete.
+This project follows a practical release process. Changes before the first public release are collected under `v1.0.0`.
 
 ## Unreleased
+
+No unreleased changes yet.
+
+## v1.0.0 - 2026-06-14
 
 ### Added
 
@@ -44,4 +48,3 @@ This project follows a practical release process rather than strict semantic ver
 - Existing production Pi soak tested with templated `vox@...` services, SOX/PulseAudio recording, rclone sync, cleanup, and health timers.
 - Fresh Raspberry Pi OS Trixie minimal install on Raspberry Pi 3 validated through install, recording, and rclone sync.
 - Shell syntax and ShellCheck pass locally through WSL and in GitHub Actions.
-
