@@ -12,15 +12,15 @@ Fill in or update these details from the installed site:
 
 | Item | Details |
 | --- | --- |
-| Raspberry Pi model | TODO |
-| Raspberry Pi OS | TODO |
-| Storage | TODO |
-| RTL-SDR model | TODO |
-| Antenna | TODO |
-| Feedline/adapters | TODO |
-| Power supply | TODO |
-| Cooling/enclosure | TODO |
-| Network | TODO |
+| Raspberry Pi model | Raspberry Pi 3 |
+| Raspberry Pi OS | Raspberry Pi OS Bullseye minimal image |
+| Storage | Samsung 32Gb EVO Plus SD Card |
+| RTL-SDR model | Nooelec RTL-SDR v5 SDR - NESDR Smart |
+| Antenna | HYS VHF/UHF 2M/70CM Antenna HYS-771N Mounted directly to RTL-SDR adapter using 90 deg adapter |
+| Feedline/adapters | RP-SMA - BNC 90 deg Adapter |
+| Power supply | Raspberry Pi Micro-USB Power Adapter |
+| Cooling/enclosure | Raspberry Pi Aluminum Heatsink Case |
+| Network | Built-in Wifi |
 | Notes | Existing production recorder for 160.545 MHz and 161.265 MHz. |
 
 ### Fresh Install Validation Pi
@@ -31,13 +31,13 @@ Status: fresh install validated on Raspberry Pi OS Trixie.
 | --- | --- |
 | Raspberry Pi model | Raspberry Pi 3 |
 | Raspberry Pi OS | Raspberry Pi OS Trixie minimal image |
-| Storage | TODO |
-| RTL-SDR model | TODO |
-| Antenna | TODO |
-| Feedline/adapters | TODO |
-| Power supply | TODO |
-| Cooling/enclosure | TODO |
-| Network | TODO |
+| Storage | Samsung 256Gb EVO Plus SD Card |
+| RTL-SDR model | Nooelec RTL-SDR v5 SDR - NESDR Smart |
+| Antenna | HYS VHF/UHF 2M/70CM Antenna HYS-771N Mounted directly to RTL-SDR adapter using 90 deg adapter |
+| Feedline/adapters | RP-SMA - BNC 90 deg Adapter |
+| Power supply | Raspberry Pi Micro-USB Power Adapter |
+| Cooling/enclosure | Raspberry Pi Aluminum Heatsink Case |
+| Network | Built-in Wifi |
 | Notes | Installed from project docs, recorded transmissions, and rclone-synced recordings successfully. |
 
 ## Recommended Hardware Information to Capture
