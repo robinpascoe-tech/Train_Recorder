@@ -34,6 +34,25 @@ JOURNAL_WINDOW_MINUTES=10080
 
 Set those in `/etc/train-recorder/common.env` if the default windows are too short or too noisy for your site.
 
+## Diagnostics Bundle
+
+For support or deeper troubleshooting, collect a sanitized diagnostics bundle:
+
+```bash
+sudo /opt/train-recorder/Scripts/collect_diagnostics.sh
+```
+
+The script writes a timestamped `.tar.gz` under `/tmp` by default. It gathers service states, timers, recent journals, package versions, PulseAudio sinks/sources, disk and log usage, recording counts and permissions, rclone reachability checks, and redacted copies of Train Recorder configs.
+
+Known sensitive fields such as Broadcastify passwords, mountpoints, rclone tokens, and generic token/secret values are redacted from copied configs. Still review the bundle before sharing it publicly.
+
+Useful overrides:
+
+```bash
+SINCE="6 hours ago" sudo /opt/train-recorder/Scripts/collect_diagnostics.sh
+OUT_DIR=/home/pi sudo /opt/train-recorder/Scripts/collect_diagnostics.sh
+```
+
 ## Journal Retention
 
 Long-running Raspberry Pi installs should cap journal size so logs cannot slowly fill the SD card. This is handled by systemd-journald, not by logrotate.
