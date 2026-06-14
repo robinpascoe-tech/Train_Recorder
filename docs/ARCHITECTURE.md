@@ -30,7 +30,7 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `rtl_airband.service` starts RTLSDR-Airband and reads the installed RTL-Airband config.
 
-`pulseaudio.service` starts PulseAudio in system mode. The included `system.pa` creates two null sinks named `myfreq1sink` and `myfreq2sink`; their `.monitor` sources are used by SOX.
+`pulseaudio.service` starts PulseAudio in system mode. The included `system.pa` creates two null sinks named `myfreq1sink` and `myfreq2sink`; their `.monitor` sources are used by SOX. Recorder appliances should not also run the per-user `pi` PulseAudio service/socket; the installer can mask those user units so SOX and RTLSDR-Airband consistently use the system-mode server.
 
 `vox@.service` is the templated recorder unit. Each instance loads `common.env` and `/etc/train-recorder/%i.env`, then runs `vox_record.sh`. For example, `vox@freq160545.service` records from `myfreq1sink.monitor` and names files with `_160.545`.
 

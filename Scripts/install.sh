@@ -201,6 +201,43 @@ configure_pulseaudio_access() {
   echo "group changes apply to newly started services; restart PulseAudio/RTLSDR-Airband after configuration."
 }
 
+disable_user_pulseaudio() {
+  local uid home_dir user_systemd_dir
+
+  if ! id "$RUN_USER" >/dev/null 2>&1; then
+    echo "warning: run user does not exist yet: $RUN_USER"
+    return
+  fi
+
+  uid="$(id -u "$RUN_USER")"
+  home_dir="$(getent passwd "$RUN_USER" | cut -d: -f6)"
+  user_systemd_dir="$home_dir/.config/systemd/user"
+
+  echo
+  echo "Disabling per-user PulseAudio for $RUN_USER"
+  "${SUDO[@]}" install -d -o "$RUN_USER" -g "$RUN_GROUP" "$user_systemd_dir"
+  "${SUDO[@]}" ln -sfn /dev/null "$user_systemd_dir/pulseaudio.service"
+  "${SUDO[@]}" ln -sfn /dev/null "$user_systemd_dir/pulseaudio.socket"
+  "${SUDO[@]}" chown -h "$RUN_USER:$RUN_GROUP" "$user_systemd_dir/pulseaudio.service" "$user_systemd_dir/pulseaudio.socket"
+
+  if [[ -d "/run/user/$uid" ]]; then
+    if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+      runuser -u "$RUN_USER" -- env XDG_RUNTIME_DIR="/run/user/$uid" \
+        systemctl --user disable --now pulseaudio.service pulseaudio.socket 2>/dev/null || true
+      runuser -u "$RUN_USER" -- env XDG_RUNTIME_DIR="/run/user/$uid" \
+        systemctl --user mask pulseaudio.service pulseaudio.socket 2>/dev/null || true
+    else
+      sudo -u "$RUN_USER" XDG_RUNTIME_DIR="/run/user/$uid" \
+        systemctl --user disable --now pulseaudio.service pulseaudio.socket 2>/dev/null || true
+      sudo -u "$RUN_USER" XDG_RUNTIME_DIR="/run/user/$uid" \
+        systemctl --user mask pulseaudio.service pulseaudio.socket 2>/dev/null || true
+    fi
+  fi
+
+  "${SUDO[@]}" pkill -u "$RUN_USER" -x pulseaudio 2>/dev/null || true
+  echo "system-mode pulseaudio.service should be the only PulseAudio daemon used by Train Recorder."
+}
+
 install_rclone() {
   install_packages rclone
 }
@@ -371,6 +408,10 @@ prepare_directories
 install_local_configs
 install_systemd_units
 configure_tmpfs_mounts
+
+if ask_yes_no "Disable per-user PulseAudio for $RUN_USER? Recommended for recorder appliances using system-mode PulseAudio." y; then
+  disable_user_pulseaudio
+fi
 
 echo
 if ask_yes_no "Disable Performance Co-Pilot (PCP) services if installed? Recommended for small /var/log tmpfs." y; then

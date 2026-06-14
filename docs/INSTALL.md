@@ -41,6 +41,8 @@ The installer can optionally install SOX, PulseAudio, rclone, RTL-SDR packages, 
 
 On a first pass, the installer prepares packages, directories, systemd units, PulseAudio access groups, and optional tmpfs mounts. If `/etc/train-recorder/site.yaml` does not exist yet, it intentionally skips service start prompts. Configure rclone and run `site_config.sh apply` after the site settings are ready; `apply` enables and starts the configured recorder services and timers.
 
+The RTLSDR-Airband source build installs development packages such as `build-essential`, `cmake`, `libpulse-dev`, `libfftw3-dev`, `libmp3lame-dev`, and related libraries. Those are expected if you choose to build from source. They can be left installed for future rebuilds; removing them later saves space but makes future RTLSDR-Airband upgrades less convenient.
+
 ## Configure OneDrive on a Headless Pi
 
 Do this before running the site configuration wizard if this recorder will offload MP3s to OneDrive. The wizard asks for the rclone remote path, and it is easier to answer that prompt after the remote exists and has been tested.
@@ -187,6 +189,23 @@ sudo systemctl restart pulseaudio.service
 sudo systemctl restart rtl_airband.service
 sudo systemctl restart 'vox@*.service'
 ```
+
+On desktop-capable Raspberry Pi OS images, installing PulseAudio can also enable a per-user PulseAudio service and socket for `pi`. Train Recorder does not use that user session daemon; it should use only the system-mode `pulseaudio.service`. The installer offers to disable the per-user service by masking:
+
+```text
+~pi/.config/systemd/user/pulseaudio.service
+~pi/.config/systemd/user/pulseaudio.socket
+```
+
+Check for duplicate PulseAudio daemons:
+
+```bash
+ps -eo user,group,pid,ppid,cmd | grep '[p]ulseaudio'
+systemctl is-active pulseaudio.service
+sudo -u pi XDG_RUNTIME_DIR=/run/user/1000 systemctl --user is-active pulseaudio.service pulseaudio.socket
+```
+
+The expected recorder-appliance state is one active system daemon running as the `pulse` user, and inactive or masked user units for `pi`.
 
 ## Generate Site Config
 
