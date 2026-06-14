@@ -1,0 +1,65 @@
+# Hardware Notes
+
+This project is intended for small Raspberry Pi recorder appliances using one RTL-SDR receiver. Exact RF performance depends heavily on local signal levels, antenna placement, feedline, and power quality, so keep site-specific hardware notes with each deployment.
+
+## Tested Systems
+
+### ONR Recorder Production Pi
+
+Status: production soak tested.
+
+Fill in or update these details from the installed site:
+
+| Item | Details |
+| --- | --- |
+| Raspberry Pi model | TODO |
+| Raspberry Pi OS | TODO |
+| Storage | TODO |
+| RTL-SDR model | TODO |
+| Antenna | TODO |
+| Feedline/adapters | TODO |
+| Power supply | TODO |
+| Cooling/enclosure | TODO |
+| Network | TODO |
+| Notes | Existing production recorder for 160.545 MHz and 161.265 MHz. |
+
+### Fresh Install Validation Pi
+
+Status: fresh install validated on Raspberry Pi OS Trixie.
+
+| Item | Details |
+| --- | --- |
+| Raspberry Pi model | Raspberry Pi 3 |
+| Raspberry Pi OS | Raspberry Pi OS Trixie minimal image |
+| Storage | TODO |
+| RTL-SDR model | TODO |
+| Antenna | TODO |
+| Feedline/adapters | TODO |
+| Power supply | TODO |
+| Cooling/enclosure | TODO |
+| Network | TODO |
+| Notes | Installed from project docs, recorded transmissions, and rclone-synced recordings successfully. |
+
+## Recommended Hardware Information to Capture
+
+For each deployment, record:
+
+- Raspberry Pi model and RAM size.
+- Raspberry Pi OS version and whether it is minimal/headless.
+- SD card or storage model, size, and endurance rating if known.
+- RTL-SDR dongle model, serial/index if more than one SDR is attached, and frequency correction value if measured.
+- Antenna model/type, mounting location, approximate height, and whether it is indoors or outdoors.
+- Feedline type/length and any adapters, filters, splitters, or LNAs.
+- Power supply rating and whether it is official Raspberry Pi power or another known-good supply.
+- Cooling, enclosure, and expected ambient temperature.
+- Network connection type and any static IP or hostname convention.
+- Broadcastify/Icecast feed channel and local recording channels, without documenting secrets.
+
+## Practical Notes
+
+- One RTL-SDR can receive multiple nearby railway NFM channels when they fit inside the usable tuner bandwidth configured in `site.yaml`.
+- Strong local signals can still clip after demodulation or SOX gain. Use per-channel `SOX_VOLUME` overrides to tune recording loudness.
+- Poor power supplies and overheating can cause USB, SDR, or filesystem instability. Prefer a known-good power supply and basic cooling for unattended installs.
+- Antenna placement is often more important than SDR gain. Raise and clear the antenna before compensating with high gain.
+- Keep live Broadcastify credentials, rclone tokens, and exact private deployment details out of the public repository.
+

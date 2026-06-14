@@ -43,7 +43,10 @@ docs/
   INSTALL.md                 Raspberry Pi setup notes.
   ARCHITECTURE.md            Signal flow and operational model.
   OPERATIONS.md              Log, retention, and long-running install notes.
+  HARDWARE.md                Tested hardware notes and deployment checklist.
+  RELEASE.md                 Release checklist.
   ROADMAP.md                 Follow-up ideas for continued development.
+CHANGELOG.md                 Release history and unreleased changes.
 AGENTS.md                    Context for future coding agents and maintainers.
 ```
 
@@ -92,7 +95,11 @@ See [docs/INSTALL.md](docs/INSTALL.md) for a fuller checklist.
 
 See [docs/OPERATIONS.md](docs/OPERATIONS.md) for log and retention guidance.
 
+See [docs/HARDWARE.md](docs/HARDWARE.md) for hardware notes and deployment details to collect.
+
 See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
+
+See [docs/RELEASE.md](docs/RELEASE.md) for the v1 release checklist.
 
 The sanitized recording directory example in [docs/OPERATIONS.md](docs/OPERATIONS.md#recording-retention) shows the dated folder tree and MP3 filename format.
 
@@ -167,6 +174,6 @@ Channel env files also support:
 
 - Rotate any credential that was ever committed to a local or private copy.
 - Verify git history contains no real credentials before pushing publicly.
-- Choose a license before publishing.
-- Add hardware notes for the exact Raspberry Pi, RTL-SDR dongle, antenna, and power setup.
+- Complete [docs/RELEASE.md](docs/RELEASE.md) before tagging v1.
+- Fill in hardware notes for the exact Raspberry Pi, RTL-SDR dongle, antenna, and power setup.
 - Add screenshots or sample sanitized logs if useful for troubleshooting.
