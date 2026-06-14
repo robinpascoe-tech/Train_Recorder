@@ -134,6 +134,11 @@ write_file commands/recording-counts sh -c "printf 'mp3_count='; find '$OUTPUT_R
 if [[ -x "$INSTALL_DIR/Scripts/status_summary.sh" ]]; then
   write_file commands/status-summary "$INSTALL_DIR/Scripts/status_summary.sh"
 fi
+if [[ -x "$INSTALL_DIR/Scripts/site_config.sh" ]]; then
+  write_file commands/doctor "$INSTALL_DIR/Scripts/site_config.sh" doctor
+elif [[ -x "$INSTALL_DIR/Scripts/doctor.sh" ]]; then
+  write_file commands/doctor "$INSTALL_DIR/Scripts/doctor.sh"
+fi
 if [[ -x "$INSTALL_DIR/Scripts/health_check.sh" ]]; then
   write_file commands/health-check "$INSTALL_DIR/Scripts/health_check.sh"
 fi

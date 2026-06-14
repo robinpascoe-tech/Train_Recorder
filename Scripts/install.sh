@@ -370,6 +370,17 @@ site_config_exists() {
   [[ -f "$SITE_CONFIG" ]]
 }
 
+run_install_validation() {
+  if [[ -x "$INSTALL_DIR/Scripts/site_config.sh" ]]; then
+    "${SUDO[@]}" "$INSTALL_DIR/Scripts/site_config.sh" doctor
+  elif [[ -x "$INSTALL_DIR/Scripts/doctor.sh" ]]; then
+    "${SUDO[@]}" "$INSTALL_DIR/Scripts/doctor.sh"
+  else
+    echo "doctor command is not installed at $INSTALL_DIR/Scripts"
+    return 1
+  fi
+}
+
 echo "Train Recorder installer"
 echo "Repo root:    $REPO_ROOT"
 echo "Install dir:  $INSTALL_DIR"
@@ -434,11 +445,18 @@ if site_config_exists; then
   if ask_yes_no "Enable health, sync, and cleanup timers now?"; then
     enable_optional_timers
   fi
+
+  if ask_yes_no "Run read-only install validation with site_config.sh doctor now?"; then
+    if ! run_install_validation; then
+      echo "doctor reported one or more failures; review the output above and rerun after fixing them."
+    fi
+  fi
 else
   echo
   echo "Skipping service start prompts because $SITE_CONFIG does not exist yet."
   echo "Run site_config.sh wizard/generate/plan/diff/apply after configuring rclone and site settings."
   echo "site_config.sh apply will enable/start the configured recorder services and train-recorder timers."
+  echo "After apply, run site_config.sh doctor to validate the install."
 fi
 
 echo
@@ -451,6 +469,8 @@ echo "  3. Run: sudo $INSTALL_DIR/Scripts/site_config.sh generate"
 echo "  4. Run: sudo $INSTALL_DIR/Scripts/site_config.sh plan"
 echo "  5. Run: sudo $INSTALL_DIR/Scripts/site_config.sh diff"
 echo "  6. Run: sudo $INSTALL_DIR/Scripts/site_config.sh apply"
-echo "  7. Verify with:"
-echo "     sudo $INSTALL_DIR/Scripts/health_check.sh"
+echo "  7. Validate the install:"
+echo "     sudo $INSTALL_DIR/Scripts/site_config.sh doctor"
+echo "  8. Optional quick status views:"
 echo "     sudo $INSTALL_DIR/Scripts/status_summary.sh"
+echo "     sudo $INSTALL_DIR/Scripts/health_check.sh"

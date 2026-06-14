@@ -72,7 +72,7 @@ For support or deeper troubleshooting, collect a sanitized diagnostics bundle:
 sudo /opt/train-recorder/Scripts/collect_diagnostics.sh
 ```
 
-The script writes a timestamped `.tar.gz` under `/tmp` by default. It gathers service states, timers, recent journals, package versions, PulseAudio sinks/sources, disk and log usage, recording counts and permissions, rclone reachability checks, and redacted copies of Train Recorder configs.
+The script writes a timestamped `.tar.gz` under `/tmp` by default. It gathers doctor output, service states, timers, recent journals, package versions, PulseAudio sinks/sources, disk and log usage, recording counts and permissions, rclone reachability checks, and redacted copies of Train Recorder configs.
 
 Known sensitive fields such as Broadcastify passwords, mountpoints, rclone tokens, and generic token/secret values are redacted from copied configs. Still review the bundle before sharing it publicly.
 

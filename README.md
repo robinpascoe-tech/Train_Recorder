@@ -89,9 +89,10 @@ AGENTS.md                    Context for future coding agents and maintainers.
 6. Verify the recorder:
 
    ```bash
-   sudo /opt/train-recorder/Scripts/health_check.sh
-   sudo /opt/train-recorder/Scripts/status_summary.sh
+   sudo /opt/train-recorder/Scripts/site_config.sh doctor
    ```
+
+   For a shorter operational view after validation, run `sudo /opt/train-recorder/Scripts/status_summary.sh`.
 
 See [docs/INSTALL.md](docs/INSTALL.md) for a fuller checklist.
 

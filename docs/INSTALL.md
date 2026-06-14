@@ -39,7 +39,7 @@ sudo Scripts/install.sh
 
 The installer can optionally install SOX, PulseAudio, rclone, RTL-SDR packages, and build RTLSDR-Airband from source with RTL-SDR, NFM, PulseAudio, libshout, and LAME support. The source build defaults to the project-tested `RTL_AIRBAND_REF=v5.2.0`; override that environment variable if you want another tag or branch. It does not overwrite existing env files, live RTLSDR-Airband config, PulseAudio config, or rclone credentials without prompting.
 
-On a first pass, the installer prepares packages, directories, systemd units, PulseAudio access groups, and optional tmpfs mounts. If `/etc/train-recorder/site.yaml` does not exist yet, it intentionally skips service start prompts. Configure rclone and run `site_config.sh apply` after the site settings are ready; `apply` enables and starts the configured recorder services and timers.
+On a first pass, the installer prepares packages, directories, systemd units, PulseAudio access groups, and optional tmpfs mounts. If `/etc/train-recorder/site.yaml` does not exist yet, it intentionally skips service start prompts. Configure rclone and run `site_config.sh apply` after the site settings are ready; `apply` enables and starts the configured recorder services and timers. Finish the install by running `site_config.sh doctor`.
 
 The RTLSDR-Airband source build installs development packages such as `build-essential`, `cmake`, `libpulse-dev`, `libfftw3-dev`, `libmp3lame-dev`, and related libraries. Those are expected if you choose to build from source. They can be left installed for future rebuilds; removing them later saves space but makes future RTLSDR-Airband upgrades less convenient.
 
@@ -217,9 +217,10 @@ sudo /opt/train-recorder/Scripts/site_config.sh generate
 sudo /opt/train-recorder/Scripts/site_config.sh plan
 sudo /opt/train-recorder/Scripts/site_config.sh diff
 sudo /opt/train-recorder/Scripts/site_config.sh apply
+sudo /opt/train-recorder/Scripts/site_config.sh doctor
 ```
 
-The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `plan` shows service-level changes, and `diff` shows generated file changes with Broadcastify mountpoint/password values redacted. `apply` runs preflight checks, backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, enables/restarts the configured `vox@...` services, and enables the health, cleanup, and sync timers when applicable. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
+The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `plan` shows service-level changes, and `diff` shows generated file changes with Broadcastify mountpoint/password values redacted. `apply` runs preflight checks, backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, enables/restarts the configured `vox@...` services, and enables the health, cleanup, and sync timers when applicable. `doctor` is the read-only validation step after apply; it checks services, timers, PulseAudio sources, paths, permissions, packages, rclone reachability, known legacy-service pitfalls, PCP, raspiBackup hooks, and recent SOX clipping warnings. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
 
 ### Wizard Prompt Reference
 
@@ -313,10 +314,11 @@ The VOX recorder services and sync service run as the `pi` user. This keeps gene
 Check status and logs:
 
 ```bash
+sudo /opt/train-recorder/Scripts/site_config.sh doctor
 systemctl status pulseaudio.service rtl_airband.service vox@freq160545.service vox@freq161265.service
 journalctl -u rtl_airband.service -u vox@freq160545.service -u vox@freq161265.service -f
-sudo /opt/train-recorder/Scripts/health_check.sh
 sudo /opt/train-recorder/Scripts/status_summary.sh
+sudo /opt/train-recorder/Scripts/health_check.sh
 ```
 
 Check the systemd timers:
