@@ -607,7 +607,10 @@ def show_plan(data, config_dir=DEFAULT_CONFIG_DIR):
     if data.get("site", {}).get("rclone_remote"):
         print("- Regenerate sync.env")
     print("- Back up replaced files under /etc/train-recorder/backups/<timestamp>/")
-    print("- Restart pulseaudio.service, rtl_airband.service, and configured vox@ services")
+    print("- Enable and restart pulseaudio.service, rtl_airband.service, and configured vox@ services")
+    print("- Enable train-recorder-health.timer and train-recorder-cleanup.timer")
+    if data.get("site", {}).get("rclone_remote"):
+        print("- Enable train-recorder-sync.timer")
 
 
 def run(command, check=True):
@@ -679,6 +682,7 @@ def apply_config(data, generated, yes=False, config_dir=DEFAULT_CONFIG_DIR, inst
         copy_with_backup(template, SYSTEMD_DIR / "vox@.service", backup_root)
 
     run(sudo + ["systemctl", "daemon-reload"])
+    run(sudo + ["systemctl", "enable", "pulseaudio.service", "rtl_airband.service"])
     for channel in sorted(old - new):
         run(sudo + ["systemctl", "disable", "--now", f"vox@{channel}.service"], check=False)
     for channel in sorted(old | new):
@@ -687,6 +691,10 @@ def apply_config(data, generated, yes=False, config_dir=DEFAULT_CONFIG_DIR, inst
     run(sudo + ["systemctl", "restart", "rtl_airband.service"])
     for channel in sorted(new):
         run(sudo + ["systemctl", "enable", "--now", f"vox@{channel}.service"])
+    run(sudo + ["systemctl", "enable", "--now", "train-recorder-health.timer"], check=False)
+    run(sudo + ["systemctl", "enable", "--now", "train-recorder-cleanup.timer"], check=False)
+    if data.get("site", {}).get("rclone_remote"):
+        run(sudo + ["systemctl", "enable", "--now", "train-recorder-sync.timer"], check=False)
     print_restore_notes(backup_root, mapping)
 
 
@@ -795,6 +803,11 @@ def wizard(path):
                 "send_scan_freq_tags": bool_value(broadcastify_defaults.get("send_scan_freq_tags"), False),
             }
         )
+    rclone_remote = prompt("rclone remote, blank to skip", site_defaults.get("rclone_remote", ""))
+    check_sync_default = bool_value(
+        site_defaults.get("check_recent_sync_success"),
+        bool(rclone_remote),
+    )
     data = {
         "site": {
             "name": site_name,
@@ -807,9 +820,9 @@ def wizard(path):
             "stop_threshold": site_defaults.get("stop_threshold", "0.1%"),
             "recording_umask": site_defaults.get("recording_umask", "0002"),
             "check_recent_local_recordings": bool_value(site_defaults.get("check_recent_local_recordings"), False),
-            "check_recent_sync_success": bool_value(site_defaults.get("check_recent_sync_success"), True),
+            "check_recent_sync_success": check_sync_default,
             "max_sync_success_age_minutes": site_defaults.get("max_sync_success_age_minutes", 30),
-            "rclone_remote": prompt("rclone remote, blank to skip", site_defaults.get("rclone_remote", "")),
+            "rclone_remote": rclone_remote,
             "rclone_min_age": site_defaults.get("rclone_min_age", "15s"),
         },
         "sdr": {

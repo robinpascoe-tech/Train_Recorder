@@ -49,7 +49,15 @@ AGENTS.md                    Context for future coding agents and maintainers.
 
 ## Quick Start
 
-1. Copy or clone this repo to the Raspberry Pi, usually `/opt/train-recorder`.
+1. Install git, then clone this repo to the Raspberry Pi, usually `/opt/train-recorder`.
+
+   ```bash
+   sudo apt update
+   sudo apt install -y git
+   sudo git clone https://github.com/robinpascoe-tech/Train_Recorder.git /opt/train-recorder
+   sudo chown -R pi:pi /opt/train-recorder
+   ```
+
 2. Run the conservative installer:
 
    ```bash
@@ -57,13 +65,14 @@ AGENTS.md                    Context for future coding agents and maintainers.
    sudo Scripts/install.sh
    ```
 
-3. Create or edit `/etc/train-recorder/site.yaml`:
+3. Configure rclone as the `pi` user if cloud offload is enabled.
+4. Create or edit `/etc/train-recorder/site.yaml`:
 
    ```bash
    sudo /opt/train-recorder/Scripts/site_config.sh wizard
    ```
 
-4. Preview and apply the generated site configuration:
+5. Preview and apply the generated site configuration:
 
    ```bash
    sudo /opt/train-recorder/Scripts/site_config.sh generate
@@ -72,7 +81,6 @@ AGENTS.md                    Context for future coding agents and maintainers.
    sudo /opt/train-recorder/Scripts/site_config.sh apply
    ```
 
-5. Configure rclone as the `pi` user if cloud offload is enabled.
 6. Verify the recorder:
 
    ```bash
@@ -108,7 +116,7 @@ sudo /opt/train-recorder/Scripts/site_config.sh diff
 sudo /opt/train-recorder/Scripts/site_config.sh apply
 ```
 
-`generate` writes a preview to `/tmp/train-recorder-generated` by default. `diff` compares generated files with live files and redacts Broadcastify secrets in RTLSDR-Airband diffs. `apply` runs preflight checks, backs up replaced files, reconciles `vox@...` services, and restarts the affected recorder services.
+`generate` writes a preview to `/tmp/train-recorder-generated` by default. `diff` compares generated files with live files and redacts Broadcastify secrets in RTLSDR-Airband diffs. `apply` runs preflight checks, backs up replaced files, reconciles `vox@...` services, enables PulseAudio/RTLSDR-Airband, and enables the train-recorder timers.
 
 If `site.yaml` already exists, the wizard loads it and uses the current values as defaults. Sensitive Broadcastify values are preserved without printing them in the prompt.
 

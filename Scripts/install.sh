@@ -3,8 +3,10 @@ set -euo pipefail
 
 INSTALL_DIR="${INSTALL_DIR:-/opt/train-recorder}"
 CONFIG_DIR="${CONFIG_DIR:-/etc/train-recorder}"
+SITE_CONFIG="${SITE_CONFIG:-$CONFIG_DIR/site.yaml}"
 RECORDINGS_DIR="${RECORDINGS_DIR:-/home/pi/Recordings}"
 RAMDISK_DIR="${RAMDISK_DIR:-/mnt/ramdisk}"
+VARLOG_TMPFS_SIZE="${VARLOG_TMPFS_SIZE:-64m}"
 RUN_USER="${RUN_USER:-pi}"
 RUN_GROUP="${RUN_GROUP:-pi}"
 VOX_CHANNELS="${VOX_CHANNELS:-freq160545,freq161265}"
@@ -176,11 +178,27 @@ configured_vox_channels() {
 }
 
 install_sox() {
-  install_packages sox libsox-fmt-mp3
+  install_packages sox libsox-fmt-mp3 libsox-fmt-pulse
 }
 
 install_pulseaudio() {
   install_packages pulseaudio pulseaudio-utils
+}
+
+configure_pulseaudio_access() {
+  echo
+  echo "Configuring PulseAudio system-mode access groups"
+
+  if id "$RUN_USER" >/dev/null 2>&1; then
+    "${SUDO[@]}" usermod -aG pulse,pulse-access,audio "$RUN_USER"
+    echo "added $RUN_USER to pulse, pulse-access, and audio"
+  else
+    echo "warning: run user does not exist yet: $RUN_USER"
+  fi
+
+  "${SUDO[@]}" usermod -aG pulse,pulse-access root
+  echo "added root to pulse and pulse-access for rtl_airband.service"
+  echo "group changes apply to newly started services; restart PulseAudio/RTLSDR-Airband after configuration."
 }
 
 install_rclone() {
@@ -189,6 +207,52 @@ install_rclone() {
 
 install_rtlsdr_runtime() {
   install_packages rtl-sdr librtlsdr-dev
+}
+
+disable_pcp_if_installed() {
+  if ! dpkg-query -W pcp >/dev/null 2>&1 && ! dpkg-query -W pcp-conf >/dev/null 2>&1; then
+    echo "PCP packages not detected"
+    return
+  fi
+
+  echo
+  echo "Disabling Performance Co-Pilot services"
+  "${SUDO[@]}" systemctl disable --now pmcd pmlogger pmie pmproxy 2>/dev/null || true
+  "${SUDO[@]}" rm -rf /var/log/pcp
+  echo "disabled PCP services and removed /var/log/pcp"
+}
+
+fstab_has_mount() {
+  local mountpoint="$1"
+  grep -Eq "^[[:space:]]*[^#][^[:space:]]+[[:space:]]+${mountpoint}[[:space:]]+" /etc/fstab
+}
+
+add_fstab_line_if_missing() {
+  local mountpoint="$1"
+  local line="$2"
+
+  if fstab_has_mount "$mountpoint"; then
+    echo "keep existing /etc/fstab entry for $mountpoint"
+    return
+  fi
+
+  printf '%s\n' "$line" | "${SUDO[@]}" tee -a /etc/fstab >/dev/null
+  echo "added /etc/fstab entry for $mountpoint"
+}
+
+configure_tmpfs_mounts() {
+  echo
+  echo "Configuring optional tmpfs mounts"
+
+  if ask_yes_no "Add $RAMDISK_DIR tmpfs to /etc/fstab if missing?" y; then
+    add_fstab_line_if_missing "$RAMDISK_DIR" "tmpfs $RAMDISK_DIR tmpfs nodev,nosuid,size=50M 0 0"
+    "${SUDO[@]}" mount "$RAMDISK_DIR" 2>/dev/null || true
+  fi
+
+  if ask_yes_no "Add /var/log tmpfs to /etc/fstab if missing?"; then
+    add_fstab_line_if_missing "/var/log" "tmpfs /var/log tmpfs defaults,noatime,nosuid,size=$VARLOG_TMPFS_SIZE 0 0"
+    echo "Mount /var/log tmpfs after reviewing current logs, or reboot during a planned maintenance window."
+  fi
 }
 
 build_rtlsdr_airband() {
@@ -265,6 +329,10 @@ enable_optional_timers() {
   "${SUDO[@]}" systemctl enable --now train-recorder-cleanup.timer
 }
 
+site_config_exists() {
+  [[ -f "$SITE_CONFIG" ]]
+}
+
 echo "Train Recorder installer"
 echo "Repo root:    $REPO_ROOT"
 echo "Install dir:  $INSTALL_DIR"
@@ -283,6 +351,7 @@ fi
 
 if ask_yes_no "Install PulseAudio packages?"; then
   install_pulseaudio
+  configure_pulseaudio_access
 fi
 
 if ask_yes_no "Install rclone from apt?"; then
@@ -301,31 +370,46 @@ install_repo_files
 prepare_directories
 install_local_configs
 install_systemd_units
+configure_tmpfs_mounts
 
 echo
-echo "RAM disk note:"
-echo "  For persistent RAM disk setup, add this to /etc/fstab if it is not present:"
-echo "  tmpfs $RAMDISK_DIR tmpfs nodev,nosuid,size=50M 0 0"
-
-if ask_yes_no "Enable core recorder services at boot?"; then
-  enable_core_services
+if ask_yes_no "Disable Performance Co-Pilot (PCP) services if installed? Recommended for small /var/log tmpfs." y; then
+  disable_pcp_if_installed
 fi
 
-if ask_yes_no "Start core recorder services now?"; then
-  start_core_services
-fi
+if site_config_exists; then
+  echo
+  echo "Site config found at $SITE_CONFIG."
+  echo "You can start services here, or use site_config.sh apply to reconcile config and services."
 
-if ask_yes_no "Enable health, sync, and cleanup timers now?"; then
-  enable_optional_timers
+  if ask_yes_no "Enable core recorder services at boot?"; then
+    enable_core_services
+  fi
+
+  if ask_yes_no "Start core recorder services now?"; then
+    start_core_services
+  fi
+
+  if ask_yes_no "Enable health, sync, and cleanup timers now?"; then
+    enable_optional_timers
+  fi
+else
+  echo
+  echo "Skipping service start prompts because $SITE_CONFIG does not exist yet."
+  echo "Run site_config.sh wizard/generate/plan/diff/apply after configuring rclone and site settings."
+  echo "site_config.sh apply will enable/start the configured recorder services and train-recorder timers."
 fi
 
 echo
 echo "Install pass complete."
 echo
 echo "Next manual steps:"
-echo "  1. Edit /usr/local/etc/rtl_airband.conf with local Broadcastify/Icecast settings."
-echo "  2. Edit $CONFIG_DIR/*.env for local paths, rclone remote, and channel tuning."
-echo "  3. Configure rclone as $RUN_USER if using OneDrive offload."
-echo "  4. Verify with:"
+echo "  1. Configure rclone as $RUN_USER if using OneDrive offload."
+echo "  2. Run: sudo $INSTALL_DIR/Scripts/site_config.sh wizard"
+echo "  3. Run: sudo $INSTALL_DIR/Scripts/site_config.sh generate"
+echo "  4. Run: sudo $INSTALL_DIR/Scripts/site_config.sh plan"
+echo "  5. Run: sudo $INSTALL_DIR/Scripts/site_config.sh diff"
+echo "  6. Run: sudo $INSTALL_DIR/Scripts/site_config.sh apply"
+echo "  7. Verify with:"
 echo "     sudo $INSTALL_DIR/Scripts/health_check.sh"
 echo "     sudo $INSTALL_DIR/Scripts/status_summary.sh"

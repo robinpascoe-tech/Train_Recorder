@@ -6,13 +6,21 @@ These notes assume a Raspberry Pi-style Linux host and an install path of `/opt/
 
 The installer can offer to install these packages for you:
 
+- git, rsync, and CA certificates
 - RTLSDR-Airband
 - RTL-SDR drivers and udev rules
 - PulseAudio
-- SOX with MP3 support
+- SOX with MP3 and PulseAudio support
 - rclone, optional
 
 ## Install Project Files
+
+On a fresh Raspberry Pi OS image, install `git` first so the project can be cloned:
+
+```bash
+sudo apt update
+sudo apt install -y git
+```
 
 Clone or copy the repository to the Pi:
 
@@ -30,6 +38,8 @@ sudo Scripts/install.sh
 ```
 
 The installer can optionally install SOX, PulseAudio, rclone, RTL-SDR packages, and build RTLSDR-Airband from source with RTL-SDR, NFM, PulseAudio, libshout, and LAME support. The source build defaults to the project-tested `RTL_AIRBAND_REF=v5.2.0`; override that environment variable if you want another tag or branch. It does not overwrite existing env files, live RTLSDR-Airband config, PulseAudio config, or rclone credentials without prompting.
+
+On a first pass, the installer prepares packages, directories, systemd units, PulseAudio access groups, and optional tmpfs mounts. If `/etc/train-recorder/site.yaml` does not exist yet, it intentionally skips service start prompts. Configure rclone and run `site_config.sh apply` after the site settings are ready; `apply` enables and starts the configured recorder services and timers.
 
 ## Configure OneDrive on a Headless Pi
 
@@ -54,9 +64,10 @@ In the interactive prompts:
 ```text
 n) New remote
 name> onedrive
-Storage> onedrive
+Storage> onedrive       # choose Microsoft OneDrive; on some rclone versions this is option 30
 client_id>            # press Enter for the default unless you have your own app registration
 client_secret>        # press Enter for the default unless you have your own app registration
+Choose national cloud region for OneDrive> 1  # Microsoft Cloud Global
 Edit advanced config? # usually n
 Use web browser to automatically authenticate rclone with remote? # n
 ```
@@ -158,6 +169,25 @@ sudo rm -rf /var/log/pcp
 
 PCP can quickly fill a small `/var/log` tmpfs with performance archives. It is not required by Train Recorder, RTLSDR-Airband, PulseAudio, SOX, or rclone. See [OPERATIONS.md](OPERATIONS.md) for checking log usage during long soaks.
 
+## PulseAudio Access
+
+The recorder uses PulseAudio in system mode. SOX recorder services run as `pi`, while `rtl_airband.service` normally runs as root and writes to the PulseAudio null sinks. Both users need access to the system PulseAudio socket.
+
+The installer configures these groups when PulseAudio packages are installed:
+
+```bash
+sudo usermod -aG pulse,pulse-access,audio pi
+sudo usermod -aG pulse,pulse-access root
+```
+
+If you install PulseAudio manually or see PulseAudio `Access denied` errors from SOX or RTLSDR-Airband, run those commands and restart the affected services:
+
+```bash
+sudo systemctl restart pulseaudio.service
+sudo systemctl restart rtl_airband.service
+sudo systemctl restart 'vox@*.service'
+```
+
 ## Generate Site Config
 
 For a site-specific install, use `site_config.sh` instead of hand-editing every generated file:
@@ -170,7 +200,7 @@ sudo /opt/train-recorder/Scripts/site_config.sh diff
 sudo /opt/train-recorder/Scripts/site_config.sh apply
 ```
 
-The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `plan` shows service-level changes, and `diff` shows generated file changes with Broadcastify mountpoint/password values redacted. `apply` runs preflight checks, backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, reconciles `vox@...` services, and restarts the affected services. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
+The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `plan` shows service-level changes, and `diff` shows generated file changes with Broadcastify mountpoint/password values redacted. `apply` runs preflight checks, backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, enables/restarts the configured `vox@...` services, and enables the health, cleanup, and sync timers when applicable. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
 
 ### Wizard Prompt Reference
 
@@ -239,7 +269,7 @@ Channel-specific env files are loaded after `common.env`, so they can override s
 
 ## Install Services
 
-`site_config.sh apply` installs generated config files and reconciles `vox@...` services, but it does not replace the full system installer. If you are setting up manually, install the systemd units:
+`site_config.sh apply` installs generated config files, reconciles `vox@...` services, and enables the train-recorder timers, but it does not replace the full system installer. If you are setting up manually, install the systemd units:
 
 ```bash
 sudo cp /opt/train-recorder/Service_Files/*.service /etc/systemd/system/

@@ -24,9 +24,9 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 ## Runtime Pieces
 
-`install.sh` is a conservative Raspberry Pi installer. It can install prerequisite packages, optionally build RTLSDR-Airband from source, copy project files, seed missing local configs, install systemd units, and prompt before enabling or starting services.
+`install.sh` is a conservative Raspberry Pi installer. It can install prerequisite packages, optionally build RTLSDR-Airband from source, copy project files, seed missing local configs, install systemd units, configure PulseAudio access groups, and set up optional tmpfs mounts. On a fresh install it prepares the host but skips service start prompts until `/etc/train-recorder/site.yaml` exists, so services are not started against placeholder config.
 
-`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, and reconcile live `vox@...` services. The YAML file is the desired state; generated files are artifacts. If `site.yaml` already exists, the wizard uses it as the default source for prompts and preserves sensitive Broadcastify values without printing them.
+`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, and reconcile live `vox@...` services. `apply` is the activation step for generated installs: it enables/restarts PulseAudio, RTLSDR-Airband, the configured recorder services, and the train-recorder timers. The YAML file is the desired state; generated files are artifacts. If `site.yaml` already exists, the wizard uses it as the default source for prompts and preserves sensitive Broadcastify values without printing them.
 
 `rtl_airband.service` starts RTLSDR-Airband and reads the installed RTL-Airband config.
 
@@ -85,6 +85,6 @@ sudo /opt/train-recorder/Scripts/site_config.sh plan
 sudo /opt/train-recorder/Scripts/site_config.sh apply
 ```
 
-The wizard updates `/etc/train-recorder/site.yaml`. `generate` writes a preview under `/tmp/train-recorder-generated`, `plan` shows which `vox@...` services would be enabled or disabled, and `apply` backs up replaced files before restarting PulseAudio, RTLSDR-Airband, and the configured recorder instances.
+The wizard updates `/etc/train-recorder/site.yaml`. `generate` writes a preview under `/tmp/train-recorder-generated`, `plan` shows which `vox@...` services would be enabled or disabled, and `apply` backs up replaced files before enabling/restarting PulseAudio, RTLSDR-Airband, the configured recorder instances, and train-recorder timers.
 
 Manual channel changes are still possible, but every layer must agree: PulseAudio null sinks, RTLSDR-Airband channel outputs, `common.env` `VOX_CHANNELS`, channel env files, and enabled `vox@...` units.
