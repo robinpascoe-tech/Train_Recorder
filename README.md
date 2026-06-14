@@ -29,6 +29,7 @@ Scripts/
   install.sh                 Conservative Raspberry Pi installer.
   site_config.sh             Wizard/generator/apply tool for site-specific configs.
   health_check.sh            Dynamic service, PulseAudio, storage, sync, and channel checks.
+  doctor.sh                  Read-only install and runtime sanity checker.
   collect_diagnostics.sh     Sanitized troubleshooting bundle collector.
   cleanup_empty_dirs.sh      Daily cleanup for empty local recording directories.
   vox_record.sh              Shared configurable VOX recorder.

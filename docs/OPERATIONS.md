@@ -34,6 +34,30 @@ JOURNAL_WINDOW_MINUTES=10080
 
 Set those in `/etc/train-recorder/common.env` if the default windows are too short or too noisy for your site.
 
+## Doctor Check
+
+Run the doctor check when validating an install or investigating a recorder that looks unhealthy:
+
+```bash
+sudo /opt/train-recorder/Scripts/doctor.sh
+```
+
+The doctor command is read-only. It reports `ok`, `warn`, and `fail` lines for common installation and runtime issues:
+
+- core service and timer state
+- configured `vox@...` services and PulseAudio monitor sources
+- writable recording and temp paths
+- root-owned recordings or directories
+- PulseAudio system-mode groups and accidental per-user PulseAudio
+- required packages and tools
+- rclone reachability and recent sync success
+- legacy `vox.service`/`vox2.service`
+- PCP services that can fill `/var/log` tmpfs
+- raspiBackup recorder stop/start hooks
+- recent SOX clipping warnings
+
+Warnings do not make the command fail, but any `fail` line exits with status `1`.
+
 ## Diagnostics Bundle
 
 For support or deeper troubleshooting, collect a sanitized diagnostics bundle:

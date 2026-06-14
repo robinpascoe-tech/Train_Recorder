@@ -9,6 +9,7 @@ This project follows a practical release process. Changes before the first publi
 ### Added
 
 - Diagnostics bundle collector for sanitized troubleshooting snapshots.
+- Read-only doctor command for common install and runtime checks.
 
 ## v1.0.0 - 2026-06-14
 
