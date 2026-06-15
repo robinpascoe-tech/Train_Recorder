@@ -11,6 +11,7 @@ journalctl -u rtl_airband.service --since today
 journalctl -u vox@freq160545.service -u vox@freq161265.service --since today
 journalctl -u train-recorder-sync.service --since today
 journalctl -u train-recorder-health.service -u train-recorder-cleanup.service --since today
+journalctl -u train-recorder-dashboard.service -u train-recorder-wifi-check.service --since today
 ```
 
 Follow live recorder activity:
@@ -87,6 +88,12 @@ http://<pi-address>:8080/
 ```
 
 The dashboard exposes `/api/status` for the raw JSON payload. It is designed for trusted LAN use only. Do not expose it directly to the internet without a separate authentication and TLS layer such as a VPN or reverse proxy.
+
+The dashboard includes host, IP, Wi-Fi SSID, service, timer, storage, sync, and latest Wi-Fi/network-check status. If the dashboard service was already running when scripts were updated, restart it so it loads the latest code:
+
+```bash
+sudo systemctl restart train-recorder-dashboard.service
+```
 
 ## Wi-Fi and Network Check
 

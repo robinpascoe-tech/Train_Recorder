@@ -28,7 +28,7 @@ Clone or copy the repository to the Pi:
 ```bash
 sudo git clone https://github.com/robinpascoe-tech/Train_Recorder.git /opt/train-recorder
 sudo chown -R pi:pi /opt/train-recorder
-chmod +x /opt/train-recorder/Scripts/*.sh
+chmod +x /opt/train-recorder/Scripts/*.sh /opt/train-recorder/Scripts/*.py
 ```
 
 For a guided, conservative install on a fresh Raspberry Pi, run:
@@ -316,6 +316,7 @@ Optional health and sync timers:
 sudo systemctl enable --now train-recorder-health.timer
 sudo systemctl enable --now train-recorder-sync.timer
 sudo systemctl enable --now train-recorder-cleanup.timer
+sudo systemctl enable --now train-recorder-wifi-check.timer
 ```
 
 The VOX recorder services and sync service run as the `pi` user. This keeps generated recordings and rclone/OneDrive credentials in the same user context, so root-owned recordings and recursive `chmod 777` cron workarounds should not be needed.

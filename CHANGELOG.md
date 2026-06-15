@@ -14,7 +14,7 @@ This project follows a practical release process. Changes before the first publi
 
 ### Changed
 
-- Refreshed documentation to align README, architecture, operations, release, roadmap, and agent handoff notes with the current v1.1 project state.
+- Refreshed documentation to align README, architecture, operations, release, roadmap, and agent handoff notes with the current project state.
 - Diagnostics bundles now include the status JSON payload.
 
 ## v1.1.0 - 2026-06-15

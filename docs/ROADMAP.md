@@ -35,7 +35,6 @@ Future ideas:
 - Integrate the Raspberry Pi hardware watchdog for unattended recovery. Document enabling the kernel watchdog, add conservative systemd watchdog settings where appropriate, and make sure the recorder services fail clearly enough for the host watchdog strategy to be useful.
 - Expand Wi-Fi/network remediation only after observing the first-pass timer in production. Avoid reboot loops unless explicitly configured and tested.
 - Consider exposing the dashboard only on the LAN by default, with clear notes that it should not be internet-facing without authentication and TLS handled outside the project.
-
 - Soak-test and harden `site_config.sh apply` with real frequency add/remove changes.
 - Continue monitoring SOX clipping warnings after longer soaks and adjust per-channel gain if needed.
 - Add optional runtime-only cleanup guidance for removing build dependencies after RTLSDR-Airband is built.
