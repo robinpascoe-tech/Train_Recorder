@@ -253,6 +253,7 @@ def render_page() -> str:
         row('Hostname', data.network.hostname, 'mono'),
         row('IP address', data.network.ip_addresses.join('<br>') || 'none', 'mono'),
         row('Wi-Fi', data.network.wifi_ssid || (data.network.wifi_connected ? 'connected' : 'unavailable'), 'mono'),
+        row('Network check', data.network.latest_check.available ? data.network.latest_check.overall : 'not run', data.network.latest_check.overall === 'fail' ? 'warn' : 'ok'),
         row('Channels', data.config.vox_channels.join(', '), 'mono'),
         row('Rclone', data.rclone.configured ? (data.rclone.reachable ? 'reachable' : 'not reachable') : 'not configured', data.rclone.reachable === false ? 'fail' : 'ok')
       ]);

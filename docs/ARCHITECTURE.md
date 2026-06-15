@@ -50,6 +50,8 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `dashboard.py` is an optional read-only Flask dashboard for LAN use. It serves a human status view at `/` and raw JSON at `/api/status`.
 
+`wifi_check.py` is an optional network health checker. It records hostname, IPs, Wi-Fi SSID when detectable, default gateway reachability, DNS resolution, rclone reachability, and local dashboard reachability to `/var/lib/train-recorder/wifi-check.json`. It can run in check-only mode from `train-recorder-wifi-check.timer`, or in explicit `--remedy` mode for conservative recovery attempts such as `wpa_cli reconnect` or restarting the active Wi-Fi/DHCP service.
+
 `collect_diagnostics.sh` gathers a sanitized support bundle. It includes doctor output, status JSON, service states, timers, journals, package versions, PulseAudio state, storage usage, recording counts, rclone checks, and redacted copies of Train Recorder configs.
 
 The recorder, sync, and cleanup services run as `pi:pi`. This keeps PulseAudio access, generated MP3 ownership, and rclone credentials in one user context.

@@ -1,0 +1,10 @@
+[Unit]
+Description=Train Recorder Wi-Fi and network health check
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/train-recorder/common.env
+EnvironmentFile=-/etc/train-recorder/sync.env
+ExecStart=/opt/train-recorder/Scripts/wifi_check.py

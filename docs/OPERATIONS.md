@@ -88,6 +88,37 @@ http://<pi-address>:8080/
 
 The dashboard exposes `/api/status` for the raw JSON payload. It is designed for trusted LAN use only. Do not expose it directly to the internet without a separate authentication and TLS layer such as a VPN or reverse proxy.
 
+## Wi-Fi and Network Check
+
+The optional Wi-Fi/network check can be run manually or by timer:
+
+```bash
+sudo /opt/train-recorder/Scripts/wifi_check.py
+sudo /opt/train-recorder/Scripts/wifi_check.py --json
+```
+
+The latest result is written to:
+
+```text
+/var/lib/train-recorder/wifi-check.json
+```
+
+Enable the check-only timer:
+
+```bash
+sudo systemctl enable --now train-recorder-wifi-check.timer
+```
+
+The script checks local IP assignment, default gateway reachability, DNS resolution, rclone remote reachability when configured, and the local dashboard API. It also records Wi-Fi SSID when the installed network tools can detect it.
+
+Manual remedy mode is available:
+
+```bash
+sudo /opt/train-recorder/Scripts/wifi_check.py --remedy
+```
+
+Use remedy mode cautiously. It attempts conservative local recovery actions only and does not reboot the Pi.
+
 ## Diagnostics Bundle
 
 For support or deeper troubleshooting, collect a sanitized diagnostics bundle:

@@ -366,6 +366,36 @@ http://<pi-address>:8080/
 
 The service uses `DASHBOARD_HOST` and `DASHBOARD_PORT` environment variables from the systemd unit. Do not expose the dashboard directly to the internet; if remote access is needed, put authentication and TLS in front of it with a separate reverse proxy or VPN.
 
+## Optional Wi-Fi and Network Check
+
+The optional Wi-Fi/network check records a small JSON state file for the dashboard and diagnostics bundle:
+
+```text
+/var/lib/train-recorder/wifi-check.json
+```
+
+Run a one-time check:
+
+```bash
+sudo /opt/train-recorder/Scripts/wifi_check.py
+sudo /opt/train-recorder/Scripts/wifi_check.py --json
+```
+
+Enable the check-only timer:
+
+```bash
+sudo systemctl enable --now train-recorder-wifi-check.timer
+systemctl list-timers --all | grep train-recorder-wifi-check
+```
+
+The timer runs every 5 minutes and does not attempt recovery by default. To try conservative recovery actions during a manual troubleshooting session:
+
+```bash
+sudo /opt/train-recorder/Scripts/wifi_check.py --remedy
+```
+
+Remedy mode attempts only local network recovery steps supported by the installed tools, such as `wpa_cli reconnect` or restarting an active `dhcpcd`/`wpa_supplicant` service. It does not reboot the Pi.
+
 ## Optional rclone Offload
 
 Configure rclone for your destination, then override `RCLONE_REMOTE` if the default does not match your setup:

@@ -19,6 +19,7 @@ from typing import Any
 CONFIG_DIR = Path(os.environ.get("CONFIG_DIR", "/etc/train-recorder"))
 RUN_USER = os.environ.get("RUN_USER", "pi")
 PULSE_SERVER = os.environ.get("PULSE_SERVER", "unix:/run/pulse/native")
+WIFI_CHECK_STATE = Path(os.environ.get("WIFI_CHECK_STATE", "/var/lib/train-recorder/wifi-check.json"))
 
 
 def read_env_file(path: Path) -> dict[str, str]:
@@ -95,7 +96,18 @@ def service_status(name: str) -> dict[str, Any]:
 
 
 def command_exists(name: str) -> bool:
-    return shutil.which(name) is not None
+    return command_path(name) is not None
+
+
+def command_path(name: str) -> str | None:
+    found = shutil.which(name)
+    if found:
+        return found
+    for directory in ("/usr/sbin", "/sbin", "/usr/bin", "/bin"):
+        candidate = Path(directory) / name
+        if candidate.exists():
+            return str(candidate)
+    return None
 
 
 def ip_addresses() -> list[str]:
@@ -106,29 +118,33 @@ def ip_addresses() -> list[str]:
 
 
 def wifi_status() -> dict[str, Any]:
-    if command_exists("iwgetid"):
-        result = run_cmd(["iwgetid", "-r"])
+    iwgetid = command_path("iwgetid")
+    if iwgetid:
+        result = run_cmd([iwgetid, "-r"])
         if result["ok"] and result["stdout"]:
             return {"ssid": result["stdout"].splitlines()[0].strip(), "source": "iwgetid", "connected": True}
 
-    if command_exists("iw"):
-        result = run_cmd(["iw", "dev"])
+    iw = command_path("iw")
+    if iw:
+        result = run_cmd([iw, "dev"])
         if result["stdout"]:
             for line in result["stdout"].splitlines():
                 line = line.strip()
                 if line.startswith("ssid "):
                     return {"ssid": line.removeprefix("ssid ").strip(), "source": "iw", "connected": True}
 
-    if command_exists("nmcli"):
-        result = run_cmd(["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"])
+    nmcli = command_path("nmcli")
+    if nmcli:
+        result = run_cmd([nmcli, "-t", "-f", "active,ssid", "dev", "wifi"])
         if result["stdout"]:
             for line in result["stdout"].splitlines():
                 active, _, ssid = line.partition(":")
                 if active == "yes" and ssid:
                     return {"ssid": ssid, "source": "nmcli", "connected": True}
 
-    if command_exists("wpa_cli"):
-        result = run_cmd(["wpa_cli", "status"])
+    wpa_cli = command_path("wpa_cli")
+    if wpa_cli:
+        result = run_cmd([wpa_cli, "status"])
         if result["stdout"]:
             fields = dict(line.split("=", 1) for line in result["stdout"].splitlines() if "=" in line)
             ssid = fields.get("ssid", "")
@@ -275,6 +291,18 @@ def rclone_status(env: dict[str, str]) -> dict[str, Any]:
     return status
 
 
+def wifi_check_state() -> dict[str, Any]:
+    if not WIFI_CHECK_STATE.exists():
+        return {"available": False, "path": str(WIFI_CHECK_STATE)}
+    try:
+        data = json.loads(WIFI_CHECK_STATE.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"available": False, "path": str(WIFI_CHECK_STATE), "error": str(exc)}
+    data["available"] = True
+    data["path"] = str(WIFI_CHECK_STATE)
+    return data
+
+
 def add_check(checks: list[dict[str, Any]], name: str, level: str, ok: bool, message: str) -> None:
     checks.append({"name": name, "level": level if not ok else "ok", "ok": ok, "message": message})
 
@@ -374,6 +402,16 @@ def collect_status() -> dict[str, Any]:
     if rclone["configured"]:
         add_check(checks, "rclone remote", "fail", bool(rclone["reachable"]), rclone.get("error", "reachable"))
 
+    wifi_check = wifi_check_state()
+    if wifi_check.get("available"):
+        add_check(
+            checks,
+            "Wi-Fi/network check",
+            "warn",
+            wifi_check.get("overall") == "ok",
+            f"latest network check {wifi_check.get('overall', 'unknown')}",
+        )
+
     clipping = clipping_summary(sorted(set(all_journal_units)), clipping_window)
     add_check(checks, "SOX clipping", "warn", clipping["count"] == 0, f"{clipping['count']} warnings")
 
@@ -392,6 +430,7 @@ def collect_status() -> dict[str, Any]:
             "wifi_ssid": wifi["ssid"],
             "wifi_ssid_source": wifi["source"],
             "wifi_connected": wifi["connected"],
+            "latest_check": wifi_check,
         },
         "overall": overall,
         "summary": {"failures": len(failures), "warnings": len(warnings), "checks": len(checks)},

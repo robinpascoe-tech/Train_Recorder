@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Train Recorder Wi-Fi and network health check periodically
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+Unit=train-recorder-wifi-check.service
+
+[Install]
+WantedBy=timers.target

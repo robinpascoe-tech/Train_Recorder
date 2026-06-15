@@ -374,6 +374,11 @@ enable_dashboard_service() {
   "${SUDO[@]}" systemctl enable --now train-recorder-dashboard.service
 }
 
+enable_wifi_check_timer() {
+  "${SUDO[@]}" mkdir -p /var/lib/train-recorder
+  "${SUDO[@]}" systemctl enable --now train-recorder-wifi-check.timer
+}
+
 site_config_exists() {
   [[ -f "$SITE_CONFIG" ]]
 }
@@ -463,6 +468,10 @@ if site_config_exists; then
     echo "dashboard will listen on DASHBOARD_HOST/DASHBOARD_PORT, default http://<pi-address>:8080/"
   fi
 
+  if ask_yes_no "Enable the optional Wi-Fi/network health check timer now?"; then
+    enable_wifi_check_timer
+  fi
+
   if ask_yes_no "Run read-only install validation with site_config.sh doctor now?"; then
     if ! run_install_validation; then
       echo "doctor reported one or more failures; review the output above and rerun after fixing them."
@@ -475,6 +484,7 @@ else
   echo "site_config.sh apply will enable/start the configured recorder services and train-recorder timers."
   echo "After apply, run site_config.sh doctor to validate the install."
   echo "After validation, optionally enable train-recorder-dashboard.service."
+  echo "After validation, optionally enable train-recorder-wifi-check.timer."
 fi
 
 echo
@@ -496,3 +506,5 @@ echo "     $INSTALL_DIR/Scripts/status_json.py"
 echo "  9. Optional dashboard:"
 echo "     sudo apt install python3-flask"
 echo "     sudo systemctl enable --now train-recorder-dashboard.service"
+echo " 10. Optional Wi-Fi/network check timer:"
+echo "     sudo systemctl enable --now train-recorder-wifi-check.timer"

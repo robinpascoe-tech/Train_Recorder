@@ -10,6 +10,7 @@ This project follows a practical release process. Changes before the first publi
 
 - Machine-readable status JSON via `site_config.sh doctor --json`.
 - Optional read-only Flask web dashboard and systemd unit.
+- Optional Wi-Fi/network health check with JSON state, check-only timer, and manual conservative remedy mode.
 
 ### Changed
 

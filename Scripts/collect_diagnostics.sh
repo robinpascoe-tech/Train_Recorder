@@ -130,6 +130,9 @@ write_file commands/pcp-state systemctl is-active pmcd pmlogger pmie pmproxy
 write_file commands/raspibackup-state sh -c "systemctl list-timers --all --no-pager | grep -i raspibackup || true; systemctl status --no-pager --full raspiBackup.service raspiBackup.timer 2>/dev/null || true"
 write_file commands/recording-tree sh -c "find '$OUTPUT_ROOT' -maxdepth 4 -printf '%M %u:%g %p\n' 2>/dev/null | head -200"
 write_file commands/recording-counts sh -c "printf 'mp3_count='; find '$OUTPUT_ROOT' -type f -name '*.mp3' 2>/dev/null | wc -l; printf 'root_owned_mp3_count='; find '$OUTPUT_ROOT' -type f -name '*.mp3' -user root 2>/dev/null | wc -l; du -sh '$OUTPUT_ROOT' '$TEMP_DIR' 2>/dev/null || true"
+if [[ -x "$INSTALL_DIR/Scripts/wifi_check.py" ]]; then
+  write_file commands/wifi-check "$INSTALL_DIR/Scripts/wifi_check.py" --json --no-write-state
+fi
 
 if [[ -x "$INSTALL_DIR/Scripts/status_summary.sh" ]]; then
   write_file commands/status-summary "$INSTALL_DIR/Scripts/status_summary.sh"
@@ -155,7 +158,7 @@ fi
 for unit in \
   pulseaudio.service rtl_airband.service \
   train-recorder-sync.service train-recorder-health.service train-recorder-cleanup.service \
-  train-recorder-sync.timer train-recorder-health.timer train-recorder-cleanup.timer \
+  train-recorder-wifi-check.service train-recorder-sync.timer train-recorder-health.timer train-recorder-cleanup.timer train-recorder-wifi-check.timer \
   raspiBackup.service raspiBackup.timer; do
   write_file "logs/${unit}.journal" journalctl -u "$unit" --since "$SINCE" --no-pager
 done
@@ -176,6 +179,7 @@ copy_file /etc/pulse/system.pa configs/system.pa
 copy_file /etc/systemd/system/vox@.service configs/vox@.service
 copy_file /etc/systemd/system/pulseaudio.service configs/pulseaudio.service
 copy_file /etc/systemd/system/rtl_airband.service configs/rtl_airband.service
+copy_file /var/lib/train-recorder/wifi-check.json configs/wifi-check.json
 copy_redacted /usr/local/etc/raspiBackup.conf configs/raspiBackup.conf.redacted
 
 find "$bundle_dir" -type f -exec chmod 600 {} +

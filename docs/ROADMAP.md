@@ -21,6 +21,7 @@ Completed:
 - `/var/log` tmpfs and PCP disablement guidance for SD-card-friendly long-running installs.
 - v1.1 doctor command, `site_config.sh doctor` alias, diagnostics bundle doctor output, installer validation flow, and release validation on both known Pi installs.
 - Dashboard foundation with `site_config.sh doctor --json`, reusable status JSON collection, optional read-only Flask dashboard, dashboard systemd unit, and diagnostics bundle status JSON.
+- Wi-Fi/network check first pass with JSON state, check-only timer, manual conservative remedy mode, dashboard/status integration, and diagnostics bundle capture.
 
 Release readiness:
 
@@ -32,7 +33,7 @@ Future ideas:
 
 - Polish the optional web dashboard after real operator use, including any additional fields, layout tweaks, or deployment hardening that prove useful.
 - Integrate the Raspberry Pi hardware watchdog for unattended recovery. Document enabling the kernel watchdog, add conservative systemd watchdog settings where appropriate, and make sure the recorder services fail clearly enough for the host watchdog strategy to be useful.
-- Add a Wi-Fi connectivity check/remedy script. It should detect loss of network or rclone destination reachability, log what it found, attempt safe recovery steps such as reconnecting the wireless interface or restarting the network service, and avoid reboot loops unless explicitly configured.
+- Expand Wi-Fi/network remediation only after observing the first-pass timer in production. Avoid reboot loops unless explicitly configured and tested.
 - Consider exposing the dashboard only on the LAN by default, with clear notes that it should not be internet-facing without authentication and TLS handled outside the project.
 
 - Soak-test and harden `site_config.sh apply` with real frequency add/remove changes.

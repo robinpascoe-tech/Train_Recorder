@@ -69,6 +69,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 - `Scripts/doctor.sh` is the read-only validation command. Prefer `sudo /opt/train-recorder/Scripts/site_config.sh doctor`; diagnostics bundles include the same doctor output under `commands/doctor`.
 - `Scripts/status_json.py` powers `sudo /opt/train-recorder/Scripts/site_config.sh doctor --json` and the optional Flask dashboard. Keep dashboard/status automation read-only unless the user explicitly asks for control actions.
 - `Scripts/dashboard.py` is an optional LAN-oriented Flask dashboard served by `train-recorder-dashboard.service` on port `8080` by default. Do not expose it directly to the internet without a separate authentication and TLS layer.
+- `Scripts/wifi_check.py` writes `/var/lib/train-recorder/wifi-check.json` for the dashboard and diagnostics bundle. `train-recorder-wifi-check.timer` runs check-only mode by default; `--remedy` is manual/explicit and should stay conservative.
 - New recorder services should use the templated `vox@.service` naming convention. Legacy `vox.service` and `vox2.service` existed for the original two-channel install, but new/generated configs should enable `vox@<channel-env-name>.service`.
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
 - Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run. The cleanup script logs a summary count instead of every deleted path.

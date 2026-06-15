@@ -32,6 +32,7 @@ Scripts/
   doctor.sh                  Read-only install and runtime sanity checker.
   status_json.py             Machine-readable status collector for automation and dashboards.
   dashboard.py               Optional read-only Flask status dashboard.
+  wifi_check.py              Optional Wi-Fi/network health check with conservative remedy mode.
   collect_diagnostics.sh     Sanitized troubleshooting bundle collector.
   cleanup_empty_dirs.sh      Daily cleanup for empty local recording directories.
   vox_record.sh              Shared configurable VOX recorder.
@@ -42,6 +43,7 @@ Scripts/
 Service_Files/
   vox@.service               Templated VOX recorder unit, one instance per channel env file.
   train-recorder-dashboard.service Optional read-only web dashboard unit.
+  train-recorder-wifi-check.* Optional Wi-Fi/network check service and timer.
   *.service                  systemd units for PulseAudio, RTLSDR-Airband, health, sync, and cleanup.
   *.timer                    Optional systemd timers for health checks, rclone sync, and cleanup.
 docs/
