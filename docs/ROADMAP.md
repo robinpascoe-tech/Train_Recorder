@@ -8,7 +8,7 @@ Completed:
 - Dynamic health and status reports based on configured `VOX_CHANNELS`.
 - Templated `vox@...` recorder services for channel-specific recorder instances.
 - Conservative Raspberry Pi installer with optional prerequisite installation and RTLSDR-Airband source build.
-- Generated site configuration workflow with `site_config.sh wizard`, `generate`, `plan`, and `apply`.
+- Generated site configuration workflow with `site_config.sh wizard`, `generate`, `plan`, `diff`, `apply`, and `doctor`.
 - Wizard defaults sourced from existing `/etc/train-recorder/site.yaml`, with sensitive Broadcastify values masked in prompts.
 - Daily empty-directory cleanup service with summarized journal output.
 - Documentation refresh for the current generated-config workflow.

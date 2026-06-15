@@ -2,71 +2,78 @@
 
 Use this checklist before tagging a public release.
 
-## v1.0.0 Readiness
+## Standard Release Flow
 
-- Confirm both known recorder installs are healthy:
-  - Production Pi: SOX/PulseAudio architecture soak tested.
-  - Fresh Raspberry Pi OS Trixie Pi: install, recording, and rclone sync validated.
-- Run local checks:
+1. Confirm the working tree is clean and current:
 
-```bash
-bash -n Scripts/*.sh
-shellcheck --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
-```
+   ```bash
+   git status --short --branch
+   git log --oneline --decorate -n 5
+   ```
 
-- Confirm GitHub Actions shell lint passes on `main`.
-- Run a final secret scan and manual review:
-  - no real Broadcastify/Icecast passwords
-  - no real mountpoints if considered private
-  - no rclone tokens
-  - no SSH keys or passwords
-  - no generated recordings
-- Confirm public docs are current:
-  - [INSTALL.md](INSTALL.md)
-  - [OPERATIONS.md](OPERATIONS.md)
-  - [ARCHITECTURE.md](ARCHITECTURE.md)
-  - [HARDWARE.md](HARDWARE.md)
-  - [ROADMAP.md](ROADMAP.md)
-- Confirm examples are sanitized:
-  - `Config/*.example`
-  - `Config/site.example.yaml`
-  - sanitized recording tree in [OPERATIONS.md](OPERATIONS.md#recording-retention)
-- Confirm runtime expectations are documented:
-  - system-mode PulseAudio only
-  - `vox@...` templated services
-  - rclone runs as `pi`
-  - `/mnt/ramdisk` temp recordings
-  - optional `/var/log` tmpfs and PCP disablement
-- Update [CHANGELOG.md](../CHANGELOG.md):
-  - move `Unreleased` entries to `v1.0.0`
-  - add the release date
-- Create and push the tag:
+2. Run local checks:
 
-```bash
-git tag -a v1.0.0 -m "Train Recorder v1.0.0"
-git push origin v1.0.0
-```
+   ```bash
+   bash -n Scripts/*.sh
+   shellcheck --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
+   ```
 
-## Post-Release
+3. Confirm GitHub Actions shell lint passes on `main`.
 
-- Create a GitHub release from the tag.
-- Include the tested hardware/OS summary.
-- Include any known limitations, especially that RTLSDR-Airband native MP3 recording was tested but not used in production.
-- Start a new `Unreleased` section in [CHANGELOG.md](../CHANGELOG.md) for future changes.
+4. Confirm public docs are current:
 
-## v1.1.0 Readiness
+   - [INSTALL.md](INSTALL.md)
+   - [OPERATIONS.md](OPERATIONS.md)
+   - [ARCHITECTURE.md](ARCHITECTURE.md)
+   - [HARDWARE.md](HARDWARE.md)
+   - [ROADMAP.md](ROADMAP.md)
 
-- Confirm current `main` is deployed on both known recorder installs:
-  - Production Pi: `site_config.sh doctor` reports no failures and diagnostics bundle includes `commands/doctor`.
-  - Fresh Raspberry Pi OS Trixie Pi: `site_config.sh doctor` reports no failures and diagnostics bundle includes `commands/doctor`.
-- Run local checks:
+5. Confirm examples and generated references are sanitized:
 
-```bash
-bash -n Scripts/*.sh
-shellcheck --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
-git status --short --branch
-```
+   - `Config/*.example`
+   - `Config/site.example.yaml`
+   - sanitized recording tree in [OPERATIONS.md](OPERATIONS.md#recording-retention)
 
-- Run a final secret and history scan.
-- Move `Unreleased` entries to `v1.1.0` in [CHANGELOG.md](../CHANGELOG.md).
-- Tag and publish the release.
+6. Run a final secret scan and manual review:
+
+   - no real Broadcastify/Icecast passwords
+   - no real mountpoints if considered private
+   - no rclone tokens
+   - no SSH keys or passwords
+   - no generated recordings
+   - no live `site.yaml`, `rtl_airband.conf`, or `rclone.conf`
+
+7. Validate known recorder installs when practical:
+
+   ```bash
+   sudo /opt/train-recorder/Scripts/site_config.sh doctor
+   sudo /opt/train-recorder/Scripts/collect_diagnostics.sh
+   ```
+
+   Doctor should report zero failures. Warnings may still be acceptable when they are understood and documented, such as optional `pulse` group membership warnings on a working system-mode PulseAudio install.
+
+8. Update [CHANGELOG.md](../CHANGELOG.md):
+
+   - move `Unreleased` entries to the new version
+   - add the release date
+   - leave an empty `Unreleased` section for future work
+
+9. Create and push the annotated tag:
+
+   ```bash
+   git tag -a vX.Y.Z -m "Train Recorder vX.Y.Z"
+   git push origin vX.Y.Z
+   ```
+
+10. Create the GitHub release from the tag. Include the tested hardware/OS summary, important validation notes, and any known limitations.
+
+## Current Known Installs
+
+- Original production Pi: upgraded production SOX/PulseAudio architecture, templated `vox@...` services, rclone sync, cleanup, and health timers.
+- Fresh Raspberry Pi OS Trixie Pi: validated from a minimal install through package setup, site configuration, recording, rclone sync, doctor, and diagnostics bundle collection.
+
+## Historical Release Notes
+
+- v1.0.0 established the production SOX/PulseAudio architecture, generated site configuration workflow, conservative installer, templated recorder services, rclone sync, cleanup, documentation, MIT license, and shell lint workflow.
+- v1.1.0 added the doctor command, `site_config.sh doctor`, doctor output in diagnostics bundles, installer validation flow, and production-tested doctor behavior for PulseAudio group warnings.
+- RTLSDR-Airband native MP3 recording was tested with versions 5.1.1 and 5.2.0 but is not the production recording path because it did not produce reliable file output on the target Pi.

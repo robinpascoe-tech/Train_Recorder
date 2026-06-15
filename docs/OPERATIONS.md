@@ -64,6 +64,8 @@ The doctor command is read-only. It reports `ok`, `warn`, and `fail` lines for c
 
 Warnings do not make the command fail, but any `fail` line exits with status `1`.
 
+For PulseAudio access, `pulse-access` is the required group for the system-mode socket checks. Missing `pulse` group membership is reported as a warning because existing installs can function correctly with `pulse-access` while still differing from the installer's preferred group set.
+
 ## Diagnostics Bundle
 
 For support or deeper troubleshooting, collect a sanitized diagnostics bundle:

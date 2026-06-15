@@ -31,7 +31,7 @@ PulseAudio monitor sources -> SOX VOX recorder scripts
 ## Important Paths
 
 ```text
-/opt/train-recorder                  deployed repo-backed app files
+/opt/train-recorder                  deployed app files
 /etc/train-recorder/site.yaml        desired site config with possible secrets
 /etc/train-recorder/common.env       shared recorder settings
 /etc/train-recorder/freq160545.env   first recorder channel settings
@@ -46,7 +46,7 @@ PulseAudio monitor sources -> SOX VOX recorder scripts
 
 ## Pi Access
 
-The Windows SSH config has an `onr-recorder` host alias for the current Pi. Prefer:
+The Windows SSH config may have an `onr-recorder` host alias for the production Pi. Prefer it when it resolves:
 
 ```bash
 ssh onr-recorder
@@ -64,8 +64,9 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 ## Operational Notes
 
 - `Scripts/install.sh` is intentionally conservative. It can install packages and seed missing configs, but it must not overwrite live env files, `/usr/local/etc/rtl_airband.conf`, `/etc/pulse/system.pa`, or rclone credentials without prompting. Its optional RTLSDR-Airband source build defaults to `RTL_AIRBAND_REF=v5.2.0`. On fresh installs it prepares packages/files/units/access groups but skips service start prompts until `/etc/train-recorder/site.yaml` exists.
-- Fresh Trixie installs need `git` before cloning, `libsox-fmt-pulse` for SOX PulseAudio input, and PulseAudio system-mode group access for both `pi` and root: `pi` in `pulse,pulse-access,audio`, root in `pulse,pulse-access`. Desktop-capable images may enable per-user `pi` PulseAudio units; recorder appliances should mask `~pi/.config/systemd/user/pulseaudio.service` and `pulseaudio.socket` so only system-mode `pulseaudio.service` runs.
-- `Scripts/site_config.sh` is the desired-state configuration tool. `/etc/train-recorder/site.yaml` is source-of-truth and may contain Broadcastify secrets; generated env files, `system.pa`, and `rtl_airband.conf` are artifacts. Use `generate` and `plan` before `apply`. The wizard loads an existing `site.yaml` as prompt defaults and masks sensitive Broadcastify values in prompts. `apply` is the activation step for generated installs and enables/restarts the configured recorder services and train-recorder timers.
+- Fresh Trixie installs need `git` before cloning, `libsox-fmt-pulse` for SOX PulseAudio input, and PulseAudio system-mode group access for both `pi` and root. The installer adds `pi` to `pulse,pulse-access,audio` and root to `pulse,pulse-access`; doctor treats `pulse-access` as required and missing `pulse` membership as a warning. Desktop-capable images may enable per-user `pi` PulseAudio units; recorder appliances should mask `~pi/.config/systemd/user/pulseaudio.service` and `pulseaudio.socket` so only system-mode `pulseaudio.service` runs.
+- `Scripts/site_config.sh` is the desired-state configuration tool. `/etc/train-recorder/site.yaml` is source-of-truth and may contain Broadcastify secrets; generated env files, `system.pa`, and `rtl_airband.conf` are artifacts. Use `generate`, `plan`, and `diff` before `apply`, then `doctor` after apply. The wizard loads an existing `site.yaml` as prompt defaults and masks sensitive Broadcastify values in prompts. `apply` is the activation step for generated installs and enables/restarts the configured recorder services and train-recorder timers.
+- `Scripts/doctor.sh` is the read-only validation command. Prefer `sudo /opt/train-recorder/Scripts/site_config.sh doctor`; diagnostics bundles include the same doctor output under `commands/doctor`.
 - New recorder services should use the templated `vox@.service` naming convention. Legacy `vox.service` and `vox2.service` existed for the original two-channel install, but new/generated configs should enable `vox@<channel-env-name>.service`.
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
 - Empty local date directories are cleaned deepest-first by `train-recorder-cleanup.timer`, not by adding `--delete-empty-src-dirs` to every rclone run. The cleanup script logs a summary count instead of every deleted path.
@@ -74,7 +75,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 - Generated MP3s should be `pi:pi` and group writable.
 - The health check local-recency warning is disabled by default because rclone moves files away quickly. Re-enable it only when troubleshooting a setup that keeps local MP3s.
 - The health check and status summary read `VOX_CHANNELS` and source each channel env file. Per-channel recent-save behavior belongs in `HEALTH_CHECK_RECENT_SAVE` and `MAX_SAVE_AGE_MINUTES`, not hardcoded script logic.
-- Use `sudo /opt/train-recorder/Scripts/status_summary.sh` for a quick read-only operator summary before pulling detailed logs.
+- Use `sudo /opt/train-recorder/Scripts/site_config.sh doctor` for install/runtime validation and `sudo /opt/train-recorder/Scripts/status_summary.sh` for a quick read-only operator summary before pulling detailed logs.
 - SOX clipping warnings have been observed. Production tuning was moved from `SOX_VOLUME=5` toward `SOX_VOLUME=4`; compare clipping warnings and intelligibility after a soak.
 - Channel env files load after `common.env`, so `SOX_VOLUME` can be tuned per channel. Current production direction is lowering `freq160545.env` one notch below the shared default to reduce channel 1 clipping.
 
@@ -91,6 +92,7 @@ Before changing the live Pi:
 ```bash
 systemctl is-active rtl_airband.service vox@freq160545.service vox@freq161265.service
 systemctl list-timers --all | grep train-recorder
+sudo /opt/train-recorder/Scripts/site_config.sh doctor
 journalctl -u vox@freq160545.service -u vox@freq161265.service -u train-recorder-sync.service --since today
 ```
 

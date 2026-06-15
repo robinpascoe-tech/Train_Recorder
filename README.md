@@ -102,7 +102,7 @@ See [docs/HARDWARE.md](docs/HARDWARE.md) for hardware notes and deployment detai
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
 
-See [docs/RELEASE.md](docs/RELEASE.md) for the v1 release checklist.
+See [docs/RELEASE.md](docs/RELEASE.md) for the release checklist.
 
 The sanitized recording directory example in [docs/OPERATIONS.md](docs/OPERATIONS.md#recording-retention) shows the dated folder tree and MP3 filename format.
 
@@ -124,9 +124,12 @@ sudo /opt/train-recorder/Scripts/site_config.sh generate
 sudo /opt/train-recorder/Scripts/site_config.sh plan
 sudo /opt/train-recorder/Scripts/site_config.sh diff
 sudo /opt/train-recorder/Scripts/site_config.sh apply
+sudo /opt/train-recorder/Scripts/site_config.sh doctor
 ```
 
 `generate` writes a preview to `/tmp/train-recorder-generated` by default. `diff` compares generated files with live files and redacts Broadcastify secrets in RTLSDR-Airband diffs. `apply` runs preflight checks, backs up replaced files, reconciles `vox@...` services, enables PulseAudio/RTLSDR-Airband, and enables the train-recorder timers.
+
+After applying a site config, run `sudo /opt/train-recorder/Scripts/site_config.sh doctor` for the read-only install and runtime validation check.
 
 If `site.yaml` already exists, the wizard loads it and uses the current values as defaults. Sensitive Broadcastify values are preserved without printing them in the prompt.
 
@@ -177,6 +180,6 @@ Channel env files also support:
 
 - Rotate any credential that was ever committed to a local or private copy.
 - Verify git history contains no real credentials before pushing publicly.
-- Complete [docs/RELEASE.md](docs/RELEASE.md) before tagging v1.
+- Complete [docs/RELEASE.md](docs/RELEASE.md) before tagging a release.
 - Fill in hardware notes for the exact Raspberry Pi, RTL-SDR dongle, antenna, and power setup.
 - Add screenshots or sample sanitized logs if useful for troubleshooting.

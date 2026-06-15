@@ -207,6 +207,8 @@ sudo -u pi XDG_RUNTIME_DIR=/run/user/1000 systemctl --user is-active pulseaudio.
 
 The expected recorder-appliance state is one active system daemon running as the `pulse` user, and inactive or masked user units for `pi`.
 
+`site_config.sh doctor` requires `pulse-access` for system-mode PulseAudio access. It reports missing `pulse` group membership as a warning because some upgraded installs work correctly with `pulse-access` even if they differ from the installer's preferred group set.
+
 ## Generate Site Config
 
 For a site-specific install, use `site_config.sh` instead of hand-editing every generated file:
@@ -257,7 +259,7 @@ The wizard prompts are intentionally short. Use this reference when deciding wha
 
 ## Manual Config Fallback
 
-The preferred path is `site_config.sh wizard`, `generate`, `plan`, and `apply`. If you are not using generated config yet, you can still seed and edit the individual files manually.
+The preferred path is `site_config.sh wizard`, `generate`, `plan`, `diff`, `apply`, and `doctor`. If you are not using generated config yet, you can still seed and edit the individual files manually.
 
 Copy the example RTL-Airband config and edit the local copy:
 

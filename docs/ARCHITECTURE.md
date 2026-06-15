@@ -26,7 +26,7 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `install.sh` is a conservative Raspberry Pi installer. It can install prerequisite packages, optionally build RTLSDR-Airband from source, copy project files, seed missing local configs, install systemd units, configure PulseAudio access groups, and set up optional tmpfs mounts. On a fresh install it prepares the host but skips service start prompts until `/etc/train-recorder/site.yaml` exists, so services are not started against placeholder config.
 
-`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, and reconcile live `vox@...` services. `apply` is the activation step for generated installs: it enables/restarts PulseAudio, RTLSDR-Airband, the configured recorder services, and the train-recorder timers. The YAML file is the desired state; generated files are artifacts. If `site.yaml` already exists, the wizard uses it as the default source for prompts and preserves sensitive Broadcastify values without printing them.
+`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, show redacted diffs, reconcile live `vox@...` services, and run the doctor checks. `apply` is the activation step for generated installs: it enables/restarts PulseAudio, RTLSDR-Airband, the configured recorder services, and the train-recorder timers. The YAML file is the desired state; generated files are artifacts. If `site.yaml` already exists, the wizard uses it as the default source for prompts and preserves sensitive Broadcastify values without printing them.
 
 `rtl_airband.service` starts RTLSDR-Airband and reads the installed RTL-Airband config.
 
@@ -44,6 +44,10 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `status_summary.sh` is a read-only operator report. It summarizes service state, last recording saves, recent sync and cleanup success, pending local MP3s, clipping warnings, and disk usage.
 
+`doctor.sh` is the read-only install and runtime validation command. The preferred entry point is `site_config.sh doctor`, which delegates to the standalone doctor script. It checks services, timers, configured channel sources, writable paths, ownership, required tools, rclone reachability, legacy services, PCP, raspiBackup hooks, and recent SOX clipping warnings.
+
+`collect_diagnostics.sh` gathers a sanitized support bundle. It includes doctor output, service states, timers, journals, package versions, PulseAudio state, storage usage, recording counts, rclone checks, and redacted copies of Train Recorder configs.
+
 The recorder, sync, and cleanup services run as `pi:pi`. This keeps PulseAudio access, generated MP3 ownership, and rclone credentials in one user context.
 
 ## Configuration
@@ -60,7 +64,7 @@ sync.env         Optional rclone settings.
 
 The legacy wrapper scripts still provide defaults for the original two channels, but the environment files and `vox@.service` are the preferred path for new installs. Each recorder service loads `common.env` first and its channel-specific env file second, so channel files can override shared values such as `SOX_VOLUME`.
 
-`health_check.sh` and `status_summary.sh` read `VOX_CHANNELS` and then source each channel env file, so they do not need to be regenerated when channels are added or removed.
+`health_check.sh`, `status_summary.sh`, and `doctor.sh` read `VOX_CHANNELS` and then source each channel env file, so they do not need to be regenerated when channels are added or removed.
 
 ## Deployed Layout
 
@@ -82,9 +86,11 @@ Use `site_config.sh` for channel add, remove, or frequency changes:
 sudo /opt/train-recorder/Scripts/site_config.sh wizard
 sudo /opt/train-recorder/Scripts/site_config.sh generate
 sudo /opt/train-recorder/Scripts/site_config.sh plan
+sudo /opt/train-recorder/Scripts/site_config.sh diff
 sudo /opt/train-recorder/Scripts/site_config.sh apply
+sudo /opt/train-recorder/Scripts/site_config.sh doctor
 ```
 
-The wizard updates `/etc/train-recorder/site.yaml`. `generate` writes a preview under `/tmp/train-recorder-generated`, `plan` shows which `vox@...` services would be enabled or disabled, and `apply` backs up replaced files before enabling/restarting PulseAudio, RTLSDR-Airband, the configured recorder instances, and train-recorder timers.
+The wizard updates `/etc/train-recorder/site.yaml`. `generate` writes a preview under `/tmp/train-recorder-generated`, `plan` shows which `vox@...` services would be enabled or disabled, `diff` shows redacted generated-file differences, and `apply` backs up replaced files before enabling/restarting PulseAudio, RTLSDR-Airband, the configured recorder instances, and train-recorder timers. Finish with `doctor` to validate the running install.
 
 Manual channel changes are still possible, but every layer must agree: PulseAudio null sinks, RTLSDR-Airband channel outputs, `common.env` `VOX_CHANNELS`, channel env files, and enabled `vox@...` units.
