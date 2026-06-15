@@ -100,7 +100,7 @@ def render_page() -> str:
     .status.fail .dot {{ background: var(--fail); }}
     .headline {{
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
       margin-bottom: 14px;
     }}
@@ -125,9 +125,11 @@ def render_page() -> str:
       line-height: 1;
       overflow-wrap: anywhere;
     }}
-    .metric:last-child strong {{
-      font-size: 1.05rem;
-      line-height: 1.25;
+    .metric small {{
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
     }}
     main {{
       padding: 24px 0 40px;
@@ -136,6 +138,9 @@ def render_page() -> str:
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 14px;
+    }}
+    .overview {{
+      grid-template-columns: 1.1fr 1fr 1fr;
     }}
     section {{
       background: var(--surface);
@@ -214,6 +219,9 @@ def render_page() -> str:
     }}
     @media (max-width: 720px) {{
       .headline {{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }}
+      .overview {{
         grid-template-columns: 1fr;
       }}
     }}
@@ -233,7 +241,7 @@ def render_page() -> str:
   </header>
   <main class="wrap">
     <div class="headline" id="headline"></div>
-    <div class="grid">
+    <div class="grid overview">
       <section>
         <h2>Summary</h2>
         <table id="summary"></table>
@@ -251,8 +259,8 @@ def render_page() -> str:
         <table id="events"></table>
       </section>
       <section>
-        <h2>Runtime</h2>
-        <table id="runtime"></table>
+        <h2>Activity</h2>
+        <table id="activity"></table>
       </section>
     </div>
     <div class="grid" id="channels" style="margin-top:14px"></div>
@@ -298,10 +306,13 @@ def render_page() -> str:
       overall.lastElementChild.textContent = data.overall;
       document.getElementById('generated').textContent = `${{data.host}} - ${{new Date(data.generated_at).toLocaleString()}}`;
       const nonOk = currentChecks.filter(item => !item.ok);
+      const pending = data.storage.pending_recordings;
+      const networkStatus = data.network.latest_check.available ? data.network.latest_check.overall : 'not run';
       document.getElementById('headline').innerHTML = [
-        `<div class="metric"><span>Failures</span><strong class="${{data.summary.failures ? 'fail' : 'ok'}}">${{data.summary.failures}}</strong></div>`,
-        `<div class="metric"><span>Warnings</span><strong class="${{data.summary.warnings ? 'warn' : 'ok'}}">${{data.summary.warnings}}</strong></div>`,
-        `<div class="metric"><span>Attention</span><strong class="${{nonOk.length ? cls(nonOk[0].level) : 'ok'}}">${{nonOk.length ? nonOk[0].name : 'clear'}}</strong></div>`
+        `<div class="metric"><span>Overall</span><strong class="${{cls(data.overall)}}">${{data.overall}}</strong><small>${{data.summary.failures}} failures, ${{data.summary.warnings}} warnings</small></div>`,
+        `<div class="metric"><span>Last Sync</span><strong class="${{checkClass(findCheck('recent sync'))}}">${{age(data.events.sync?.age_seconds)}}</strong><small>${{data.rclone.configured ? 'rclone configured' : 'local only'}}</small></div>`,
+        `<div class="metric"><span>Network</span><strong class="${{networkStatus === 'ok' ? 'ok' : 'warn'}}">${{networkStatus}}</strong><small>${{data.network.wifi_ssid || data.network.ip_addresses[0] || 'no network detail'}}</small></div>`,
+        `<div class="metric"><span>Pending</span><strong>${{pending.count}}</strong><small>${{bytes(pending.total_bytes)}} waiting</small></div>`
       ].join('');
       fillTable('summary', [
         row('Overall', data.overall, cls(data.overall)),
@@ -310,7 +321,8 @@ def render_page() -> str:
         row('Hostname', data.network.hostname, 'mono'),
         row('IP address', data.network.ip_addresses.join('<br>') || 'none', 'mono'),
         row('Wi-Fi', data.network.wifi_ssid || (data.network.wifi_connected ? 'connected' : 'unavailable'), 'mono'),
-        row('Network check', data.network.latest_check.available ? data.network.latest_check.overall : 'not run', data.network.latest_check.overall === 'fail' ? 'warn' : 'ok'),
+        row('Attention', nonOk.length ? `${{nonOk[0].name}}: ${{nonOk[0].message}}` : 'clear', nonOk.length ? cls(nonOk[0].level) : 'ok'),
+        row('Network check', networkStatus, networkStatus === 'ok' ? 'ok' : 'warn'),
         row('Channels', data.config.vox_channels.join(', '), 'mono'),
         row('Rclone', data.rclone.configured ? (data.rclone.reachable ? 'reachable' : 'not reachable') : 'not configured', data.rclone.reachable === false ? 'fail' : 'ok')
       ]);
@@ -328,12 +340,11 @@ def render_page() -> str:
         row('Last cleanup', age(data.events.cleanup?.age_seconds), checkClass(findCheck('train-recorder-cleanup.timer'))),
         row('SOX clipping', `${{data.clipping.count}} warnings, max ${{data.clipping.max_samples}} samples`, data.clipping.count ? 'warn' : 'ok')
       ]);
-      const dashboard = data.runtime?.dashboard || {{}};
-      fillTable('runtime', [
-        row('Dashboard service', dashboard.service ? `${{dashboard.service.active}} / ${{dashboard.service.enabled}}` : 'unknown', dashboard.service?.ok ? 'ok' : 'warn'),
-        row('Flask', dashboard.flask_available ? 'installed' : 'missing', dashboard.flask_available ? 'ok' : 'fail'),
-        row('API', 'ok', 'ok'),
-        row('Refresh', '30s')
+      fillTable('activity', [
+        row('Status age', ageIso(data.generated_at), 'ok'),
+        row('Wi-Fi check age', data.network.latest_check.available ? ageIso(data.network.latest_check.generated_at) : 'not run', networkStatus === 'ok' ? 'ok' : 'warn'),
+        row('Pulse sources', data.pulse.sources.length, data.pulse.sources.length ? 'ok' : 'fail'),
+        row('First issue', nonOk.length ? nonOk[0].name : 'none', nonOk.length ? cls(nonOk[0].level) : 'ok')
       ]);
       document.getElementById('channels').innerHTML = data.channels.map(channel => `
         <section>
