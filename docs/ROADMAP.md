@@ -19,15 +19,21 @@ Completed:
 - Broadcastify/Icecast placeholder validation before applying generated RTLSDR-Airband config.
 - PulseAudio system-mode access and per-user PulseAudio disablement documented and handled by the installer.
 - `/var/log` tmpfs and PCP disablement guidance for SD-card-friendly long-running installs.
+- v1.1 doctor command, `site_config.sh doctor` alias, diagnostics bundle doctor output, installer validation flow, and release validation on both known Pi installs.
 
-v1 release readiness:
+Release readiness:
 
-- Fill in site-specific hardware details in [HARDWARE.md](HARDWARE.md).
-- Run the final release checklist in [RELEASE.md](RELEASE.md).
-- Run one final secret/history scan before tagging `v1.0.0`.
-- Move `CHANGELOG.md` `Unreleased` notes to `v1.0.0` with a release date.
+- v1.0.0 tagged and released.
+- v1.1.0 tagged and released.
+- Continue using [RELEASE.md](RELEASE.md) before future tags.
 
-Future ideas after v1:
+Future ideas:
+
+- Add a simple local web dashboard for recorder status. Keep it lightweight, likely Flask-based, and expose read-only status for core services, configured `vox@...` channels, PulseAudio source visibility, recent sync/cleanup/health results, disk and `/var/log` usage, pending local recordings, recent SOX clipping warnings, and the latest doctor summary.
+- Integrate the Raspberry Pi hardware watchdog for unattended recovery. Document enabling the kernel watchdog, add conservative systemd watchdog settings where appropriate, and make sure the recorder services fail clearly enough for the host watchdog strategy to be useful.
+- Add a Wi-Fi connectivity check/remedy script. It should detect loss of network or rclone destination reachability, log what it found, attempt safe recovery steps such as reconnecting the wireless interface or restarting the network service, and avoid reboot loops unless explicitly configured.
+- Consider exposing the dashboard only on the LAN by default, with clear notes that it should not be internet-facing without authentication and TLS handled outside the project.
+- Consider a future `site_config.sh doctor --json` or shared status library so the dashboard can reuse doctor/status logic without scraping human-readable output.
 
 - Soak-test and harden `site_config.sh apply` with real frequency add/remove changes.
 - Continue monitoring SOX clipping warnings after longer soaks and adjust per-channel gain if needed.
