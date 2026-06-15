@@ -54,3 +54,19 @@ git push origin v1.0.0
 - Include any known limitations, especially that RTLSDR-Airband native MP3 recording was tested but not used in production.
 - Start a new `Unreleased` section in [CHANGELOG.md](../CHANGELOG.md) for future changes.
 
+## v1.1.0 Readiness
+
+- Confirm current `main` is deployed on both known recorder installs:
+  - Production Pi: `site_config.sh doctor` reports no failures and diagnostics bundle includes `commands/doctor`.
+  - Fresh Raspberry Pi OS Trixie Pi: `site_config.sh doctor` reports no failures and diagnostics bundle includes `commands/doctor`.
+- Run local checks:
+
+```bash
+bash -n Scripts/*.sh
+shellcheck --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
+git status --short --branch
+```
+
+- Run a final secret and history scan.
+- Move `Unreleased` entries to `v1.1.0` in [CHANGELOG.md](../CHANGELOG.md).
+- Tag and publish the release.

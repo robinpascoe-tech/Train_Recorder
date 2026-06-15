@@ -6,6 +6,10 @@ This project follows a practical release process. Changes before the first publi
 
 ## Unreleased
 
+No unreleased changes yet.
+
+## v1.1.0 - 2026-06-15
+
 ### Added
 
 - Diagnostics bundle collector for sanitized troubleshooting snapshots.
