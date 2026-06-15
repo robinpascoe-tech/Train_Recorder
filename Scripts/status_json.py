@@ -98,6 +98,47 @@ def command_exists(name: str) -> bool:
     return shutil.which(name) is not None
 
 
+def ip_addresses() -> list[str]:
+    result = run_cmd(["hostname", "-I"])
+    if result["ok"] and result["stdout"]:
+        return [item for item in result["stdout"].split() if item]
+    return []
+
+
+def wifi_status() -> dict[str, Any]:
+    if command_exists("iwgetid"):
+        result = run_cmd(["iwgetid", "-r"])
+        if result["ok"] and result["stdout"]:
+            return {"ssid": result["stdout"].splitlines()[0].strip(), "source": "iwgetid", "connected": True}
+
+    if command_exists("iw"):
+        result = run_cmd(["iw", "dev"])
+        if result["stdout"]:
+            for line in result["stdout"].splitlines():
+                line = line.strip()
+                if line.startswith("ssid "):
+                    return {"ssid": line.removeprefix("ssid ").strip(), "source": "iw", "connected": True}
+
+    if command_exists("nmcli"):
+        result = run_cmd(["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"])
+        if result["stdout"]:
+            for line in result["stdout"].splitlines():
+                active, _, ssid = line.partition(":")
+                if active == "yes" and ssid:
+                    return {"ssid": ssid, "source": "nmcli", "connected": True}
+
+    if command_exists("wpa_cli"):
+        result = run_cmd(["wpa_cli", "status"])
+        if result["stdout"]:
+            fields = dict(line.split("=", 1) for line in result["stdout"].splitlines() if "=" in line)
+            ssid = fields.get("ssid", "")
+            state = fields.get("wpa_state", "")
+            if ssid:
+                return {"ssid": ssid, "source": "wpa_cli", "connected": state == "COMPLETED"}
+
+    return {"ssid": "", "source": "", "connected": False}
+
+
 def pulse_sources(pulse_server: str) -> list[str]:
     env = os.environ.copy()
     env["PULSE_SERVER"] = pulse_server
@@ -340,9 +381,18 @@ def collect_status() -> dict[str, Any]:
     warnings = [item for item in checks if not item["ok"] and item["level"] == "warn"]
     overall = "fail" if failures else "warn" if warnings else "ok"
 
+    wifi = wifi_status()
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "host": platform.node(),
+        "network": {
+            "hostname": platform.node(),
+            "ip_addresses": ip_addresses(),
+            "wifi_ssid": wifi["ssid"],
+            "wifi_ssid_source": wifi["source"],
+            "wifi_connected": wifi["connected"],
+        },
         "overall": overall,
         "summary": {"failures": len(failures), "warnings": len(warnings), "checks": len(checks)},
         "config": {

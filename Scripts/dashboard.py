@@ -250,6 +250,9 @@ def render_page() -> str:
         row('Overall', data.overall, cls(data.overall)),
         row('Failures', data.summary.failures, data.summary.failures ? 'fail' : 'ok'),
         row('Warnings', data.summary.warnings, data.summary.warnings ? 'warn' : 'ok'),
+        row('Hostname', data.network.hostname, 'mono'),
+        row('IP address', data.network.ip_addresses.join('<br>') || 'none', 'mono'),
+        row('Wi-Fi', data.network.wifi_ssid || (data.network.wifi_connected ? 'connected' : 'unavailable'), 'mono'),
         row('Channels', data.config.vox_channels.join(', '), 'mono'),
         row('Rclone', data.rclone.configured ? (data.rclone.reachable ? 'reachable' : 'not reachable') : 'not configured', data.rclone.reachable === false ? 'fail' : 'ok')
       ]);
