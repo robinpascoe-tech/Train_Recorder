@@ -1,0 +1,19 @@
+[Unit]
+Description=Train Recorder web dashboard
+After=network-online.target pulseaudio.service rtl_airband.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+EnvironmentFile=-/etc/train-recorder/common.env
+Environment=DASHBOARD_HOST=0.0.0.0
+Environment=DASHBOARD_PORT=8080
+WorkingDirectory=/opt/train-recorder
+ExecStart=/usr/bin/python3 /opt/train-recorder/Scripts/dashboard.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

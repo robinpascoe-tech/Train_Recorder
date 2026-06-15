@@ -6,9 +6,15 @@ This project follows a practical release process. Changes before the first publi
 
 ## Unreleased
 
+### Added
+
+- Machine-readable status JSON via `site_config.sh doctor --json`.
+- Optional read-only Flask web dashboard and systemd unit.
+
 ### Changed
 
 - Refreshed documentation to align README, architecture, operations, release, roadmap, and agent handoff notes with the current v1.1 project state.
+- Diagnostics bundles now include the status JSON payload.
 
 ## v1.1.0 - 2026-06-15
 

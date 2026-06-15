@@ -879,20 +879,29 @@ def cmd_status(_args):
     run(["systemctl", "list-units", "vox@*.service", "--no-pager"], check=False)
 
 
-def cmd_doctor(_args):
+def find_script(script_name):
     script_dir = Path(os.environ.get("TRAIN_RECORDER_SCRIPT_DIR", ""))
     candidates = []
     if script_dir:
-        candidates.append(script_dir / "doctor.sh")
-    candidates.append(DEFAULT_INSTALL_DIR / "Scripts" / "doctor.sh")
+        candidates.append(script_dir / script_name)
+    candidates.append(DEFAULT_INSTALL_DIR / "Scripts" / script_name)
 
-    for doctor in candidates:
-        if doctor.is_file():
-            result = subprocess.run([str(doctor)], check=False)
-            raise SystemExit(result.returncode)
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
 
     searched = ", ".join(str(path) for path in candidates)
-    raise SystemExit(f"doctor.sh not found; searched: {searched}")
+    raise SystemExit(f"{script_name} not found; searched: {searched}")
+
+
+def cmd_doctor(args):
+    if args.json:
+        status_json = find_script("status_json.py")
+        result = subprocess.run([str(status_json)], check=False)
+    else:
+        doctor = find_script("doctor.sh")
+        result = subprocess.run([str(doctor)], check=False)
+    raise SystemExit(result.returncode)
 
 
 def main():
@@ -935,6 +944,7 @@ def main():
     p.set_defaults(func=cmd_status)
 
     p = sub.add_parser("doctor", help="run read-only install and runtime sanity checks")
+    p.add_argument("--json", action="store_true", help="emit machine-readable status JSON")
     p.set_defaults(func=cmd_doctor)
 
     args = parser.parse_args()

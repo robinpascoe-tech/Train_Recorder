@@ -46,7 +46,11 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `doctor.sh` is the read-only install and runtime validation command. The preferred entry point is `site_config.sh doctor`, which delegates to the standalone doctor script. It checks services, timers, configured channel sources, writable paths, ownership, required tools, rclone reachability, legacy services, PCP, raspiBackup hooks, and recent SOX clipping warnings.
 
-`collect_diagnostics.sh` gathers a sanitized support bundle. It includes doctor output, service states, timers, journals, package versions, PulseAudio state, storage usage, recording counts, rclone checks, and redacted copies of Train Recorder configs.
+`status_json.py` is the machine-readable status collector used by `site_config.sh doctor --json` and the optional dashboard. It reports the same operational surface in JSON so future tools do not need to parse human-readable doctor output.
+
+`dashboard.py` is an optional read-only Flask dashboard for LAN use. It serves a human status view at `/` and raw JSON at `/api/status`.
+
+`collect_diagnostics.sh` gathers a sanitized support bundle. It includes doctor output, status JSON, service states, timers, journals, package versions, PulseAudio state, storage usage, recording counts, rclone checks, and redacted copies of Train Recorder configs.
 
 The recorder, sync, and cleanup services run as `pi:pi`. This keeps PulseAudio access, generated MP3 ownership, and rclone credentials in one user context.
 
@@ -64,7 +68,7 @@ sync.env         Optional rclone settings.
 
 The legacy wrapper scripts still provide defaults for the original two channels, but the environment files and `vox@.service` are the preferred path for new installs. Each recorder service loads `common.env` first and its channel-specific env file second, so channel files can override shared values such as `SOX_VOLUME`.
 
-`health_check.sh`, `status_summary.sh`, and `doctor.sh` read `VOX_CHANNELS` and then source each channel env file, so they do not need to be regenerated when channels are added or removed.
+`health_check.sh`, `status_summary.sh`, `doctor.sh`, and `status_json.py` read `VOX_CHANNELS` and then source each channel env file, so they do not need to be regenerated when channels are added or removed.
 
 ## Deployed Layout
 

@@ -30,6 +30,8 @@ Scripts/
   site_config.sh             Wizard/generator/apply tool for site-specific configs.
   health_check.sh            Dynamic service, PulseAudio, storage, sync, and channel checks.
   doctor.sh                  Read-only install and runtime sanity checker.
+  status_json.py             Machine-readable status collector for automation and dashboards.
+  dashboard.py               Optional read-only Flask status dashboard.
   collect_diagnostics.sh     Sanitized troubleshooting bundle collector.
   cleanup_empty_dirs.sh      Daily cleanup for empty local recording directories.
   vox_record.sh              Shared configurable VOX recorder.
@@ -39,6 +41,7 @@ Scripts/
   status_summary.sh          Read-only operator status summary.
 Service_Files/
   vox@.service               Templated VOX recorder unit, one instance per channel env file.
+  train-recorder-dashboard.service Optional read-only web dashboard unit.
   *.service                  systemd units for PulseAudio, RTLSDR-Airband, health, sync, and cleanup.
   *.timer                    Optional systemd timers for health checks, rclone sync, and cleanup.
 docs/
@@ -130,6 +133,8 @@ sudo /opt/train-recorder/Scripts/site_config.sh doctor
 `generate` writes a preview to `/tmp/train-recorder-generated` by default. `diff` compares generated files with live files and redacts Broadcastify secrets in RTLSDR-Airband diffs. `apply` runs preflight checks, backs up replaced files, reconciles `vox@...` services, enables PulseAudio/RTLSDR-Airband, and enables the train-recorder timers.
 
 After applying a site config, run `sudo /opt/train-recorder/Scripts/site_config.sh doctor` for the read-only install and runtime validation check.
+
+For automation or the optional dashboard, use `sudo /opt/train-recorder/Scripts/site_config.sh doctor --json`.
 
 If `site.yaml` already exists, the wizard loads it and uses the current values as defaults. Sensitive Broadcastify values are preserved without printing them in the prompt.
 

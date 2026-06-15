@@ -12,6 +12,7 @@ The installer can offer to install these packages for you:
 - PulseAudio
 - SOX with MP3 and PulseAudio support
 - rclone, optional
+- python3-flask, optional for the read-only web dashboard
 
 ## Install Project Files
 
@@ -224,6 +225,12 @@ sudo /opt/train-recorder/Scripts/site_config.sh doctor
 
 The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `plan` shows service-level changes, and `diff` shows generated file changes with Broadcastify mountpoint/password values redacted. `apply` runs preflight checks, backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, enables/restarts the configured `vox@...` services, and enables the health, cleanup, and sync timers when applicable. `doctor` is the read-only validation step after apply; it checks services, timers, PulseAudio sources, paths, permissions, packages, rclone reachability, known legacy-service pitfalls, PCP, raspiBackup hooks, and recent SOX clipping warnings. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
 
+For machine-readable status, run:
+
+```bash
+sudo /opt/train-recorder/Scripts/site_config.sh doctor --json
+```
+
 ### Wizard Prompt Reference
 
 The wizard prompts are intentionally short. Use this reference when deciding what each value should be.
@@ -333,6 +340,31 @@ journalctl -u train-recorder-sync.service -u train-recorder-health.service --sin
 The health check reads `VOX_CHANNELS` from `common.env` and then sources each channel env file. A channel can set `HEALTH_CHECK_RECENT_SAVE=true` and `MAX_SAVE_AGE_MINUTES=1440` to warn when no recent save appears, or set `HEALTH_CHECK_RECENT_SAVE=false` for quieter channels. The sync check fails if `train-recorder-sync.service` has not completed within `MAX_SYNC_SUCCESS_AGE_MINUTES`.
 
 For long-running installs, configure journal retention so service logs cannot slowly fill the SD card. See [OPERATIONS.md](OPERATIONS.md).
+
+## Optional Dashboard
+
+The optional dashboard is a small read-only Flask app that uses the same status JSON as `site_config.sh doctor --json`. It is intended for LAN use and listens on port `8080` by default.
+
+Install Flask if the installer did not already do it:
+
+```bash
+sudo apt install python3-flask
+```
+
+Enable the dashboard service:
+
+```bash
+sudo systemctl enable --now train-recorder-dashboard.service
+systemctl status train-recorder-dashboard.service
+```
+
+Open:
+
+```text
+http://<pi-address>:8080/
+```
+
+The service uses `DASHBOARD_HOST` and `DASHBOARD_PORT` environment variables from the systemd unit. Do not expose the dashboard directly to the internet; if remote access is needed, put authentication and TLS in front of it with a separate reverse proxy or VPN.
 
 ## Optional rclone Offload
 

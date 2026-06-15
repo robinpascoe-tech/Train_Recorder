@@ -120,7 +120,7 @@ write_file commands/journal-usage journalctl --disk-usage
 # shellcheck disable=SC2016
 write_file commands/packages dpkg-query -W -f='${Package}\t${Version}\n' \
   git rsync sox libsox-fmt-mp3 libsox-fmt-pulse pulseaudio pulseaudio-utils \
-  rclone rtl-sdr librtlsdr-dev libpulse-dev libmp3lame-dev libshout3-dev \
+  rclone python3-flask rtl-sdr librtlsdr-dev libpulse-dev libmp3lame-dev libshout3-dev \
   'libconfig++-dev' libfftw3-dev
 write_file commands/user-groups sh -c "id $RUN_USER; id root; getent group pulse pulse-access audio || true"
 write_file commands/pulse-sinks pactl -s "${PULSE_SERVER:-unix:/run/pulse/native}" list short sinks
@@ -136,6 +136,7 @@ if [[ -x "$INSTALL_DIR/Scripts/status_summary.sh" ]]; then
 fi
 if [[ -x "$INSTALL_DIR/Scripts/site_config.sh" ]]; then
   write_file commands/doctor "$INSTALL_DIR/Scripts/site_config.sh" doctor
+  write_file commands/status-json "$INSTALL_DIR/Scripts/site_config.sh" doctor --json
 elif [[ -x "$INSTALL_DIR/Scripts/doctor.sh" ]]; then
   write_file commands/doctor "$INSTALL_DIR/Scripts/doctor.sh"
 fi

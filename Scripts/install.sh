@@ -105,7 +105,7 @@ install_repo_files() {
     echo "repo already appears to be at $INSTALL_DIR"
   fi
 
-  "${SUDO[@]}" chmod +x "$INSTALL_DIR"/Scripts/*.sh
+  "${SUDO[@]}" chmod +x "$INSTALL_DIR"/Scripts/*.sh "$INSTALL_DIR"/Scripts/*.py
   "${SUDO[@]}" chown -R "$RUN_USER:$RUN_GROUP" "$INSTALL_DIR"
 }
 
@@ -242,6 +242,10 @@ install_rclone() {
   install_packages rclone
 }
 
+install_dashboard() {
+  install_packages python3-flask
+}
+
 install_rtlsdr_runtime() {
   install_packages rtl-sdr librtlsdr-dev
 }
@@ -366,6 +370,10 @@ enable_optional_timers() {
   "${SUDO[@]}" systemctl enable --now train-recorder-cleanup.timer
 }
 
+enable_dashboard_service() {
+  "${SUDO[@]}" systemctl enable --now train-recorder-dashboard.service
+}
+
 site_config_exists() {
   [[ -f "$SITE_CONFIG" ]]
 }
@@ -404,6 +412,10 @@ fi
 
 if ask_yes_no "Install rclone from apt?"; then
   install_rclone
+fi
+
+if ask_yes_no "Install Flask for the optional read-only web dashboard?"; then
+  install_dashboard
 fi
 
 if ask_yes_no "Install RTL-SDR runtime and development packages?"; then
@@ -446,6 +458,11 @@ if site_config_exists; then
     enable_optional_timers
   fi
 
+  if ask_yes_no "Enable the optional read-only web dashboard now?"; then
+    enable_dashboard_service
+    echo "dashboard will listen on DASHBOARD_HOST/DASHBOARD_PORT, default http://<pi-address>:8080/"
+  fi
+
   if ask_yes_no "Run read-only install validation with site_config.sh doctor now?"; then
     if ! run_install_validation; then
       echo "doctor reported one or more failures; review the output above and rerun after fixing them."
@@ -457,6 +474,7 @@ else
   echo "Run site_config.sh wizard/generate/plan/diff/apply after configuring rclone and site settings."
   echo "site_config.sh apply will enable/start the configured recorder services and train-recorder timers."
   echo "After apply, run site_config.sh doctor to validate the install."
+  echo "After validation, optionally enable train-recorder-dashboard.service."
 fi
 
 echo
@@ -474,3 +492,7 @@ echo "     sudo $INSTALL_DIR/Scripts/site_config.sh doctor"
 echo "  8. Optional quick status views:"
 echo "     sudo $INSTALL_DIR/Scripts/status_summary.sh"
 echo "     sudo $INSTALL_DIR/Scripts/health_check.sh"
+echo "     $INSTALL_DIR/Scripts/status_json.py"
+echo "  9. Optional dashboard:"
+echo "     sudo apt install python3-flask"
+echo "     sudo systemctl enable --now train-recorder-dashboard.service"

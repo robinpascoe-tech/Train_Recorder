@@ -5,6 +5,7 @@
 *.example text eol=lf
 *.md text eol=lf
 *.pa text eol=lf
+*.py text eol=lf
 *.service text eol=lf
 *.sh text eol=lf
 *.timer text eol=lf

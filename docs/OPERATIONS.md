@@ -66,6 +66,28 @@ Warnings do not make the command fail, but any `fail` line exits with status `1`
 
 For PulseAudio access, `pulse-access` is the required group for the system-mode socket checks. Missing `pulse` group membership is reported as a warning because existing installs can function correctly with `pulse-access` while still differing from the installer's preferred group set.
 
+For automation or dashboard use, emit machine-readable JSON:
+
+```bash
+sudo /opt/train-recorder/Scripts/site_config.sh doctor --json
+```
+
+## Web Dashboard
+
+The optional dashboard is a read-only Flask app backed by the same status JSON:
+
+```bash
+sudo systemctl status train-recorder-dashboard.service
+```
+
+By default it listens on port `8080`:
+
+```text
+http://<pi-address>:8080/
+```
+
+The dashboard exposes `/api/status` for the raw JSON payload. It is designed for trusted LAN use only. Do not expose it directly to the internet without a separate authentication and TLS layer such as a VPN or reverse proxy.
+
 ## Diagnostics Bundle
 
 For support or deeper troubleshooting, collect a sanitized diagnostics bundle:
@@ -74,7 +96,7 @@ For support or deeper troubleshooting, collect a sanitized diagnostics bundle:
 sudo /opt/train-recorder/Scripts/collect_diagnostics.sh
 ```
 
-The script writes a timestamped `.tar.gz` under `/tmp` by default. It gathers doctor output, service states, timers, recent journals, package versions, PulseAudio sinks/sources, disk and log usage, recording counts and permissions, rclone reachability checks, and redacted copies of Train Recorder configs.
+The script writes a timestamped `.tar.gz` under `/tmp` by default. It gathers doctor output, status JSON, service states, timers, recent journals, package versions, PulseAudio sinks/sources, disk and log usage, recording counts and permissions, rclone reachability checks, and redacted copies of Train Recorder configs.
 
 Known sensitive fields such as Broadcastify passwords, mountpoints, rclone tokens, and generic token/secret values are redacted from copied configs. Still review the bundle before sharing it publicly.
 
