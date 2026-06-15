@@ -12,6 +12,7 @@ This project follows a practical release process. Changes before the first publi
 - Read-only doctor command for common install and runtime checks.
 - `site_config.sh doctor` alias for the standalone doctor command.
 - Doctor output in diagnostics bundles, plus installer and documentation validation flow updates.
+- Doctor treats missing `pulse` group membership as a warning while keeping `pulse-access` as the required system-mode PulseAudio access check.
 
 ## v1.0.0 - 2026-06-14
 

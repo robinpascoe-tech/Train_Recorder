@@ -94,21 +94,27 @@ check_path_writable() {
 check_user_group() {
   local user="$1"
   local group="$2"
+  local required="${3:-true}"
 
   if id -nG "$user" 2>/dev/null | tr ' ' '\n' | grep -Fxq "$group"; then
     ok "$user is in $group"
-  else
+  elif is_true "$required"; then
     fail "$user is not in $group"
+  else
+    warn "$user is not in $group"
   fi
 }
 
 check_root_group() {
   local group="$1"
+  local required="${2:-true}"
 
   if id -nG root 2>/dev/null | tr ' ' '\n' | grep -Fxq "$group"; then
     ok "root is in $group"
-  else
+  elif is_true "$required"; then
     fail "root is not in $group"
+  else
+    warn "root is not in $group"
   fi
 }
 
@@ -402,10 +408,10 @@ if mountpoint -q /var/log 2>/dev/null; then
 fi
 
 section "PulseAudio"
-check_user_group "$RUN_USER" pulse
+check_user_group "$RUN_USER" pulse false
 check_user_group "$RUN_USER" pulse-access
 check_user_group "$RUN_USER" audio
-check_root_group pulse
+check_root_group pulse false
 check_root_group pulse-access
 check_user_pulseaudio
 
