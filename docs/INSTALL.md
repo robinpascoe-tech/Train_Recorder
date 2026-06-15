@@ -12,7 +12,9 @@ The installer can offer to install these packages for you:
 - PulseAudio
 - SOX with MP3 and PulseAudio support
 - rclone, optional
-- python3-flask, optional for the read-only web dashboard
+- python3-flask, required when enabling the optional read-only web dashboard
+
+During fresh Raspberry Pi OS Trixie validation, the dashboard needed `python3-flask` on a minimal image. The Wi-Fi/network check did not require an extra project-specific package; it uses standard Python libraries plus installed system tools when present. Rclone is only needed for its remote-reachability check when offload is configured.
 
 ## Install Project Files
 
@@ -38,7 +40,7 @@ cd /opt/train-recorder
 sudo Scripts/install.sh
 ```
 
-The installer can optionally install SOX, PulseAudio, rclone, RTL-SDR packages, and build RTLSDR-Airband from source with RTL-SDR, NFM, PulseAudio, libshout, and LAME support. The source build defaults to the project-tested `RTL_AIRBAND_REF=v5.2.0`; override that environment variable if you want another tag or branch. It does not overwrite existing env files, live RTLSDR-Airband config, PulseAudio config, or rclone credentials without prompting.
+The installer can optionally install SOX, PulseAudio, rclone, `python3-flask` for the dashboard, RTL-SDR packages, and build RTLSDR-Airband from source with RTL-SDR, NFM, PulseAudio, libshout, and LAME support. The source build defaults to the project-tested `RTL_AIRBAND_REF=v5.2.0`; override that environment variable if you want another tag or branch. It does not overwrite existing env files, live RTLSDR-Airband config, PulseAudio config, or rclone credentials without prompting.
 
 On a first pass, the installer prepares packages, directories, systemd units, PulseAudio access groups, and optional tmpfs mounts. If `/etc/train-recorder/site.yaml` does not exist yet, it intentionally skips service start prompts. Configure rclone and run `site_config.sh apply` after the site settings are ready; `apply` enables and starts the configured recorder services and timers. Finish the install by running `site_config.sh doctor`.
 
@@ -344,9 +346,9 @@ For long-running installs, configure journal retention so service logs cannot sl
 
 ## Optional Dashboard
 
-The optional dashboard is a small read-only Flask app that uses the same status JSON as `site_config.sh doctor --json`. It is intended for LAN use and listens on port `8080` by default.
+The optional dashboard is a small read-only Flask app that uses the same status JSON as `site_config.sh doctor --json`. It is intended for LAN use and listens on port `8080` by default. The dashboard service requires the Debian/Raspberry Pi OS package `python3-flask`.
 
-Install Flask if the installer did not already do it:
+Install Flask if the installer did not already do it. Current `install.sh` also checks for Flask when you choose to enable the dashboard from the installer, but manual installs should install it explicitly:
 
 ```bash
 sudo apt install python3-flask

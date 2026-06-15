@@ -78,6 +78,7 @@ sudo /opt/train-recorder/Scripts/site_config.sh doctor --json
 The optional dashboard is a read-only Flask app backed by the same status JSON:
 
 ```bash
+sudo apt install python3-flask
 sudo systemctl status train-recorder-dashboard.service
 ```
 

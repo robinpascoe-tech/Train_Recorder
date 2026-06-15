@@ -246,6 +246,15 @@ install_dashboard() {
   install_packages python3-flask
 }
 
+ensure_dashboard_dependencies() {
+  if python3 -c "import flask" >/dev/null 2>&1; then
+    return
+  fi
+
+  echo "Flask is required for train-recorder-dashboard.service; installing python3-flask."
+  install_dashboard
+}
+
 install_rtlsdr_runtime() {
   install_packages rtl-sdr librtlsdr-dev
 }
@@ -371,6 +380,7 @@ enable_optional_timers() {
 }
 
 enable_dashboard_service() {
+  ensure_dashboard_dependencies
   "${SUDO[@]}" systemctl enable --now train-recorder-dashboard.service
 }
 
@@ -483,7 +493,7 @@ else
   echo "Run site_config.sh wizard/generate/plan/diff/apply after configuring rclone and site settings."
   echo "site_config.sh apply will enable/start the configured recorder services and train-recorder timers."
   echo "After apply, run site_config.sh doctor to validate the install."
-  echo "After validation, optionally enable train-recorder-dashboard.service."
+  echo "After validation, optionally install python3-flask and enable train-recorder-dashboard.service."
   echo "After validation, optionally enable train-recorder-wifi-check.timer."
 fi
 
