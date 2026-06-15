@@ -17,6 +17,7 @@ This project follows a practical release process. Changes before the first publi
 - Refreshed documentation to align README, architecture, operations, release, roadmap, and agent handoff notes with the current project state.
 - Diagnostics bundles now include the status JSON payload.
 - Installer now ensures `python3-flask` is present before enabling the optional dashboard, and fresh-install docs call out the dashboard dependency.
+- Dashboard now surfaces failures, warnings, event recency, and dashboard runtime state more clearly.
 
 ## v1.1.0 - 2026-06-15
 

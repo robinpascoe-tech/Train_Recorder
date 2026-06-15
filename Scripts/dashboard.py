@@ -98,6 +98,37 @@ def render_page() -> str:
     .status.ok .dot {{ background: var(--ok); }}
     .status.warn .dot {{ background: var(--warn); }}
     .status.fail .dot {{ background: var(--fail); }}
+    .headline {{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }}
+    .metric {{
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      min-width: 0;
+    }}
+    .metric span {{
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }}
+    .metric strong {{
+      display: block;
+      margin-top: 4px;
+      font-size: 1.7rem;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }}
+    .metric:last-child strong {{
+      font-size: 1.05rem;
+      line-height: 1.25;
+    }}
     main {{
       padding: 24px 0 40px;
     }}
@@ -181,6 +212,11 @@ def render_page() -> str:
       text-decoration: none;
       cursor: pointer;
     }}
+    @media (max-width: 720px) {{
+      .headline {{
+        grid-template-columns: 1fr;
+      }}
+    }}
   </style>
 </head>
 <body>
@@ -196,6 +232,7 @@ def render_page() -> str:
     </div>
   </header>
   <main class="wrap">
+    <div class="headline" id="headline"></div>
     <div class="grid">
       <section>
         <h2>Summary</h2>
@@ -213,6 +250,10 @@ def render_page() -> str:
         <h2>Events</h2>
         <table id="events"></table>
       </section>
+      <section>
+        <h2>Runtime</h2>
+        <table id="runtime"></table>
+      </section>
     </div>
     <div class="grid" id="channels" style="margin-top:14px"></div>
     <section style="margin-top:14px">
@@ -224,6 +265,8 @@ def render_page() -> str:
     const text = value => value === null || value === undefined || value === '' ? 'none' : String(value);
     const cls = value => value === 'fail' ? 'fail' : value === 'warn' ? 'warn' : 'ok';
     const row = (k, v, c = '') => `<tr><th>${{k}}</th><td class="${{c}}">${{v}}</td></tr>`;
+    let currentChecks = [];
+    const checkClass = item => item && item.ok === false ? cls(item.level) : 'ok';
     const bytes = value => {{
       if (!value) return '0 B';
       const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -238,14 +281,28 @@ def render_page() -> str:
       if (seconds < 86400) return `${{Math.floor(seconds / 3600)}}h ago`;
       return `${{Math.floor(seconds / 86400)}}d ago`;
     }};
+    const ageIso = value => {{
+      if (!value) return 'none';
+      const parsed = Date.parse(value);
+      if (Number.isNaN(parsed)) return text(value);
+      return age(Math.max(0, Math.floor((Date.now() - parsed) / 1000)));
+    }};
+    const findCheck = name => currentChecks.find(item => item.name === name);
     function fillTable(id, rows) {{
       document.getElementById(id).innerHTML = rows.join('');
     }}
     function render(data) {{
+      currentChecks = data.checks || [];
       const overall = document.getElementById('overall');
       overall.className = `status ${{cls(data.overall)}}`;
       overall.lastElementChild.textContent = data.overall;
-      document.getElementById('generated').textContent = `${{data.host}} · ${{new Date(data.generated_at).toLocaleString()}}`;
+      document.getElementById('generated').textContent = `${{data.host}} - ${{new Date(data.generated_at).toLocaleString()}}`;
+      const nonOk = currentChecks.filter(item => !item.ok);
+      document.getElementById('headline').innerHTML = [
+        `<div class="metric"><span>Failures</span><strong class="${{data.summary.failures ? 'fail' : 'ok'}}">${{data.summary.failures}}</strong></div>`,
+        `<div class="metric"><span>Warnings</span><strong class="${{data.summary.warnings ? 'warn' : 'ok'}}">${{data.summary.warnings}}</strong></div>`,
+        `<div class="metric"><span>Attention</span><strong class="${{nonOk.length ? cls(nonOk[0].level) : 'ok'}}">${{nonOk.length ? nonOk[0].name : 'clear'}}</strong></div>`
+      ].join('');
       fillTable('summary', [
         row('Overall', data.overall, cls(data.overall)),
         row('Failures', data.summary.failures, data.summary.failures ? 'fail' : 'ok'),
@@ -265,10 +322,18 @@ def render_page() -> str:
         row('Pending MP3s', `${{data.storage.pending_recordings.count}} files, ${{bytes(data.storage.pending_recordings.total_bytes)}}`)
       ]);
       fillTable('events', [
-        row('Last sync', age(data.events.sync?.age_seconds)),
-        row('Last cleanup', age(data.events.cleanup?.age_seconds)),
-        row('Last health', age(data.events.health?.age_seconds)),
+        row('Last sync', age(data.events.sync?.age_seconds), checkClass(findCheck('recent sync'))),
+        row('Last health', age(data.events.health?.age_seconds), checkClass(findCheck('train-recorder-health.timer'))),
+        row('Last Wi-Fi check', data.network.latest_check.available ? ageIso(data.network.latest_check.generated_at) : 'not run', data.network.latest_check.overall === 'ok' ? 'ok' : 'warn'),
+        row('Last cleanup', age(data.events.cleanup?.age_seconds), checkClass(findCheck('train-recorder-cleanup.timer'))),
         row('SOX clipping', `${{data.clipping.count}} warnings, max ${{data.clipping.max_samples}} samples`, data.clipping.count ? 'warn' : 'ok')
+      ]);
+      const dashboard = data.runtime?.dashboard || {{}};
+      fillTable('runtime', [
+        row('Dashboard service', dashboard.service ? `${{dashboard.service.active}} / ${{dashboard.service.enabled}}` : 'unknown', dashboard.service?.ok ? 'ok' : 'warn'),
+        row('Flask', dashboard.flask_available ? 'installed' : 'missing', dashboard.flask_available ? 'ok' : 'fail'),
+        row('API', 'ok', 'ok'),
+        row('Refresh', '30s')
       ]);
       document.getElementById('channels').innerHTML = data.channels.map(channel => `
         <section>

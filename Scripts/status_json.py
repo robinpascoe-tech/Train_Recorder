@@ -110,6 +110,11 @@ def command_path(name: str) -> str | None:
     return None
 
 
+def python_module_available(name: str) -> bool:
+    result = run_cmd(["python3", "-c", f"import {name}"], timeout=5)
+    return bool(result["ok"])
+
+
 def ip_addresses() -> list[str]:
     result = run_cmd(["hostname", "-I"])
     if result["ok"] and result["stdout"]:
@@ -420,6 +425,7 @@ def collect_status() -> dict[str, Any]:
     overall = "fail" if failures else "warn" if warnings else "ok"
 
     wifi = wifi_status()
+    dashboard_service = service_status("train-recorder-dashboard.service")
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -434,6 +440,13 @@ def collect_status() -> dict[str, Any]:
         },
         "overall": overall,
         "summary": {"failures": len(failures), "warnings": len(warnings), "checks": len(checks)},
+        "runtime": {
+            "dashboard": {
+                "service": dashboard_service,
+                "flask_available": python_module_available("flask"),
+                "api_path": "/api/status",
+            }
+        },
         "config": {
             "config_dir": str(CONFIG_DIR),
             "output_root": output_root,
