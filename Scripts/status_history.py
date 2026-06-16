@@ -86,13 +86,23 @@ def summarize(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
     failures = sum(1 for item in snapshots if item.get("failures", 0))
     warnings = sum(1 for item in snapshots if item.get("warnings", 0))
     wifi_failures = sum(1 for item in snapshots if item.get("wifi_check_overall") == "fail")
+    clipping_snapshots = sum(1 for item in snapshots if item.get("clipping_count", 0))
     max_pending = max((int(item.get("pending_recordings") or 0) for item in snapshots), default=0)
     clipping_total = sum(int(item.get("clipping_count") or 0) for item in snapshots)
+    latest = snapshots[-1] if snapshots else {}
+    latest_time = parse_time(str(latest.get("generated_at", ""))) if latest else None
+    latest_age = None
+    if latest_time:
+        latest_age = max(0, int((datetime.now(timezone.utc) - latest_time).total_seconds()))
     return {
         "snapshots": len(snapshots),
+        "latest_generated_at": latest.get("generated_at"),
+        "latest_age_seconds": latest_age,
+        "latest_overall": latest.get("overall"),
         "failure_snapshots": failures,
         "warning_snapshots": warnings,
         "wifi_failure_snapshots": wifi_failures,
+        "clipping_snapshots": clipping_snapshots,
         "max_pending_recordings": max_pending,
         "clipping_total": clipping_total,
     }

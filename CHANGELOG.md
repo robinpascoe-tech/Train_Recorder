@@ -13,6 +13,7 @@ This project follows a practical release process. Changes before the first publi
 - Dashboard and status JSON now report system uptime.
 - Dashboard history recorder, timer, API endpoint, and history panel for 24-hour operational trends.
 - Read-only recording sample diagnostics for MP3 duration, size, RMS amplitude, and peak amplitude during recorder tuning.
+- Clearer dashboard history cards with last sample age and non-zero trend indicators.
 
 ## v1.2.0 - 2026-06-16
 

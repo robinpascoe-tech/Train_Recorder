@@ -409,10 +409,10 @@ def render_page() -> str:
       const snapshots = summary.snapshots || 0;
       document.getElementById('history').innerHTML = [
         hist('Samples', snapshots, `${{history.retention_hours || 24}}h window`),
-        hist('Failure Samples', summary.failure_snapshots || 0, 'required checks', summary.failure_snapshots ? 'fail' : 'ok'),
-        hist('Wi-Fi Failures', summary.wifi_failure_snapshots || 0, 'network check', summary.wifi_failure_snapshots ? 'warn' : 'ok'),
-        hist('Max Pending', summary.max_pending_recordings || 0, 'local MP3 files'),
-        hist('Clipping Total', summary.clipping_total || 0, 'snapshot sum', summary.clipping_total ? 'warn' : 'ok')
+        hist('Last Sample', age(summary.latest_age_seconds), summary.latest_overall || 'none', cls(summary.latest_overall)),
+        hist('Warning Samples', summary.warning_snapshots || 0, 'any warning', summary.warning_snapshots ? 'warn' : 'ok'),
+        hist('Pending Peak', summary.max_pending_recordings || 0, 'local MP3 files'),
+        hist('Clipping Samples', summary.clipping_snapshots || 0, `${{summary.clipping_total || 0}} total warnings`, summary.clipping_snapshots ? 'warn' : 'ok')
       ].join('');
     }}
     async function refresh() {{
