@@ -196,6 +196,9 @@ fi
 section "Dashboard History"
 if [[ -x "$INSTALL_DIR/Scripts/status_history.py" ]]; then
   run_optional "status_history.py --json --no-write" "$INSTALL_DIR/Scripts/status_history.py" --json --no-write
+  if dashboard_enabled; then
+    run_required "dashboard history API responds" http_ok "$DASHBOARD_URL/api/history"
+  fi
 else
   warn "status_history.py missing"
 fi

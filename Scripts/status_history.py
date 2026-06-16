@@ -80,6 +80,7 @@ def write_history(snapshots: list[dict[str, Any]], path: Path = HISTORY_FILE, re
         tmp.write("\n")
         tmp_path = Path(tmp.name)
     tmp_path.replace(path)
+    path.chmod(0o644)
 
 
 def summarize(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
