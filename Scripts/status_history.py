@@ -6,10 +6,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+
+sys.dont_write_bytecode = True
 
 import status_json
 
