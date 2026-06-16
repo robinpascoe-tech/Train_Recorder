@@ -46,6 +46,8 @@ On a first pass, the installer prepares packages, directories, systemd units, Pu
 
 The RTLSDR-Airband source build installs development packages such as `build-essential`, `cmake`, `libpulse-dev`, `libfftw3-dev`, `libmp3lame-dev`, and related libraries. Those are expected if you choose to build from source. They can be left installed for future rebuilds; removing them later saves space but makes future RTLSDR-Airband upgrades less convenient.
 
+Before leaving a recorder unattended, complete the [security hardening checklist](SECURITY.md). At minimum, change the default `pi` password and keep the dashboard LAN-only.
+
 ## Configure OneDrive on a Headless Pi
 
 Do this before running the site configuration wizard if this recorder will offload MP3s to OneDrive. The wizard asks for the rclone remote path, and it is easier to answer that prompt after the remote exists and has been tested.

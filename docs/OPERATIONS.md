@@ -100,6 +100,8 @@ http://<pi-address>:8080/
 
 The dashboard exposes `/api/status` for the raw JSON payload. It is designed for trusted LAN use only. Do not expose it directly to the internet without a separate authentication and TLS layer such as a VPN or reverse proxy.
 
+For SSH, password, firewall, and dashboard exposure guidance, see [SECURITY.md](SECURITY.md).
+
 The dashboard includes host, IP, Wi-Fi SSID, service, timer, storage, sync, and latest Wi-Fi/network-check status. If the dashboard service was already running when scripts were updated, restart it so it loads the latest code:
 
 ```bash

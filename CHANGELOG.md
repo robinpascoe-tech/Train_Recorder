@@ -6,6 +6,10 @@ This project follows a practical release process. Changes before the first publi
 
 ## Unreleased
 
+### Added
+
+- Raspberry Pi security hardening checklist for SSH, passwords, LAN-only dashboard exposure, updates, and secret handling.
+
 ## v1.2.0 - 2026-06-16
 
 ### Added

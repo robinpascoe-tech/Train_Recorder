@@ -25,6 +25,7 @@ Use this checklist before tagging a public release.
    - [INSTALL.md](INSTALL.md)
    - [OPERATIONS.md](OPERATIONS.md)
    - [ARCHITECTURE.md](ARCHITECTURE.md)
+   - [SECURITY.md](SECURITY.md)
    - [HARDWARE.md](HARDWARE.md)
    - [ROADMAP.md](ROADMAP.md)
 
