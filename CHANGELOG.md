@@ -9,6 +9,7 @@ This project follows a practical release process. Changes before the first publi
 ### Added
 
 - Raspberry Pi security hardening checklist for SSH, passwords, LAN-only dashboard exposure, updates, and secret handling.
+- Hardware watchdog planning notes for conservative host-level recovery and future service restart policy review.
 
 ## v1.2.0 - 2026-06-16
 

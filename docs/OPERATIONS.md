@@ -83,6 +83,8 @@ sudo /opt/train-recorder/Scripts/validate_deploy.sh
 
 It checks the deployed git commit and worktree, core services, recorder channel services, timers, doctor, dashboard endpoints when enabled, the Wi-Fi/network check, the operator summary, and recent warning-level journal entries. It exits nonzero when required validation fails.
 
+For unattended host recovery planning, see [WATCHDOG.md](WATCHDOG.md). Enable the Raspberry Pi hardware watchdog only after reviewing the rollback path and soaking the current service restart behavior.
+
 ## Web Dashboard
 
 The optional dashboard is a read-only Flask app backed by the same status JSON:

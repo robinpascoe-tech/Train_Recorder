@@ -26,6 +26,7 @@ Use this checklist before tagging a public release.
    - [OPERATIONS.md](OPERATIONS.md)
    - [ARCHITECTURE.md](ARCHITECTURE.md)
    - [SECURITY.md](SECURITY.md)
+   - [WATCHDOG.md](WATCHDOG.md)
    - [HARDWARE.md](HARDWARE.md)
    - [ROADMAP.md](ROADMAP.md)
 

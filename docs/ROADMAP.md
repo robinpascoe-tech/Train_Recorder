@@ -24,6 +24,7 @@ Completed:
 - Wi-Fi/network check first pass with JSON state, check-only timer, manual conservative remedy mode, dashboard/status integration, and diagnostics bundle capture.
 - Dashboard operator-summary polish after real use, with clearer failure, warning, recency, network, and pending-recording display.
 - Read-only post-deploy validator for repeatable commit, service, timer, doctor, dashboard, Wi-Fi/network, summary, and warning-log checks.
+- Hardware watchdog planning notes for conservative host-level recovery, service policy review, soak testing, and rollback.
 
 Release readiness:
 
@@ -34,7 +35,7 @@ Release readiness:
 
 Future ideas:
 
-- Integrate the Raspberry Pi hardware watchdog for unattended recovery. Document enabling the kernel watchdog, add conservative systemd watchdog settings where appropriate, and make sure the recorder services fail clearly enough for the host watchdog strategy to be useful.
+- Soak-test the documented Raspberry Pi hardware watchdog plan before enabling it on unattended production hardware.
 - Expand Wi-Fi/network remediation only after observing the first-pass timer in production. Avoid reboot loops unless explicitly configured and tested.
 - Consider exposing the dashboard only on the LAN by default, with clear notes that it should not be internet-facing without authentication and TLS handled outside the project.
 - Soak-test and harden `site_config.sh apply` with real frequency add/remove changes.
