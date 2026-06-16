@@ -289,6 +289,13 @@ def render_page() -> str:
       if (seconds < 86400) return `${{Math.floor(seconds / 3600)}}h ago`;
       return `${{Math.floor(seconds / 86400)}}d ago`;
     }};
+    const duration = seconds => {{
+      if (seconds === null || seconds === undefined) return 'unknown';
+      if (seconds < 60) return `${{seconds}}s`;
+      if (seconds < 3600) return `${{Math.floor(seconds / 60)}}m`;
+      if (seconds < 86400) return `${{Math.floor(seconds / 3600)}}h ${{Math.floor((seconds % 3600) / 60)}}m`;
+      return `${{Math.floor(seconds / 86400)}}d ${{Math.floor((seconds % 86400) / 3600)}}h`;
+    }};
     const ageIso = value => {{
       if (!value) return 'none';
       const parsed = Date.parse(value);
@@ -310,9 +317,9 @@ def render_page() -> str:
       const networkStatus = data.network.latest_check.available ? data.network.latest_check.overall : 'not run';
       document.getElementById('headline').innerHTML = [
         `<div class="metric"><span>Overall</span><strong class="${{cls(data.overall)}}">${{data.overall}}</strong><small>${{data.summary.failures}} failures, ${{data.summary.warnings}} warnings</small></div>`,
+        `<div class="metric"><span>Uptime</span><strong>${{duration(data.runtime?.uptime_seconds)}}</strong><small>since last boot</small></div>`,
         `<div class="metric"><span>Last Sync</span><strong class="${{checkClass(findCheck('recent sync'))}}">${{age(data.events.sync?.age_seconds)}}</strong><small>${{data.rclone.configured ? 'rclone configured' : 'local only'}}</small></div>`,
         `<div class="metric"><span>Network</span><strong class="${{networkStatus === 'ok' ? 'ok' : 'warn'}}">${{networkStatus}}</strong><small>${{data.network.wifi_ssid || data.network.ip_addresses[0] || 'no network detail'}}</small></div>`,
-        `<div class="metric"><span>Pending</span><strong>${{pending.count}}</strong><small>${{bytes(pending.total_bytes)}} waiting</small></div>`
       ].join('');
       fillTable('summary', [
         row('Overall', data.overall, cls(data.overall)),
@@ -341,8 +348,10 @@ def render_page() -> str:
         row('SOX clipping', `${{data.clipping.count}} warnings, max ${{data.clipping.max_samples}} samples`, data.clipping.count ? 'warn' : 'ok')
       ]);
       fillTable('activity', [
+        row('Uptime', duration(data.runtime?.uptime_seconds), 'ok'),
         row('Status age', ageIso(data.generated_at), 'ok'),
         row('Wi-Fi check age', data.network.latest_check.available ? ageIso(data.network.latest_check.generated_at) : 'not run', networkStatus === 'ok' ? 'ok' : 'warn'),
+        row('Pending MP3s', `${{pending.count}} files, ${{bytes(pending.total_bytes)}}`),
         row('Pulse sources', data.pulse.sources.length, data.pulse.sources.length ? 'ok' : 'fail'),
         row('First issue', nonOk.length ? nonOk[0].name : 'none', nonOk.length ? cls(nonOk[0].level) : 'ok')
       ]);

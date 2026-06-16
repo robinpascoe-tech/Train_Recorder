@@ -122,6 +122,14 @@ def ip_addresses() -> list[str]:
     return []
 
 
+def uptime_seconds() -> int | None:
+    try:
+        raw = Path("/proc/uptime").read_text().split()[0]
+        return int(float(raw))
+    except (IndexError, OSError, ValueError):
+        return None
+
+
 def wifi_status() -> dict[str, Any]:
     iwgetid = command_path("iwgetid")
     if iwgetid:
@@ -441,6 +449,7 @@ def collect_status() -> dict[str, Any]:
         "overall": overall,
         "summary": {"failures": len(failures), "warnings": len(warnings), "checks": len(checks)},
         "runtime": {
+            "uptime_seconds": uptime_seconds(),
             "dashboard": {
                 "service": dashboard_service,
                 "flask_available": python_module_available("flask"),
