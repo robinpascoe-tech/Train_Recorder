@@ -10,10 +10,13 @@ import pwd
 import re
 import shutil
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+sys.dont_write_bytecode = True
 
 
 CONFIG_DIR = Path(os.environ.get("CONFIG_DIR", "/etc/train-recorder"))

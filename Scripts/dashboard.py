@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import os
+import sys
 from html import escape
+
+sys.dont_write_bytecode = True
 
 from flask import Flask, jsonify
 
