@@ -49,6 +49,28 @@ run_optional() {
   fi
 }
 
+run_doctor() {
+  local label="$1"
+  shift
+  local output status
+
+  set +e
+  output="$("$@" 2>&1)"
+  status=$?
+  set -e
+
+  printf '%s\n' "$output"
+  if ((status == 0)); then
+    ok "$label"
+  else
+    fail "$label"
+  fi
+
+  if [[ "$output" =~ Doctor[[:space:]]summary:[[:space:]]([0-9]+)[[:space:]]failure\(s\),[[:space:]]([0-9]+)[[:space:]]warning\(s\) ]]; then
+    warnings=$((warnings + BASH_REMATCH[2]))
+  fi
+}
+
 source_env() {
   if [[ -f "$CONFIG_DIR/common.env" ]]; then
     # shellcheck disable=SC1091
@@ -139,9 +161,9 @@ fi
 
 section "Doctor"
 if [[ -x "$INSTALL_DIR/Scripts/site_config.sh" ]]; then
-  run_required "site_config.sh doctor" "$INSTALL_DIR/Scripts/site_config.sh" doctor
+  run_doctor "site_config.sh doctor" "$INSTALL_DIR/Scripts/site_config.sh" doctor
 elif [[ -x "$INSTALL_DIR/Scripts/doctor.sh" ]]; then
-  run_required "doctor.sh" "$INSTALL_DIR/Scripts/doctor.sh"
+  run_doctor "doctor.sh" "$INSTALL_DIR/Scripts/doctor.sh"
 else
   fail "doctor command missing"
 fi
