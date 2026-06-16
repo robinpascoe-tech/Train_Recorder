@@ -3,6 +3,7 @@
 Completed:
 
 - Initial SOX volume tuning to reduce clipping while preserving intelligibility. Per-channel `SOX_VOLUME` overrides are supported, and the current production config lowers `freq160545` one notch below the shared default.
+- Recording sample diagnostics for recent MP3 count, duration, size, RMS amplitude, and peak amplitude.
 - Production SOX/PulseAudio architecture soak tested on the original recorder Pi with templated `vox@...` services, rclone sync, health checks, cleanup, and raspiBackup adjustments.
 - Fresh Raspberry Pi OS Trixie minimal install validated on a Raspberry Pi 3, including package install, site configuration, recording, and rclone sync.
 - Dynamic health and status reports based on configured `VOX_CHANNELS`.

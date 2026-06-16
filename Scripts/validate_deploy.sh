@@ -200,6 +200,13 @@ else
   warn "status_history.py missing"
 fi
 
+section "Recording Diagnostics"
+if [[ -x "$INSTALL_DIR/Scripts/recording_diagnostics.py" ]]; then
+  run_optional "recording_diagnostics.py --lookback-hours 24 --max-files 5" "$INSTALL_DIR/Scripts/recording_diagnostics.py" --lookback-hours 24 --max-files 5
+else
+  warn "recording_diagnostics.py missing"
+fi
+
 section "Operator Summary"
 if [[ -x "$INSTALL_DIR/Scripts/status_summary.sh" ]]; then
   "$INSTALL_DIR/Scripts/status_summary.sh" || warn "status_summary.sh reported attention"

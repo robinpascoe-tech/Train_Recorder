@@ -136,6 +136,9 @@ fi
 if [[ -x "$INSTALL_DIR/Scripts/status_history.py" ]]; then
   write_file commands/status-history "$INSTALL_DIR/Scripts/status_history.py" --json --no-write
 fi
+if [[ -x "$INSTALL_DIR/Scripts/recording_diagnostics.py" ]]; then
+  write_file commands/recording-diagnostics "$INSTALL_DIR/Scripts/recording_diagnostics.py" --json
+fi
 
 if [[ -x "$INSTALL_DIR/Scripts/status_summary.sh" ]]; then
   write_file commands/status-summary "$INSTALL_DIR/Scripts/status_summary.sh"

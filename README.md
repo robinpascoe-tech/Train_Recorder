@@ -32,6 +32,7 @@ Scripts/
   doctor.sh                  Read-only install and runtime sanity checker.
   status_json.py             Machine-readable status collector for automation and dashboards.
   status_history.py          Rolling dashboard status history recorder.
+  recording_diagnostics.py   Read-only recent MP3 sample diagnostics for tuning.
   dashboard.py               Optional read-only Flask status dashboard.
   wifi_check.py              Optional Wi-Fi/network health check with conservative remedy mode.
   validate_deploy.sh         Read-only post-deploy validation checklist.
@@ -186,6 +187,8 @@ Useful variables:
 | `RCLONE_MIN_AGE` | `15s` | Minimum file age before `sync.sh` allows rclone to move a completed MP3. |
 | `CLIPPING_WINDOW_MINUTES` | `1440` | Journal lookback window used by `status_summary.sh` for clipping warnings. |
 | `JOURNAL_WINDOW_MINUTES` | `10080` | Journal lookback window used by `status_summary.sh` for last-event summaries. |
+| `RECORDING_DIAGNOSTICS_LOOKBACK_HOURS` | `24` | MP3 lookback window used by `recording_diagnostics.py`. |
+| `RECORDING_DIAGNOSTICS_MAX_FILES` | `20` | Per-channel sample limit used by `recording_diagnostics.py`. |
 
 Channel env files also support:
 

@@ -12,6 +12,7 @@ This project follows a practical release process. Changes before the first publi
 - Hardware watchdog planning notes for conservative host-level recovery and future service restart policy review.
 - Dashboard and status JSON now report system uptime.
 - Dashboard history recorder, timer, API endpoint, and history panel for 24-hour operational trends.
+- Read-only recording sample diagnostics for MP3 duration, size, RMS amplitude, and peak amplitude during recorder tuning.
 
 ## v1.2.0 - 2026-06-16
 

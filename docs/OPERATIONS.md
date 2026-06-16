@@ -35,6 +35,26 @@ JOURNAL_WINDOW_MINUTES=10080
 
 Set those in `/etc/train-recorder/common.env` if the default windows are too short or too noisy for your site.
 
+## Recording Sample Diagnostics
+
+Use the recording diagnostics report when tuning SOX volume or VOX settings:
+
+```bash
+sudo /opt/train-recorder/Scripts/recording_diagnostics.py
+sudo /opt/train-recorder/Scripts/recording_diagnostics.py --json
+```
+
+The report scans recent local MP3 files under `OUTPUT_ROOT`, grouped by each channel `OUTPUT_SUFFIX`, and runs bounded `soxi`/`sox stat` checks on the newest samples. It reports file counts, duration, size, average RMS amplitude, and maximum peak amplitude.
+
+Defaults:
+
+```text
+RECORDING_DIAGNOSTICS_LOOKBACK_HOURS=24
+RECORDING_DIAGNOSTICS_MAX_FILES=20
+```
+
+Because rclone normally moves completed recordings out of the local spool, run this shortly after transmissions or temporarily widen the lookback only when local files are expected to remain available.
+
 ## Doctor Check
 
 Run the doctor check when validating an install or investigating a recorder that looks unhealthy:

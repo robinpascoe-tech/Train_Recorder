@@ -44,6 +44,8 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `status_summary.sh` is a read-only operator report. It summarizes service state, last recording saves, recent sync and cleanup success, pending local MP3s, clipping warnings, and disk usage.
 
+`recording_diagnostics.py` is a read-only sample-quality report. It scans recent local MP3s by channel suffix and uses `soxi`/`sox stat` on a bounded number of newest files to summarize durations, sizes, RMS amplitude, and peak amplitude for volume and VOX tuning.
+
 `validate_deploy.sh` is a read-only post-deploy validation checklist. It combines git state, core services, timers, doctor, dashboard endpoints, Wi-Fi/network status, operator summary, and recent warning-level logs into one repeatable command.
 
 `doctor.sh` is the read-only install and runtime validation command. The preferred entry point is `site_config.sh doctor`, which delegates to the standalone doctor script. It checks services, timers, configured channel sources, writable paths, ownership, required tools, rclone reachability, legacy services, PCP, raspiBackup hooks, and recent SOX clipping warnings.
