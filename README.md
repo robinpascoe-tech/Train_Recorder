@@ -33,6 +33,7 @@ Scripts/
   status_json.py             Machine-readable status collector for automation and dashboards.
   dashboard.py               Optional read-only Flask status dashboard.
   wifi_check.py              Optional Wi-Fi/network health check with conservative remedy mode.
+  validate_deploy.sh         Read-only post-deploy validation checklist.
   collect_diagnostics.sh     Sanitized troubleshooting bundle collector.
   cleanup_empty_dirs.sh      Daily cleanup for empty local recording directories.
   vox_record.sh              Shared configurable VOX recorder.
@@ -100,6 +101,8 @@ AGENTS.md                    Context for future coding agents and maintainers.
    For a shorter operational view after validation, run `sudo /opt/train-recorder/Scripts/status_summary.sh`.
 
    If you enable the optional dashboard, install `python3-flask` or answer yes to the installer's dashboard dependency prompt. The dashboard listens on port `8080` by default.
+
+   After a code deploy, run `sudo /opt/train-recorder/Scripts/validate_deploy.sh` for a repeatable read-only validation pass.
 
 See [docs/INSTALL.md](docs/INSTALL.md) for a fuller checklist.
 

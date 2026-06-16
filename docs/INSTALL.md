@@ -327,6 +327,7 @@ Check status and logs:
 
 ```bash
 sudo /opt/train-recorder/Scripts/site_config.sh doctor
+sudo /opt/train-recorder/Scripts/validate_deploy.sh
 systemctl status pulseaudio.service rtl_airband.service vox@freq160545.service vox@freq161265.service
 journalctl -u rtl_airband.service -u vox@freq160545.service -u vox@freq161265.service -f
 sudo /opt/train-recorder/Scripts/status_summary.sh

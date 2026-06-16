@@ -44,6 +44,8 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `status_summary.sh` is a read-only operator report. It summarizes service state, last recording saves, recent sync and cleanup success, pending local MP3s, clipping warnings, and disk usage.
 
+`validate_deploy.sh` is a read-only post-deploy validation checklist. It combines git state, core services, timers, doctor, dashboard endpoints, Wi-Fi/network status, operator summary, and recent warning-level logs into one repeatable command.
+
 `doctor.sh` is the read-only install and runtime validation command. The preferred entry point is `site_config.sh doctor`, which delegates to the standalone doctor script. It checks services, timers, configured channel sources, writable paths, ownership, required tools, rclone reachability, legacy services, PCP, raspiBackup hooks, and recent SOX clipping warnings.
 
 `status_json.py` is the machine-readable status collector used by `site_config.sh doctor --json` and the optional dashboard. It reports the same operational surface in JSON so future tools do not need to parse human-readable doctor output.
@@ -70,7 +72,7 @@ sync.env         Optional rclone settings.
 
 The legacy wrapper scripts still provide defaults for the original two channels, but the environment files and `vox@.service` are the preferred path for new installs. Each recorder service loads `common.env` first and its channel-specific env file second, so channel files can override shared values such as `SOX_VOLUME`.
 
-`health_check.sh`, `status_summary.sh`, `doctor.sh`, and `status_json.py` read `VOX_CHANNELS` and then source each channel env file, so they do not need to be regenerated when channels are added or removed.
+`health_check.sh`, `status_summary.sh`, `validate_deploy.sh`, `doctor.sh`, and `status_json.py` read `VOX_CHANNELS` and then source each channel env file, so they do not need to be regenerated when channels are added or removed.
 
 ## Deployed Layout
 

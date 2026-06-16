@@ -6,11 +6,14 @@ This project follows a practical release process. Changes before the first publi
 
 ## Unreleased
 
+## v1.2.0 - 2026-06-16
+
 ### Added
 
 - Machine-readable status JSON via `site_config.sh doctor --json`.
 - Optional read-only Flask web dashboard and systemd unit.
 - Optional Wi-Fi/network health check with JSON state, check-only timer, and manual conservative remedy mode.
+- Read-only post-deploy validator for git state, services, timers, doctor, dashboard, Wi-Fi/network, operator summary, and recent warning logs.
 
 ### Changed
 
@@ -18,6 +21,10 @@ This project follows a practical release process. Changes before the first publi
 - Diagnostics bundles now include the status JSON payload.
 - Installer now ensures `python3-flask` is present before enabling the optional dashboard, and fresh-install docs call out the dashboard dependency.
 - Dashboard now surfaces failures, warnings, event recency, network state, and pending recordings more clearly.
+
+### Validated
+
+- Fresh Raspberry Pi OS Trixie Pi ran the dashboard and Wi-Fi/network check for an 18-hour soak with clean doctor output.
 
 ## v1.1.0 - 2026-06-15
 

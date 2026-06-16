@@ -47,10 +47,11 @@ Use this checklist before tagging a public release.
 
    ```bash
    sudo /opt/train-recorder/Scripts/site_config.sh doctor
+   sudo /opt/train-recorder/Scripts/validate_deploy.sh
    sudo /opt/train-recorder/Scripts/collect_diagnostics.sh
    ```
 
-   Doctor should report zero failures. Warnings may still be acceptable when they are understood and documented, such as optional `pulse` group membership warnings on a working system-mode PulseAudio install.
+   Doctor should report zero failures, and deploy validation should report zero required failures. Warnings may still be acceptable when they are understood and documented, such as optional `pulse` group membership warnings on a working system-mode PulseAudio install.
 
 8. Update [CHANGELOG.md](../CHANGELOG.md):
 
@@ -71,11 +72,11 @@ Use this checklist before tagging a public release.
 
 - Original production Pi: upgraded production SOX/PulseAudio architecture, templated `vox@...` services, rclone sync, cleanup, and health timers.
 - Fresh Raspberry Pi OS Trixie Pi: validated from a minimal install through package setup, site configuration, recording, rclone sync, doctor, and diagnostics bundle collection.
-- Post-v1.1 main has also been deployed to the original production Pi with the optional dashboard and Wi-Fi/network check timer enabled.
+- Post-v1.1 main has been deployed to the fresh Raspberry Pi OS Trixie Pi with the optional dashboard and Wi-Fi/network check timer enabled, followed by an 18-hour clean dashboard soak.
 
 ## Historical Release Notes
 
 - v1.0.0 established the production SOX/PulseAudio architecture, generated site configuration workflow, conservative installer, templated recorder services, rclone sync, cleanup, documentation, MIT license, and shell lint workflow.
 - v1.1.0 added the doctor command, `site_config.sh doctor`, doctor output in diagnostics bundles, installer validation flow, and production-tested doctor behavior for PulseAudio group warnings.
-- Post-v1.1 unreleased work added machine-readable status JSON, the optional read-only Flask dashboard, and the optional Wi-Fi/network health check.
+- v1.2.0 added machine-readable status JSON, the optional read-only Flask dashboard, the optional Wi-Fi/network health check, dashboard dependency handling, dashboard operator-summary polish, and the read-only deploy validator.
 - RTLSDR-Airband native MP3 recording was tested with versions 5.1.1 and 5.2.0 but is not the production recording path because it did not produce reliable file output on the target Pi.

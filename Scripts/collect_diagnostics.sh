@@ -137,6 +137,9 @@ fi
 if [[ -x "$INSTALL_DIR/Scripts/status_summary.sh" ]]; then
   write_file commands/status-summary "$INSTALL_DIR/Scripts/status_summary.sh"
 fi
+if [[ -x "$INSTALL_DIR/Scripts/validate_deploy.sh" ]]; then
+  write_file commands/validate-deploy "$INSTALL_DIR/Scripts/validate_deploy.sh"
+fi
 if [[ -x "$INSTALL_DIR/Scripts/site_config.sh" ]]; then
   write_file commands/doctor "$INSTALL_DIR/Scripts/site_config.sh" doctor
   write_file commands/status-json "$INSTALL_DIR/Scripts/site_config.sh" doctor --json

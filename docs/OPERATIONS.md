@@ -73,6 +73,16 @@ For automation or dashboard use, emit machine-readable JSON:
 sudo /opt/train-recorder/Scripts/site_config.sh doctor --json
 ```
 
+## Deploy Validation
+
+After pulling a new commit or changing deployed scripts, run the read-only deploy validator:
+
+```bash
+sudo /opt/train-recorder/Scripts/validate_deploy.sh
+```
+
+It checks the deployed git commit and worktree, core services, recorder channel services, timers, doctor, dashboard endpoints when enabled, the Wi-Fi/network check, the operator summary, and recent warning-level journal entries. It exits nonzero when required validation fails.
+
 ## Web Dashboard
 
 The optional dashboard is a read-only Flask app backed by the same status JSON:
