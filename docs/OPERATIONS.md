@@ -110,6 +110,32 @@ The dashboard includes host, IP, Wi-Fi SSID, service, timer, storage, sync, and 
 sudo systemctl restart train-recorder-dashboard.service
 ```
 
+## Dashboard History
+
+The optional dashboard history timer records compact status snapshots for a rolling local view:
+
+```bash
+sudo systemctl enable --now train-recorder-status-history.timer
+```
+
+The history file is:
+
+```text
+/var/lib/train-recorder/status-history.json
+```
+
+The dashboard reads this file to show recent failure, warning, Wi-Fi, pending-recording, and clipping trends. It is intentionally a small JSON file, not a database. The default retention window is 24 hours and can be changed with:
+
+```text
+STATUS_HISTORY_RETENTION_HOURS=24
+```
+
+Inspect the history directly:
+
+```bash
+sudo /opt/train-recorder/Scripts/status_history.py --json --no-write
+```
+
 ## Wi-Fi and Network Check
 
 The optional Wi-Fi/network check can be run manually or by timer:

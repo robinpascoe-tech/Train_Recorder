@@ -133,6 +133,9 @@ write_file commands/recording-counts sh -c "printf 'mp3_count='; find '$OUTPUT_R
 if [[ -x "$INSTALL_DIR/Scripts/wifi_check.py" ]]; then
   write_file commands/wifi-check "$INSTALL_DIR/Scripts/wifi_check.py" --json --no-write-state
 fi
+if [[ -x "$INSTALL_DIR/Scripts/status_history.py" ]]; then
+  write_file commands/status-history "$INSTALL_DIR/Scripts/status_history.py" --json --no-write
+fi
 
 if [[ -x "$INSTALL_DIR/Scripts/status_summary.sh" ]]; then
   write_file commands/status-summary "$INSTALL_DIR/Scripts/status_summary.sh"
@@ -161,7 +164,7 @@ fi
 for unit in \
   pulseaudio.service rtl_airband.service \
   train-recorder-sync.service train-recorder-health.service train-recorder-cleanup.service \
-  train-recorder-wifi-check.service train-recorder-sync.timer train-recorder-health.timer train-recorder-cleanup.timer train-recorder-wifi-check.timer \
+  train-recorder-wifi-check.service train-recorder-status-history.service train-recorder-sync.timer train-recorder-health.timer train-recorder-cleanup.timer train-recorder-wifi-check.timer train-recorder-status-history.timer \
   raspiBackup.service raspiBackup.timer; do
   write_file "logs/${unit}.journal" journalctl -u "$unit" --since "$SINCE" --no-pager
 done
@@ -183,6 +186,7 @@ copy_file /etc/systemd/system/vox@.service configs/vox@.service
 copy_file /etc/systemd/system/pulseaudio.service configs/pulseaudio.service
 copy_file /etc/systemd/system/rtl_airband.service configs/rtl_airband.service
 copy_file /var/lib/train-recorder/wifi-check.json configs/wifi-check.json
+copy_file /var/lib/train-recorder/status-history.json configs/status-history.json
 copy_redacted /usr/local/etc/raspiBackup.conf configs/raspiBackup.conf.redacted
 
 find "$bundle_dir" -type f -exec chmod 600 {} +

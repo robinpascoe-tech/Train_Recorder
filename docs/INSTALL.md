@@ -321,6 +321,7 @@ sudo systemctl enable --now train-recorder-health.timer
 sudo systemctl enable --now train-recorder-sync.timer
 sudo systemctl enable --now train-recorder-cleanup.timer
 sudo systemctl enable --now train-recorder-wifi-check.timer
+sudo systemctl enable --now train-recorder-status-history.timer
 ```
 
 The VOX recorder services and sync service run as the `pi` user. This keeps generated recordings and rclone/OneDrive credentials in the same user context, so root-owned recordings and recursive `chmod 777` cron workarounds should not be needed.
@@ -361,6 +362,7 @@ Enable the dashboard service:
 
 ```bash
 sudo systemctl enable --now train-recorder-dashboard.service
+sudo systemctl enable --now train-recorder-status-history.timer
 systemctl status train-recorder-dashboard.service
 ```
 
@@ -371,6 +373,8 @@ http://<pi-address>:8080/
 ```
 
 The service uses `DASHBOARD_HOST` and `DASHBOARD_PORT` environment variables from the systemd unit. Do not expose the dashboard directly to the internet; if remote access is needed, put authentication and TLS in front of it with a separate reverse proxy or VPN.
+
+The optional history timer writes compact snapshots to `/var/lib/train-recorder/status-history.json` every 5 minutes for the dashboard history panel.
 
 ## Optional Wi-Fi and Network Check
 

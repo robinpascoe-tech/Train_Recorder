@@ -8,6 +8,7 @@ from html import escape
 
 from flask import Flask, jsonify
 
+import status_history
 import status_json
 
 
@@ -182,6 +183,30 @@ def render_page() -> str:
       display: grid;
       gap: 8px;
     }}
+    .history {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }}
+    .history-item {{
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      min-width: 0;
+    }}
+    .history-item span {{
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }}
+    .history-item strong {{
+      display: block;
+      margin-top: 4px;
+      font-size: 1.35rem;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }}
     .check {{
       display: grid;
       grid-template-columns: 58px 1fr;
@@ -265,6 +290,10 @@ def render_page() -> str:
     </div>
     <div class="grid" id="channels" style="margin-top:14px"></div>
     <section style="margin-top:14px">
+      <h2>History</h2>
+      <div id="history" class="history"></div>
+    </section>
+    <section style="margin-top:14px">
       <h2>Checks</h2>
       <div id="checks" class="checks"></div>
     </section>
@@ -273,6 +302,7 @@ def render_page() -> str:
     const text = value => value === null || value === undefined || value === '' ? 'none' : String(value);
     const cls = value => value === 'fail' ? 'fail' : value === 'warn' ? 'warn' : 'ok';
     const row = (k, v, c = '') => `<tr><th>${{k}}</th><td class="${{c}}">${{v}}</td></tr>`;
+    const hist = (label, value, note = '', c = '') => `<div class="history-item"><span>${{label}}</span><strong class="${{c}}">${{value}}</strong><small>${{note}}</small></div>`;
     let currentChecks = [];
     const checkClass = item => item && item.ok === false ? cls(item.level) : 'ok';
     const bytes = value => {{
@@ -355,6 +385,7 @@ def render_page() -> str:
         row('Pulse sources', data.pulse.sources.length, data.pulse.sources.length ? 'ok' : 'fail'),
         row('First issue', nonOk.length ? nonOk[0].name : 'none', nonOk.length ? cls(nonOk[0].level) : 'ok')
       ]);
+      renderHistory(data.history || {{}});
       document.getElementById('channels').innerHTML = data.channels.map(channel => `
         <section>
           <h2>${{channel.frequency_mhz || channel.name}}</h2>
@@ -369,6 +400,17 @@ def render_page() -> str:
         .filter(item => !item.ok)
         .map(item => `<div class="check"><span class="pill ${{item.level}}">${{item.level}}</span><span>${{item.name}}: ${{item.message}}</span></div>`)
         .join('') || '<div class="muted">No warnings or failures</div>';
+    }}
+    function renderHistory(history) {{
+      const summary = history.summary || {{}};
+      const snapshots = summary.snapshots || 0;
+      document.getElementById('history').innerHTML = [
+        hist('Samples', snapshots, `${{history.retention_hours || 24}}h window`),
+        hist('Failure Samples', summary.failure_snapshots || 0, 'required checks', summary.failure_snapshots ? 'fail' : 'ok'),
+        hist('Wi-Fi Failures', summary.wifi_failure_snapshots || 0, 'network check', summary.wifi_failure_snapshots ? 'warn' : 'ok'),
+        hist('Max Pending', summary.max_pending_recordings || 0, 'local MP3 files'),
+        hist('Clipping Total', summary.clipping_total || 0, 'snapshot sum', summary.clipping_total ? 'warn' : 'ok')
+      ].join('');
     }}
     async function refresh() {{
       const response = await fetch('/api/status', {{cache: 'no-store'}});
@@ -389,7 +431,14 @@ def index() -> str:
 
 @app.route("/api/status")
 def api_status():
-    return jsonify(status_json.collect_status())
+    status = status_json.collect_status()
+    status["history"] = status_history.read_payload()
+    return jsonify(status)
+
+
+@app.route("/api/history")
+def api_history():
+    return jsonify(status_history.read_payload())
 
 
 def main() -> None:

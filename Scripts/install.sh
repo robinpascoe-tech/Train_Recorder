@@ -389,6 +389,11 @@ enable_wifi_check_timer() {
   "${SUDO[@]}" systemctl enable --now train-recorder-wifi-check.timer
 }
 
+enable_status_history_timer() {
+  "${SUDO[@]}" mkdir -p /var/lib/train-recorder
+  "${SUDO[@]}" systemctl enable --now train-recorder-status-history.timer
+}
+
 site_config_exists() {
   [[ -f "$SITE_CONFIG" ]]
 }
@@ -482,6 +487,10 @@ if site_config_exists; then
     enable_wifi_check_timer
   fi
 
+  if ask_yes_no "Enable the optional dashboard status history timer now?"; then
+    enable_status_history_timer
+  fi
+
   if ask_yes_no "Run read-only install validation with site_config.sh doctor now?"; then
     if ! run_install_validation; then
       echo "doctor reported one or more failures; review the output above and rerun after fixing them."
@@ -495,6 +504,7 @@ else
   echo "After apply, run site_config.sh doctor to validate the install."
   echo "After validation, optionally install python3-flask and enable train-recorder-dashboard.service."
   echo "After validation, optionally enable train-recorder-wifi-check.timer."
+  echo "After validation, optionally enable train-recorder-status-history.timer."
 fi
 
 echo
@@ -519,3 +529,5 @@ echo "     sudo apt install python3-flask"
 echo "     sudo systemctl enable --now train-recorder-dashboard.service"
 echo " 10. Optional Wi-Fi/network check timer:"
 echo "     sudo systemctl enable --now train-recorder-wifi-check.timer"
+echo " 11. Optional dashboard status history timer:"
+echo "     sudo systemctl enable --now train-recorder-status-history.timer"

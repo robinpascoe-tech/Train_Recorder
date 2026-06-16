@@ -108,6 +108,10 @@ wifi_timer_enabled() {
   systemctl is-enabled --quiet train-recorder-wifi-check.timer 2>/dev/null
 }
 
+status_history_timer_enabled() {
+  systemctl is-enabled --quiet train-recorder-status-history.timer 2>/dev/null
+}
+
 http_ok() {
   local url="$1"
   python3 - "$url" <<'PY'
@@ -158,6 +162,11 @@ if wifi_timer_enabled; then
 else
   warn "train-recorder-wifi-check.timer not enabled"
 fi
+if status_history_timer_enabled; then
+  run_required "train-recorder-status-history.timer active" timer_active train-recorder-status-history.timer
+else
+  warn "train-recorder-status-history.timer not enabled"
+fi
 
 section "Doctor"
 if [[ -x "$INSTALL_DIR/Scripts/site_config.sh" ]]; then
@@ -182,6 +191,13 @@ if [[ -x "$INSTALL_DIR/Scripts/wifi_check.py" ]]; then
   run_optional "wifi_check.py --json --no-write-state" "$INSTALL_DIR/Scripts/wifi_check.py" --json --no-write-state
 else
   warn "wifi_check.py missing"
+fi
+
+section "Dashboard History"
+if [[ -x "$INSTALL_DIR/Scripts/status_history.py" ]]; then
+  run_optional "status_history.py --json --no-write" "$INSTALL_DIR/Scripts/status_history.py" --json --no-write
+else
+  warn "status_history.py missing"
 fi
 
 section "Operator Summary"

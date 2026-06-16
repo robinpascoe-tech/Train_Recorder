@@ -31,6 +31,7 @@ Scripts/
   health_check.sh            Dynamic service, PulseAudio, storage, sync, and channel checks.
   doctor.sh                  Read-only install and runtime sanity checker.
   status_json.py             Machine-readable status collector for automation and dashboards.
+  status_history.py          Rolling dashboard status history recorder.
   dashboard.py               Optional read-only Flask status dashboard.
   wifi_check.py              Optional Wi-Fi/network health check with conservative remedy mode.
   validate_deploy.sh         Read-only post-deploy validation checklist.
@@ -44,6 +45,7 @@ Scripts/
 Service_Files/
   vox@.service               Templated VOX recorder unit, one instance per channel env file.
   train-recorder-dashboard.service Optional read-only web dashboard unit.
+  train-recorder-status-history.* Optional dashboard history service and timer.
   train-recorder-wifi-check.* Optional Wi-Fi/network check service and timer.
   *.service                  systemd units for PulseAudio, RTLSDR-Airband, health, sync, and cleanup.
   *.timer                    Optional systemd timers for health checks, rclone sync, and cleanup.

@@ -25,6 +25,7 @@ Completed:
 - Dashboard operator-summary polish after real use, with clearer failure, warning, recency, network, and pending-recording display.
 - Read-only post-deploy validator for repeatable commit, service, timer, doctor, dashboard, Wi-Fi/network, summary, and warning-log checks.
 - Hardware watchdog planning notes for conservative host-level recovery, service policy review, soak testing, and rollback.
+- Dashboard history first pass with rolling JSON snapshots and 24-hour trend summaries.
 
 Release readiness:
 

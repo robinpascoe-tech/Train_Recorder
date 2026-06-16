@@ -50,6 +50,8 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `status_json.py` is the machine-readable status collector used by `site_config.sh doctor --json` and the optional dashboard. It reports the same operational surface in JSON so future tools do not need to parse human-readable doctor output.
 
+`status_history.py` records compact rolling snapshots from `status_json.py` to `/var/lib/train-recorder/status-history.json`. The optional `train-recorder-status-history.timer` runs it every 5 minutes so the dashboard can show 24-hour trend summaries without a database.
+
 `dashboard.py` is an optional read-only Flask dashboard for LAN use. It serves a human status view at `/` and raw JSON at `/api/status`.
 
 `wifi_check.py` is an optional network health checker. It records hostname, IPs, Wi-Fi SSID when detectable, default gateway reachability, DNS resolution, rclone reachability, and local dashboard reachability to `/var/lib/train-recorder/wifi-check.json`. It can run in check-only mode from `train-recorder-wifi-check.timer`, or in explicit `--remedy` mode for conservative recovery attempts such as `wpa_cli reconnect` or restarting the active Wi-Fi/DHCP service.

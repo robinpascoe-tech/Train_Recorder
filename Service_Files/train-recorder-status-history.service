@@ -1,0 +1,10 @@
+[Unit]
+Description=Record Train Recorder dashboard status history
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/train-recorder/common.env
+EnvironmentFile=-/etc/train-recorder/sync.env
+ExecStart=/opt/train-recorder/Scripts/status_history.py
