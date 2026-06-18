@@ -25,3 +25,21 @@ jobs:
 
       - name: Run ShellCheck
         run: shellcheck --severity=error --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
+
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
