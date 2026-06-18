@@ -110,12 +110,13 @@ class DashboardTests(unittest.TestCase):
         }
         self.history_payload = {"retention_hours": 24, "summary": {"snapshots": 1}}
 
-    def test_render_page_escapes_overall_text(self):
+    def test_render_page_escapes_initial_overall_text(self):
         payload = dict(self.status_payload)
         payload["overall"] = '<script>alert("x")</script>'
         with mock.patch.object(dashboard.status_json, "collect_status", return_value=payload):
             html = dashboard.render_page()
 
+        self.assertIn(">Loading</span>", html)
         self.assertIn("&lt;script&gt;alert", html)
         self.assertNotIn('<script>alert("x")</script>', html)
 
