@@ -293,6 +293,10 @@ def render_page() -> str:
     </div>
     <div class="grid" id="channels" style="margin-top:14px"></div>
     <section style="margin-top:14px">
+      <h2>Recent Recordings</h2>
+      <table id="recordings"></table>
+    </section>
+    <section style="margin-top:14px">
       <h2>History</h2>
       <div id="history" class="history"></div>
     </section>
@@ -335,6 +339,12 @@ def render_page() -> str:
       if (Number.isNaN(parsed)) return text(value);
       return age(Math.max(0, Math.floor((Date.now() - parsed) / 1000)));
     }};
+    const clippingText = clipping => `${{clipping.count}} warnings, max ${{clipping.max_samples}} samples`;
+    const wifiFailureText = item => {{
+      if (!item) return 'none';
+      const names = (item.failed_checks || []).map(check => check.name).join(', ');
+      return `${{ageIso(item.generated_at)}}${{names ? ' (' + names + ')' : ''}}`;
+    }};
     const findCheck = name => currentChecks.find(item => item.name === name);
     function fillTable(id, rows) {{
       document.getElementById(id).innerHTML = rows.join('');
@@ -348,6 +358,7 @@ def render_page() -> str:
       const nonOk = currentChecks.filter(item => !item.ok);
       const pending = data.storage.pending_recordings;
       const networkStatus = data.network.latest_check.available ? data.network.latest_check.overall : 'not run';
+      const lastWifiFailure = data.network.latest_check.last_failure;
       document.getElementById('headline').innerHTML = [
         `<div class="metric"><span>Overall</span><strong class="${{cls(data.overall)}}">${{data.overall}}</strong><small>${{data.summary.failures}} failures, ${{data.summary.warnings}} warnings</small></div>`,
         `<div class="metric"><span>Uptime</span><strong>${{duration(data.runtime?.uptime_seconds)}}</strong><small>since last boot</small></div>`,
@@ -377,8 +388,9 @@ def render_page() -> str:
         row('Last sync', age(data.events.sync?.age_seconds), checkClass(findCheck('recent sync'))),
         row('Last health', age(data.events.health?.age_seconds), checkClass(findCheck('train-recorder-health.timer'))),
         row('Last Wi-Fi check', data.network.latest_check.available ? ageIso(data.network.latest_check.generated_at) : 'not run', data.network.latest_check.overall === 'ok' ? 'ok' : 'warn'),
+        row('Last Wi-Fi failure', wifiFailureText(lastWifiFailure), lastWifiFailure ? 'warn' : 'ok'),
         row('Last cleanup', age(data.events.cleanup?.age_seconds), checkClass(findCheck('train-recorder-cleanup.timer'))),
-        row('SOX clipping', `${{data.clipping.count}} warnings, max ${{data.clipping.max_samples}} samples`, data.clipping.count ? 'warn' : 'ok')
+        row('SOX clipping', clippingText(data.clipping), data.clipping.ok ? 'ok' : 'warn')
       ]);
       fillTable('activity', [
         row('Uptime', duration(data.runtime?.uptime_seconds), 'ok'),
@@ -389,6 +401,14 @@ def render_page() -> str:
         row('First issue', nonOk.length ? nonOk[0].name : 'none', nonOk.length ? cls(nonOk[0].level) : 'ok')
       ]);
       renderHistory(data.history || {{}});
+      fillTable('recordings', data.channels.map(channel => {{
+        const recent = channel.recent_recordings || {{}};
+        const latest = recent.latest;
+        return row(
+          channel.frequency_mhz || channel.name,
+          `${{recent.count || 0}} saves, ${{bytes(recent.total_bytes || 0)}}${{latest ? '<br><span class="mono">' + latest.name + '</span> ' + age(latest.age_seconds) : '<br>latest none'}}`
+        );
+      }}));
       document.getElementById('channels').innerHTML = data.channels.map(channel => `
         <section>
           <h2>${{channel.frequency_mhz || channel.name}}</h2>
@@ -396,7 +416,8 @@ def render_page() -> str:
             ${{row('Service', `${{channel.service.active}} / ${{channel.service.enabled}}`, channel.service.ok ? 'ok' : 'fail')}}
             ${{row('Pulse source', channel.pulse_monitor || 'missing', channel.pulse_source_exists ? 'ok' : 'fail')}}
             ${{row('Last save', age(channel.last_save?.age_seconds))}}
-            ${{row('Clipping', `${{channel.clipping.count}} warnings`, channel.clipping.count ? 'warn' : 'ok')}}
+            ${{row('Recent saves', `${{channel.recent_recordings?.count || 0}}`, channel.recent_recordings?.count ? 'ok' : '')}}
+            ${{row('Clipping', clippingText(channel.clipping), channel.clipping.ok ? 'ok' : 'warn')}}
           </table>
         </section>`).join('');
       document.getElementById('checks').innerHTML = data.checks
@@ -413,7 +434,7 @@ def render_page() -> str:
         hist('Last Sample', age(summary.latest_age_seconds), latestOverall || 'none', cls(latestOverall)),
         hist('Operational Warnings', summary.operational_warning_snapshots || 0, 'excluding clipping', summary.operational_warning_snapshots ? 'warn' : 'ok'),
         hist('Pending Peak', summary.max_pending_recordings || 0, 'local MP3 files'),
-        hist('Clipping Samples', summary.clipping_snapshots || 0, `${{summary.clipping_total || 0}} total warnings`, summary.clipping_snapshots ? 'warn' : 'ok')
+        hist('Clipping Samples', summary.clipping_snapshots || 0, `${{summary.clipping_total || 0}} total warnings`, summary.clipping_warning_snapshots ? 'warn' : 'ok')
       ].join('');
     }}
     async function refresh() {{

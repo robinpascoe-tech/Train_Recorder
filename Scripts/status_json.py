@@ -23,6 +23,7 @@ CONFIG_DIR = Path(os.environ.get("CONFIG_DIR", "/etc/train-recorder"))
 RUN_USER = os.environ.get("RUN_USER", "pi")
 PULSE_SERVER = os.environ.get("PULSE_SERVER", "unix:/run/pulse/native")
 WIFI_CHECK_STATE = Path(os.environ.get("WIFI_CHECK_STATE", "/var/lib/train-recorder/wifi-check.json"))
+SAVE_RE = re.compile(r"Saved\s+(\S+)\s+\((\d+)\s+bytes\)")
 
 
 def read_env_file(path: Path) -> dict[str, str]:
@@ -50,6 +51,8 @@ def runtime_env() -> dict[str, str]:
         "CHECK_RECENT_SYNC_SUCCESS": "true",
         "MAX_SYNC_SUCCESS_AGE_MINUTES": "30",
         "CLIPPING_WINDOW_MINUTES": "1440",
+        "CLIPPING_WARN_COUNT": "50",
+        "CLIPPING_WARN_MAX_SAMPLES": "1000000",
         "JOURNAL_WINDOW_MINUTES": "10080",
     }
     env.update(read_env_file(CONFIG_DIR / "common.env"))
@@ -81,6 +84,13 @@ def run_cmd(command: list[str], timeout: int = 8, env: dict[str, str] | None = N
 
 def bool_env(value: str | None) -> bool:
     return str(value or "").lower() in {"1", "true", "yes", "on"}
+
+
+def int_env(env: dict[str, str], name: str, default: int) -> int:
+    try:
+        return int(env.get(name, str(default)))
+    except (TypeError, ValueError):
+        return default
 
 
 def channels_list(env: dict[str, str]) -> list[str]:
@@ -262,7 +272,48 @@ def last_journal_event(units: list[str], minutes: int, pattern: str) -> dict[str
     }
 
 
-def clipping_summary(units: list[str], minutes: int) -> dict[str, Any]:
+def recent_recordings(units: list[str], minutes: int, output_suffix: str) -> dict[str, Any]:
+    events: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for line in journal_lines(units, minutes):
+        epoch, message = parse_short_unix(line)
+        if epoch is None:
+            continue
+        match = SAVE_RE.search(message)
+        if not match:
+            continue
+        file_path = match.group(1)
+        if output_suffix and output_suffix not in Path(file_path).stem:
+            continue
+        key = (str(epoch), file_path)
+        if key in seen:
+            continue
+        seen.add(key)
+        events.append({
+            "epoch": epoch,
+            "iso": datetime.fromtimestamp(epoch, timezone.utc).isoformat(),
+            "age_seconds": max(0, int(time.time() - epoch)),
+            "path": file_path,
+            "name": Path(file_path).name,
+            "bytes": int(match.group(2)),
+        })
+    events.sort(key=lambda item: item["epoch"])
+    latest = events[-1] if events else None
+    return {
+        "count": len(events),
+        "total_bytes": sum(int(item["bytes"]) for item in events),
+        "latest": latest,
+        "window_minutes": minutes,
+    }
+
+
+def clipping_is_ok(summary: dict[str, Any], warn_count: int, warn_max_samples: int) -> bool:
+    count_ok = warn_count <= 0 or int(summary.get("count", 0)) < warn_count
+    samples_ok = warn_max_samples <= 0 or int(summary.get("max_samples", 0)) < warn_max_samples
+    return count_ok and samples_ok
+
+
+def clipping_summary(units: list[str], minutes: int, warn_count: int = 50, warn_max_samples: int = 1000000) -> dict[str, Any]:
     count = 0
     max_samples = 0
     for line in journal_lines(units, minutes, output="short"):
@@ -272,7 +323,15 @@ def clipping_summary(units: list[str], minutes: int) -> dict[str, Any]:
         match = re.search(r"balancing clipped ([0-9]+) samples", line)
         if match:
             max_samples = max(max_samples, int(match.group(1)))
-    return {"count": count, "max_samples": max_samples, "window_minutes": minutes}
+    summary = {
+        "count": count,
+        "max_samples": max_samples,
+        "window_minutes": minutes,
+        "warn_count": warn_count,
+        "warn_max_samples": warn_max_samples,
+    }
+    summary["ok"] = clipping_is_ok(summary, warn_count, warn_max_samples)
+    return summary
 
 
 def user_groups(user: str) -> list[str]:
@@ -316,6 +375,14 @@ def wifi_check_state() -> dict[str, Any]:
         return {"available": False, "path": str(WIFI_CHECK_STATE), "error": str(exc)}
     data["available"] = True
     data["path"] = str(WIFI_CHECK_STATE)
+    last_failure = data.get("last_failure")
+    if isinstance(last_failure, dict):
+        generated = last_failure.get("generated_at")
+        try:
+            parsed = datetime.fromisoformat(str(generated).replace("Z", "+00:00"))
+            last_failure["age_seconds"] = max(0, int((datetime.now(timezone.utc) - parsed).total_seconds()))
+        except (TypeError, ValueError):
+            pass
     return data
 
 
@@ -329,8 +396,10 @@ def collect_status() -> dict[str, Any]:
     pulse_server = env.get("PULSE_SERVER", PULSE_SERVER)
     source_names = pulse_sources(pulse_server)
     journal_window = int(env.get("JOURNAL_WINDOW_MINUTES", "10080"))
-    clipping_window = int(env.get("CLIPPING_WINDOW_MINUTES", "1440"))
-    sync_window = int(env.get("MAX_SYNC_SUCCESS_AGE_MINUTES", "30"))
+    clipping_window = int_env(env, "CLIPPING_WINDOW_MINUTES", 1440)
+    clipping_warn_count = int_env(env, "CLIPPING_WARN_COUNT", 50)
+    clipping_warn_max_samples = int_env(env, "CLIPPING_WARN_MAX_SAMPLES", 1000000)
+    sync_window = int_env(env, "MAX_SYNC_SUCCESS_AGE_MINUTES", 30)
 
     core_services = [service_status(name) for name in ["pulseaudio.service", "rtl_airband.service"]]
     timer_requirements = {
@@ -358,7 +427,8 @@ def collect_status() -> dict[str, Any]:
             "pulse_source_exists": monitor in source_names if monitor else False,
             "output_suffix": output_suffix,
             "last_save": last_save,
-            "clipping": clipping_summary(journal_units, clipping_window),
+            "recent_recordings": recent_recordings(journal_units, journal_window, output_suffix),
+            "clipping": clipping_summary(journal_units, clipping_window, clipping_warn_count, clipping_warn_max_samples),
         }
         channel_statuses.append(channel_item)
         all_journal_units.extend(journal_units)
@@ -428,8 +498,17 @@ def collect_status() -> dict[str, Any]:
             f"latest network check {wifi_check.get('overall', 'unknown')}",
         )
 
-    clipping = clipping_summary(sorted(set(all_journal_units)), clipping_window)
-    add_check(checks, "SOX clipping", "warn", clipping["count"] == 0, f"{clipping['count']} warnings")
+    clipping = clipping_summary(sorted(set(all_journal_units)), clipping_window, clipping_warn_count, clipping_warn_max_samples)
+    add_check(
+        checks,
+        "SOX clipping",
+        "warn",
+        bool(clipping["ok"]),
+        (
+            f"{clipping['count']} warnings, max {clipping['max_samples']} samples "
+            f"(warn at {clipping_warn_count}+ warnings or {clipping_warn_max_samples}+ samples)"
+        ),
+    )
 
     failures = [item for item in checks if not item["ok"] and item["level"] == "fail"]
     warnings = [item for item in checks if not item["ok"] and item["level"] == "warn"]

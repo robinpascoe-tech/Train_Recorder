@@ -21,6 +21,8 @@ VOX_CHANNELS="${VOX_CHANNELS:-freq160545,freq161265}"
 CHECK_RECENT_SYNC_SUCCESS="${CHECK_RECENT_SYNC_SUCCESS:-true}"
 MAX_SYNC_SUCCESS_AGE_MINUTES="${MAX_SYNC_SUCCESS_AGE_MINUTES:-30}"
 DOCTOR_LOG_WINDOW_MINUTES="${DOCTOR_LOG_WINDOW_MINUTES:-1440}"
+CLIPPING_WARN_COUNT="${CLIPPING_WARN_COUNT:-50}"
+CLIPPING_WARN_MAX_SAMPLES="${CLIPPING_WARN_MAX_SAMPLES:-1000000}"
 
 failures=0
 warnings=0
@@ -438,10 +440,17 @@ check_raspibackup
 
 section "Recent Warnings"
 clipping_count="$(journalctl --since "$DOCTOR_LOG_WINDOW_MINUTES minutes ago" --no-pager 2>/dev/null | grep -c 'balancing clipped' || true)"
-if [[ "$clipping_count" == "0" ]]; then
-  ok "no SOX clipping warnings in ${DOCTOR_LOG_WINDOW_MINUTES} minutes"
+clipping_max="$(journalctl --since "$DOCTOR_LOG_WINDOW_MINUTES minutes ago" --no-pager 2>/dev/null \
+  | grep -Eo 'balancing clipped [0-9]+ samples' \
+  | awk '{print $3}' \
+  | sort -n \
+  | tail -1 || true)"
+clipping_max="${clipping_max:-0}"
+if (( CLIPPING_WARN_COUNT > 0 && clipping_count >= CLIPPING_WARN_COUNT )) \
+  || (( CLIPPING_WARN_MAX_SAMPLES > 0 && clipping_max >= CLIPPING_WARN_MAX_SAMPLES )); then
+  warn "$clipping_count SOX clipping warnings in ${DOCTOR_LOG_WINDOW_MINUTES} minutes, max ${clipping_max} samples (thresholds: ${CLIPPING_WARN_COUNT} warnings, ${CLIPPING_WARN_MAX_SAMPLES} samples)"
 else
-  warn "$clipping_count SOX clipping warnings in ${DOCTOR_LOG_WINDOW_MINUTES} minutes"
+  ok "$clipping_count SOX clipping warnings in ${DOCTOR_LOG_WINDOW_MINUTES} minutes, max ${clipping_max} samples"
 fi
 
 echo

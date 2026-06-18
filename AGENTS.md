@@ -80,6 +80,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 - The health check and status summary read `VOX_CHANNELS` and source each channel env file. Per-channel recent-save behavior belongs in `HEALTH_CHECK_RECENT_SAVE` and `MAX_SAVE_AGE_MINUTES`, not hardcoded script logic.
 - Use `sudo /opt/train-recorder/Scripts/site_config.sh doctor` for install/runtime validation and `sudo /opt/train-recorder/Scripts/status_summary.sh` for a quick read-only operator summary before pulling detailed logs.
 - SOX clipping warnings have been observed. Shared `SOX_VOLUME` is `4`; production `freq160545.env` has been lowered to `SOX_VOLUME=2` after soak testing, while `freq161265` currently uses the shared default.
+- Clipping counts are expected to be visible in status/dashboard output; warning state is controlled by `CLIPPING_WARN_COUNT` and `CLIPPING_WARN_MAX_SAMPLES` in the shared env.
 - Channel env files load after `common.env`, so `SOX_VOLUME` can be tuned per channel. For RTLSDR-Airband-side false-open tuning, keep per-channel fields such as `squelch_snr_threshold` in `/etc/train-recorder/site.yaml`; current production desired state uses `squelch_snr_threshold: 14` for `freq161265`.
 - v1.3.0 is released and deployed to the Trixie Pi. It includes dashboard history, recording diagnostics, hardware watchdog docs/phase 1, and per-channel RTLSDR-Airband squelch generation.
 

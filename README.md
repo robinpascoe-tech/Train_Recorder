@@ -182,7 +182,9 @@ Useful variables:
 | `CHECK_RECENT_SYNC_SUCCESS` | `true` | Fail health checks when `train-recorder-sync.service` has not finished recently. |
 | `MAX_SYNC_SUCCESS_AGE_MINUTES` | `30` | Recent-success window for the rclone sync service. |
 | `RCLONE_MIN_AGE` | `15s` | Minimum file age before `sync.sh` allows rclone to move a completed MP3. |
-| `CLIPPING_WINDOW_MINUTES` | `1440` | Journal lookback window used by `status_summary.sh` for clipping warnings. |
+| `CLIPPING_WINDOW_MINUTES` | `1440` | Journal lookback window used by status, doctor, and dashboard clipping summaries. |
+| `CLIPPING_WARN_COUNT` | `50` | Warning threshold for SOX clipping messages within the clipping window; set `0` to disable the count threshold. |
+| `CLIPPING_WARN_MAX_SAMPLES` | `1000000` | Warning threshold for the largest SOX clipping sample count; set `0` to disable the peak-samples threshold. |
 | `JOURNAL_WINDOW_MINUTES` | `10080` | Journal lookback window used by `status_summary.sh` for last-event summaries. |
 | `RECORDING_DIAGNOSTICS_LOOKBACK_HOURS` | `24` | MP3 lookback window used by `recording_diagnostics.py`. |
 | `RECORDING_DIAGNOSTICS_JOURNAL_HOURS` | `24` | Journal lookback window used by `recording_diagnostics.py` for recent save events after rclone moves local files. |

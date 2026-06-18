@@ -8,6 +8,9 @@ This project follows a practical release process. Changes before the first publi
 
 ### Changed
 
+- SOX clipping checks now use configurable count and peak-sample thresholds so expected clipping remains visible without creating constant warnings.
+- Dashboard now shows recent recording save counts from the recorder journal and keeps clipping trend display separate from threshold-warning state.
+- Wi-Fi/network check state now preserves the most recent failure summary after recovery for dashboard and diagnostics visibility.
 - Documentation freshness and optimization pass across README, install, operations, release, roadmap, watchdog, hardware, and agent handoff notes.
 
 ## v1.3.0 - 2026-06-17

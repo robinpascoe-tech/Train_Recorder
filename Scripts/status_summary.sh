@@ -17,6 +17,8 @@ OUTPUT_ROOT="${OUTPUT_ROOT:-/home/pi/Recordings}"
 TEMP_DIR="${TEMP_DIR:-/mnt/ramdisk}"
 VOX_CHANNELS="${VOX_CHANNELS:-freq160545,freq161265}"
 CLIPPING_WINDOW_MINUTES="${CLIPPING_WINDOW_MINUTES:-1440}"
+CLIPPING_WARN_COUNT="${CLIPPING_WARN_COUNT:-50}"
+CLIPPING_WARN_MAX_SAMPLES="${CLIPPING_WARN_MAX_SAMPLES:-1000000}"
 JOURNAL_WINDOW_MINUTES="${JOURNAL_WINDOW_MINUTES:-10080}"
 
 now_epoch="$(date +%s)"
@@ -161,7 +163,7 @@ pending_recordings_summary() {
 clipping_summary() {
   local label="$1"
   local units="$2"
-  local logs="" unit count max
+  local logs="" unit count max status
 
   for unit in $units; do
     logs+="$(journalctl -u "$unit" --since "$CLIPPING_WINDOW_MINUTES minutes ago" --no-pager 2>/dev/null || true)"
@@ -169,13 +171,20 @@ clipping_summary() {
   done
 
   count="$(grep -c 'balancing clipped' <<<"$logs" || true)"
-  max="$(grep 'balancing clipped' <<<"$logs" \
-    | sed -E 's/.*balancing clipped ([0-9]+) samples.*/\1/' \
+  max="$(grep -Eo 'balancing clipped [0-9]+ samples' <<<"$logs" \
+    | awk '{print $3}' \
     | sort -n \
     | tail -1 || true)"
   max="${max:-0}"
+  status="ok"
+  if (( CLIPPING_WARN_COUNT > 0 && count >= CLIPPING_WARN_COUNT )); then
+    status="warn"
+  fi
+  if (( CLIPPING_WARN_MAX_SAMPLES > 0 && max >= CLIPPING_WARN_MAX_SAMPLES )); then
+    status="warn"
+  fi
 
-  printf '%-18s %s warnings, max %s samples in %s minutes\n' "$label:" "$count" "$max" "$CLIPPING_WINDOW_MINUTES"
+  printf '%-18s %s warnings, max %s samples in %s minutes (%s)\n' "$label:" "$count" "$max" "$CLIPPING_WINDOW_MINUTES" "$status"
 }
 
 disk_summary() {

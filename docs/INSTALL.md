@@ -227,7 +227,7 @@ sudo /opt/train-recorder/Scripts/site_config.sh apply
 sudo /opt/train-recorder/Scripts/site_config.sh doctor
 ```
 
-The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `plan` shows service-level changes, and `diff` shows generated file changes with Broadcastify mountpoint/password values redacted. `apply` runs preflight checks, backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, enables/restarts the configured `vox@...` services, and enables the health, cleanup, and sync timers when applicable. `doctor` is the read-only validation step after apply; it checks services, timers, PulseAudio sources, paths, permissions, packages, rclone reachability, known legacy-service pitfalls, PCP, raspiBackup hooks, and recent SOX clipping warnings. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
+The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `plan` shows service-level changes, and `diff` shows generated file changes with Broadcastify mountpoint/password values redacted. `apply` runs preflight checks, backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, enables/restarts the configured `vox@...` services, and enables the health, cleanup, and sync timers when applicable. `doctor` is the read-only validation step after apply; it checks services, timers, PulseAudio sources, paths, permissions, packages, rclone reachability, known legacy-service pitfalls, PCP, raspiBackup hooks, and SOX clipping against the configured warning thresholds. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
 
 For machine-readable status, run:
 
@@ -375,7 +375,7 @@ http://<pi-address>:8080/
 
 The service uses `DASHBOARD_HOST` and `DASHBOARD_PORT` environment variables from the systemd unit. Do not expose the dashboard directly to the internet; if remote access is needed, put authentication and TLS in front of it with a separate reverse proxy or VPN.
 
-The optional history timer writes compact snapshots to `/var/lib/train-recorder/status-history.json` every 5 minutes for the dashboard history panel.
+The dashboard also shows recent recorder `Saved ...` journal events per channel so activity remains visible after rclone has moved local MP3s. The optional history timer writes compact snapshots to `/var/lib/train-recorder/status-history.json` every 5 minutes for the dashboard history panel.
 
 ## Optional Wi-Fi and Network Check
 
@@ -399,7 +399,7 @@ sudo systemctl enable --now train-recorder-wifi-check.timer
 systemctl list-timers --all | grep train-recorder-wifi-check
 ```
 
-The timer runs every 5 minutes and does not attempt recovery by default. To try conservative recovery actions during a manual troubleshooting session:
+The timer runs every 5 minutes and does not attempt recovery by default. The state file preserves the last failed network check after the next successful run so the dashboard can show when Wi-Fi or remote reachability last had trouble. To try conservative recovery actions during a manual troubleshooting session:
 
 ```bash
 sudo /opt/train-recorder/Scripts/wifi_check.py --remedy

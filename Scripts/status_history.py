@@ -54,6 +54,7 @@ def compact_snapshot(status: dict[str, Any]) -> dict[str, Any]:
         "pending_recordings": status.get("storage", {}).get("pending_recordings", {}).get("count", 0),
         "pending_bytes": status.get("storage", {}).get("pending_recordings", {}).get("total_bytes", 0),
         "clipping_count": status.get("clipping", {}).get("count", 0),
+        "clipping_ok": status.get("clipping", {}).get("ok", True),
         "uptime_seconds": status.get("runtime", {}).get("uptime_seconds"),
     }
 
@@ -102,6 +103,7 @@ def summarize(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
     operational_warnings = sum(1 for item in snapshots if item.get("operational_warnings", 0))
     wifi_failures = sum(1 for item in snapshots if item.get("wifi_check_overall") == "fail")
     clipping_snapshots = sum(1 for item in snapshots if item.get("clipping_count", 0))
+    clipping_warning_snapshots = sum(1 for item in snapshots if item.get("clipping_ok") is False)
     max_pending = max((int(item.get("pending_recordings") or 0) for item in snapshots), default=0)
     clipping_total = sum(int(item.get("clipping_count") or 0) for item in snapshots)
     latest = snapshots[-1] if snapshots else {}
@@ -121,6 +123,7 @@ def summarize(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
         "operational_warning_snapshots": operational_warnings,
         "wifi_failure_snapshots": wifi_failures,
         "clipping_snapshots": clipping_snapshots,
+        "clipping_warning_snapshots": clipping_warning_snapshots,
         "max_pending_recordings": max_pending,
         "clipping_total": clipping_total,
     }

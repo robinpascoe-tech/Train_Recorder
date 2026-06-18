@@ -30,10 +30,12 @@ The summary reads recent journal history to report last saves, sync and cleanup 
 
 ```text
 CLIPPING_WINDOW_MINUTES=1440
+CLIPPING_WARN_COUNT=50
+CLIPPING_WARN_MAX_SAMPLES=1000000
 JOURNAL_WINDOW_MINUTES=10080
 ```
 
-Set those in `/etc/train-recorder/common.env` if the default windows are too short or too noisy for your site.
+Set those in `/etc/train-recorder/common.env` if the default windows or clipping warning thresholds are too short or too noisy for your site. A value of `0` disables the matching clipping threshold. Clipping counts remain visible even when they are below the warning threshold.
 
 ## Recording Sample Diagnostics
 
@@ -139,7 +141,7 @@ The dashboard exposes `/api/status` for the raw JSON payload. It is designed for
 
 For SSH, password, firewall, and dashboard exposure guidance, see [SECURITY.md](SECURITY.md).
 
-The dashboard includes host, IP, Wi-Fi SSID, service, timer, storage, sync, and latest Wi-Fi/network-check status. If the dashboard service was already running when scripts were updated, restart it so it loads the latest code:
+The dashboard includes host, IP, Wi-Fi SSID, service, timer, storage, sync, latest Wi-Fi/network-check status, recent journal save counts, and threshold-aware SOX clipping status. If the dashboard service was already running when scripts were updated, restart it so it loads the latest code:
 
 ```bash
 sudo systemctl restart train-recorder-dashboard.service
@@ -159,7 +161,7 @@ The history file is:
 /var/lib/train-recorder/status-history.json
 ```
 
-The dashboard reads this file to show sample freshness, operational warning trends, Wi-Fi failures, pending-recording peaks, and clipping trends. Clipping is displayed separately from operational warnings so a known audio-level tuning issue does not hide current service health. The history file is intentionally small JSON, not a database. The default retention window is 24 hours and can be changed with:
+The dashboard reads this file to show sample freshness, operational warning trends, Wi-Fi failures, pending-recording peaks, and clipping trends. Clipping is displayed separately from operational warnings so a known audio-level tuning issue does not hide current service health. Clipping samples are counted as a trend, while the warning color follows `CLIPPING_WARN_COUNT` and `CLIPPING_WARN_MAX_SAMPLES`. The history file is intentionally small JSON, not a database. The default retention window is 24 hours and can be changed with:
 
 ```text
 STATUS_HISTORY_RETENTION_HOURS=24
@@ -192,7 +194,7 @@ Enable the check-only timer:
 sudo systemctl enable --now train-recorder-wifi-check.timer
 ```
 
-The script checks local IP assignment, default gateway reachability, DNS resolution, rclone remote reachability when configured, and the local dashboard API. It also records Wi-Fi SSID when the installed network tools can detect it.
+The script checks local IP assignment, default gateway reachability, DNS resolution, rclone remote reachability when configured, and the local dashboard API. It also records Wi-Fi SSID when the installed network tools can detect it. The JSON state preserves `last_failure` after recovery so the dashboard and diagnostics bundle can show the most recent network failure age and failed check names.
 
 Manual remedy mode is available:
 

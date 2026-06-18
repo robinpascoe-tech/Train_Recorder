@@ -42,21 +42,21 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `train-recorder-cleanup.service` and `train-recorder-cleanup.timer` remove empty local date directories once a day. Empty directory cleanup is kept separate from the 5-minute rclone move job to avoid repeatedly deleting and recreating the current day's folder tree. Cleanup walks deepest-first, so an empty `Year/Month/Day` branch can be removed in one run, and logs a summary count instead of every deleted path.
 
-`status_summary.sh` is a read-only operator report. It summarizes service state, last recording saves, recent sync and cleanup success, pending local MP3s, clipping warnings, and disk usage.
+`status_summary.sh` is a read-only operator report. It summarizes service state, last recording saves, recent sync and cleanup success, pending local MP3s, threshold-aware clipping warnings, and disk usage.
 
 `recording_diagnostics.py` is a read-only sample-quality report. It scans recent local MP3s by channel suffix and uses `soxi`/`sox stat` on a bounded number of newest files to summarize durations, sizes, RMS amplitude, and peak amplitude for volume and VOX tuning. It also summarizes recent journal save events so activity remains visible after rclone moves local files.
 
 `validate_deploy.sh` is a read-only post-deploy validation checklist. It combines git state, core services, timers, doctor, dashboard endpoints, Wi-Fi/network status, operator summary, and recent warning-level logs into one repeatable command.
 
-`doctor.sh` is the read-only install and runtime validation command. The preferred entry point is `site_config.sh doctor`, which delegates to the standalone doctor script. It checks services, timers, configured channel sources, writable paths, ownership, required tools, rclone reachability, legacy services, PCP, raspiBackup hooks, and recent SOX clipping warnings.
+`doctor.sh` is the read-only install and runtime validation command. The preferred entry point is `site_config.sh doctor`, which delegates to the standalone doctor script. It checks services, timers, configured channel sources, writable paths, ownership, required tools, rclone reachability, legacy services, PCP, raspiBackup hooks, and SOX clipping against configurable thresholds.
 
-`status_json.py` is the machine-readable status collector used by `site_config.sh doctor --json` and the optional dashboard. It reports the same operational surface in JSON so future tools do not need to parse human-readable doctor output.
+`status_json.py` is the machine-readable status collector used by `site_config.sh doctor --json` and the optional dashboard. It reports the same operational surface in JSON so future tools do not need to parse human-readable doctor output. It also summarizes recent recorder save events from the journal so the dashboard can show channel activity even after rclone moves MP3s away.
 
-`status_history.py` records compact rolling snapshots from `status_json.py` to `/var/lib/train-recorder/status-history.json`. The optional `train-recorder-status-history.timer` runs it every 5 minutes so the dashboard can show 24-hour trend summaries without a database.
+`status_history.py` records compact rolling snapshots from `status_json.py` to `/var/lib/train-recorder/status-history.json`. The optional `train-recorder-status-history.timer` runs it every 5 minutes so the dashboard can show 24-hour trend summaries without a database. Clipping counts remain a trend metric, while clipping warning samples follow the configured thresholds.
 
 `dashboard.py` is an optional read-only Flask dashboard for LAN use. It serves a human status view at `/` and raw JSON at `/api/status`.
 
-`wifi_check.py` is an optional network health checker. It records hostname, IPs, Wi-Fi SSID when detectable, default gateway reachability, DNS resolution, rclone reachability, and local dashboard reachability to `/var/lib/train-recorder/wifi-check.json`. It can run in check-only mode from `train-recorder-wifi-check.timer`, or in explicit `--remedy` mode for conservative recovery attempts such as `wpa_cli reconnect` or restarting the active Wi-Fi/DHCP service.
+`wifi_check.py` is an optional network health checker. It records hostname, IPs, Wi-Fi SSID when detectable, default gateway reachability, DNS resolution, rclone reachability, and local dashboard reachability to `/var/lib/train-recorder/wifi-check.json`. The state keeps the most recent failed check summary after recovery so later dashboard views still show the last network trouble point. It can run in check-only mode from `train-recorder-wifi-check.timer`, or in explicit `--remedy` mode for conservative recovery attempts such as `wpa_cli reconnect` or restarting the active Wi-Fi/DHCP service.
 
 `collect_diagnostics.sh` gathers a sanitized support bundle. It includes doctor output, status JSON, service states, timers, journals, package versions, PulseAudio state, storage usage, recording counts, rclone checks, and redacted copies of Train Recorder configs.
 

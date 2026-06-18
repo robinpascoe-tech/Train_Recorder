@@ -145,6 +145,33 @@ def check_result(name: str, ok: bool, message: str, details: dict[str, Any] | No
     return {"name": name, "ok": ok, "message": message, "details": details or {}}
 
 
+def load_state() -> dict[str, Any]:
+    if not STATE_FILE.exists():
+        return {}
+    try:
+        data = json.loads(STATE_FILE.read_text())
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def failure_snapshot(checks: list[dict[str, Any]], generated_at: str) -> dict[str, Any] | None:
+    failures = [item for item in checks if not item.get("ok")]
+    if not failures:
+        return None
+    return {
+        "generated_at": generated_at,
+        "failed_checks": [
+            {
+                "name": item.get("name", ""),
+                "message": item.get("message", ""),
+            }
+            for item in failures
+        ],
+        "summary": f"{len(failures)} failed check(s): " + ", ".join(str(item.get("name", "")) for item in failures),
+    }
+
+
 def check_gateway(gateway: str) -> dict[str, Any]:
     if not gateway:
         return check_result("gateway", False, "no default gateway")
@@ -230,6 +257,8 @@ def remedy_actions() -> list[dict[str, Any]]:
 
 def collect(remedy: bool = False) -> dict[str, Any]:
     env = runtime_env()
+    previous_state = load_state()
+    generated_at = datetime.now(timezone.utc).isoformat()
     gateway = default_gateway()
     wifi = wifi_status()
     checks = [
@@ -245,8 +274,9 @@ def collect(remedy: bool = False) -> dict[str, Any]:
         actions = remedy_actions()
 
     overall = "fail" if failures else "ok"
+    last_failure = failure_snapshot(checks, generated_at) or previous_state.get("last_failure")
     return {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": generated_at,
         "host": platform.node(),
         "overall": overall,
         "remedy_requested": remedy,
@@ -261,6 +291,7 @@ def collect(remedy: bool = False) -> dict[str, Any]:
         "summary": {"failures": len(failures), "checks": len(checks), "actions": len(actions)},
         "checks": checks,
         "actions": actions,
+        "last_failure": last_failure,
     }
 
 
