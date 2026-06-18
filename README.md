@@ -159,6 +159,8 @@ The VOX recorder is intentionally parameterized with environment variables so ad
 
 The Python test suite now covers `site_config.py`, `status_json.py`, `wifi_check.py`, `recording_diagnostics.py`, `status_history.py`, and the dashboard API/render helpers. That coverage is intentionally helper-focused so operator-visible regressions are caught without needing a live Pi in CI.
 
+Failure-oriented tests now cover `site_config.py apply` paths for missing runtime directories, partial file-copy failures, `systemctl` failures, stale non-file targets, and restore-note output after backups are created.
+
 GitHub Actions runs a shell lint workflow on pushes to `main` and pull requests. To run the same checks on a Linux host:
 
 ```bash

@@ -707,6 +707,10 @@ def print_restore_notes(backup_root, mapping):
             print(f"- {dest} <= {backup}")
 
 
+def format_command(command):
+    return " ".join(str(part) for part in command)
+
+
 def apply_config(data, generated, yes=False, config_dir=DEFAULT_CONFIG_DIR, install_dir=DEFAULT_INSTALL_DIR):
     generated = Path(generated)
     if not generated.exists():
@@ -770,7 +774,15 @@ def apply_config(data, generated, yes=False, config_dir=DEFAULT_CONFIG_DIR, inst
     except subprocess.CalledProcessError as exc:
         print("apply failed; backup files are available for restore.")
         print_restore_notes(backup_root, backup_mapping)
-        raise SystemExit(f"apply failed while running: {' '.join(str(part) for part in exc.cmd)}") from exc
+        raise SystemExit(f"apply failed while running: {format_command(exc.cmd)}") from exc
+    except OSError as exc:
+        print("apply failed while updating files; backup files are available for restore.")
+        print_restore_notes(backup_root, backup_mapping)
+        raise SystemExit(f"apply failed while updating files: {exc}") from exc
+    except SystemExit as exc:
+        print("apply failed while updating files; backup files are available for restore.")
+        print_restore_notes(backup_root, backup_mapping)
+        raise
     finally:
         shutil.rmtree(temp_apply, ignore_errors=True)
 
