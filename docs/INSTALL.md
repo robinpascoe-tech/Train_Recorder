@@ -252,7 +252,7 @@ The wizard prompts are intentionally short. Use this reference when deciding wha
 | Require recent-save health warning for this channel | Whether health checks should warn when this channel has not saved a recording recently. Enable it for active channels; disable it for quiet channels that may go a day or two without traffic. |
 | Max save age minutes | Age threshold used when recent-save health warnings are enabled for the channel. |
 | Enable RTLSDR-Airband AFC for this channel | Enables RTLSDR-Airband automatic frequency correction for the channel. This can help track small tuning offsets; leave disabled if it causes unstable tuning on a quiet or adjacent channel. |
-| Optional RTLSDR-Airband squelch and filter fields | `site.yaml` channel entries may include `squelch_snr_threshold`, `squelch_threshold`, `bandwidth`, or `ctcss`. These are generated into the matching RTLSDR-Airband channel block. |
+| Optional RTLSDR-Airband squelch and filter fields | `site.yaml` channel entries may include `squelch_snr_threshold`, `squelch_threshold`, `bandwidth`, or `ctcss`. The wizard preserves existing values, but add new values directly in `site.yaml`; they are generated into the matching RTLSDR-Airband channel block. |
 | Stream one channel to Broadcastify/Icecast | Enables an Icecast/Broadcastify stream output in addition to local recording. |
 | Channel to stream | Channel env name to send to the Icecast/Broadcastify mixer. Usually the primary road or dispatch channel. |
 | Icecast server | Hostname supplied by Broadcastify or another Icecast provider. |

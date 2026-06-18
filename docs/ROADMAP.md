@@ -35,13 +35,13 @@ Release readiness:
 - v1.0.0 tagged and released.
 - v1.1.0 tagged and released.
 - v1.2.0 release notes prepared after an 18-hour clean dashboard soak on the fresh Trixie Pi.
+- v1.3.0 tagged and released with dashboard history, recording diagnostics, watchdog/security docs, and per-channel RTLSDR-Airband squelch generation.
 - Continue using [RELEASE.md](RELEASE.md) before future tags.
 
 Future ideas:
 
-- Soak-test the documented Raspberry Pi hardware watchdog plan before enabling it on unattended production hardware.
+- Continue soaking the Raspberry Pi hardware watchdog configuration before adding service-level watchdog settings.
 - Expand Wi-Fi/network remediation only after observing the first-pass timer in production. Avoid reboot loops unless explicitly configured and tested.
-- Consider exposing the dashboard only on the LAN by default, with clear notes that it should not be internet-facing without authentication and TLS handled outside the project.
 - Soak-test and harden `site_config.sh apply` with real frequency add/remove changes.
 - Continue monitoring SOX clipping warnings after longer soaks and adjust per-channel gain if needed.
 - Add optional runtime-only cleanup guidance for removing build dependencies after RTLSDR-Airband is built.

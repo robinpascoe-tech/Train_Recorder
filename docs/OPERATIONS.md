@@ -44,7 +44,9 @@ sudo /opt/train-recorder/Scripts/recording_diagnostics.py
 sudo /opt/train-recorder/Scripts/recording_diagnostics.py --json
 ```
 
-The report scans recent local MP3 files under `OUTPUT_ROOT`, grouped by each channel `OUTPUT_SUFFIX`, and runs bounded `soxi`/`sox stat` checks on the newest samples. It reports file counts, duration, size, average RMS amplitude, and maximum peak amplitude. Because rclone usually moves recordings quickly, it also reads recent recorder journal `Saved ...` events so save counts and byte totals remain visible after local files are gone.
+The report scans recent local MP3 files under `OUTPUT_ROOT`, grouped by each channel `OUTPUT_SUFFIX`, and runs bounded `soxi`/`sox stat` checks on the newest samples. Because rclone usually moves recordings quickly, it also reads recent recorder journal `Saved ...` events so save counts and byte totals remain visible after local files are gone.
+
+Use the text output for a quick tuning check. Use `--json` when comparing counts, byte totals, durations, RMS amplitude, and peak amplitude over time.
 
 Defaults:
 
@@ -54,7 +56,7 @@ RECORDING_DIAGNOSTICS_JOURNAL_HOURS=24
 RECORDING_DIAGNOSTICS_MAX_FILES=20
 ```
 
-Because rclone normally moves completed recordings out of the local spool, run this shortly after transmissions or temporarily widen the lookback only when local files are expected to remain available.
+When local sample counts are zero but recent saves are nonzero, rclone has already moved the MP3s. That is normal on healthy offload-enabled installs.
 
 ## RTLSDR-Airband Squelch Tuning
 
@@ -157,7 +159,7 @@ The history file is:
 /var/lib/train-recorder/status-history.json
 ```
 
-The dashboard reads this file to show recent failure, warning, Wi-Fi, pending-recording, and clipping trends. It is intentionally a small JSON file, not a database. The default retention window is 24 hours and can be changed with:
+The dashboard reads this file to show sample freshness, operational warning trends, Wi-Fi failures, pending-recording peaks, and clipping trends. Clipping is displayed separately from operational warnings so a known audio-level tuning issue does not hide current service health. The history file is intentionally small JSON, not a database. The default retention window is 24 hours and can be changed with:
 
 ```text
 STATUS_HISTORY_RETENTION_HOURS=24

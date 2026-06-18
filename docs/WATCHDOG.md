@@ -17,6 +17,18 @@ The preferred recovery order is:
 - `rtl_airband.service` currently uses `Restart=no` because startup failures are usually misconfiguration or SDR device failure. Changing this needs a separate soak test; blind restart loops could hide a broken SDR or bad config.
 - `pulseaudio.service` has no explicit restart policy in the project unit. If PulseAudio exits, downstream health checks and recorder services should fail clearly.
 
+## Current Production Status
+
+Phase 1 host-watchdog enablement has been tested on the Trixie Pi with console and physical access available. The disruptive watchdog test confirmed that the Pi rebooted when watchdog keepalives stopped, and the recorder stack validated cleanly after reboot. Keep the rollback steps below handy before enabling the same policy on any additional remote recorder.
+
+The current host-level override is:
+
+```ini
+[Manager]
+RuntimeWatchdogSec=30s
+RebootWatchdogSec=10min
+```
+
 ## Phase 1: Documented Manual Enablement
 
 Before enabling a watchdog on a remote recorder, confirm console or power-cycle access exists. A bad watchdog setup can create a reboot loop.
@@ -57,7 +69,7 @@ sudo /opt/train-recorder/Scripts/validate_deploy.sh
 
 ## Phase 2: Soak-Test Host Watchdog Only
 
-After enabling the host watchdog, soak before adding any service-level watchdog settings:
+After enabling the host watchdog, continue soaking before adding any service-level watchdog settings:
 
 - confirm the Pi does not reboot unexpectedly
 - confirm dashboard, doctor, and deploy validation remain green

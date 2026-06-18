@@ -6,7 +6,9 @@ This project follows a practical release process. Changes before the first publi
 
 ## Unreleased
 
-No unreleased changes.
+### Changed
+
+- Documentation freshness and optimization pass across README, install, operations, release, roadmap, watchdog, hardware, and agent handoff notes.
 
 ## v1.3.0 - 2026-06-17
 

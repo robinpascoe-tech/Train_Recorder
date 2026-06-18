@@ -11,6 +11,7 @@ The default example setup:
 - RTLSDR-Airband receiving two NFM channels from one RTL-SDR dongle.
 - 160.545 MHz streamed to Broadcastify/Icecast and sent to a PulseAudio sink.
 - 161.265 MHz sent to a second PulseAudio sink.
+- 161.265 MHz example config uses manual RTLSDR-Airband SNR squelch to reduce false opens on a quiet channel.
 - SOX-based VOX recorder services that write one MP3 per transmission.
 - Optional rclone sync/move of recordings to cloud storage.
 
@@ -109,19 +110,15 @@ AGENTS.md                    Context for future coding agents and maintainers.
 
    After a code deploy, run `sudo /opt/train-recorder/Scripts/validate_deploy.sh` for a repeatable read-only validation pass.
 
-See [docs/INSTALL.md](docs/INSTALL.md) for a fuller checklist.
+Reference docs:
 
-See [docs/OPERATIONS.md](docs/OPERATIONS.md) for log and retention guidance.
-
-See [docs/SECURITY.md](docs/SECURITY.md) for the Raspberry Pi hardening checklist.
-
-See [docs/WATCHDOG.md](docs/WATCHDOG.md) for hardware watchdog planning.
-
-See [docs/HARDWARE.md](docs/HARDWARE.md) for hardware notes and deployment details to collect.
-
-See [docs/ROADMAP.md](docs/ROADMAP.md) for follow-up ideas.
-
-See [docs/RELEASE.md](docs/RELEASE.md) for the release checklist.
+- [docs/INSTALL.md](docs/INSTALL.md): full install checklist.
+- [docs/OPERATIONS.md](docs/OPERATIONS.md): logs, dashboard, diagnostics, retention, and tuning.
+- [docs/SECURITY.md](docs/SECURITY.md): Raspberry Pi hardening checklist.
+- [docs/WATCHDOG.md](docs/WATCHDOG.md): hardware watchdog plan and rollback.
+- [docs/HARDWARE.md](docs/HARDWARE.md): tested hardware and deployment details to collect.
+- [docs/ROADMAP.md](docs/ROADMAP.md): completed work and follow-up ideas.
+- [docs/RELEASE.md](docs/RELEASE.md): release checklist.
 
 The sanitized recording directory example in [docs/OPERATIONS.md](docs/OPERATIONS.md#recording-retention) shows the dated folder tree and MP3 filename format.
 
@@ -191,18 +188,23 @@ Useful variables:
 | `RECORDING_DIAGNOSTICS_JOURNAL_HOURS` | `24` | Journal lookback window used by `recording_diagnostics.py` for recent save events after rclone moves local files. |
 | `RECORDING_DIAGNOSTICS_MAX_FILES` | `20` | Per-channel sample limit used by `recording_diagnostics.py`. |
 
-Channel settings also support:
+Channel environment files also support:
 
 | Variable | Purpose |
 | --- | --- |
 | `FREQUENCY_MHZ` | Human-readable channel frequency for reports. |
-| `squelch_snr_threshold` | Optional RTLSDR-Airband per-channel SNR squelch threshold generated into `rtl_airband.conf`. |
-| `squelch_threshold` | Optional RTLSDR-Airband per-channel absolute squelch threshold. |
-| `bandwidth` | Optional RTLSDR-Airband per-channel bandwidth limit. |
-| `ctcss` | Optional RTLSDR-Airband per-channel CTCSS tone. |
 | `HEALTH_CHECK_RECENT_SAVE` | Enables or disables recent-save health warnings for that channel. |
 | `MAX_SAVE_AGE_MINUTES` | Recent-save lookback window for that channel. |
 | `JOURNAL_UNITS` | Optional space-separated journal units to search for that channel, useful during migrations. |
+
+`site.yaml` channel entries also support these RTLSDR-Airband fields, which are generated into `rtl_airband.conf`:
+
+| Field | Purpose |
+| --- | --- |
+| `squelch_snr_threshold` | Optional per-channel SNR squelch threshold. The `161.265` example uses `14` after soak testing. |
+| `squelch_threshold` | Optional per-channel absolute squelch threshold. More gain/site dependent than SNR squelch. |
+| `bandwidth` | Optional per-channel bandwidth limit. |
+| `ctcss` | Optional per-channel CTCSS tone when the channel tone is known. |
 
 ## Public Release Checklist
 

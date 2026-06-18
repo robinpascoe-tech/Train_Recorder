@@ -25,7 +25,7 @@ Fill in or update these details from the installed site:
 
 ### Fresh Install Validation Pi
 
-Status: fresh install validated on Raspberry Pi OS Trixie.
+Status: fresh install validated on Raspberry Pi OS Trixie and used for v1.3.0 production validation.
 
 | Item | Details |
 | --- | --- |
@@ -38,7 +38,7 @@ Status: fresh install validated on Raspberry Pi OS Trixie.
 | Power supply | Raspberry Pi Micro-USB Power Adapter |
 | Cooling/enclosure | Raspberry Pi Aluminum Heatsink Case |
 | Network | Built-in Wifi |
-| Notes | Installed from project docs, recorded transmissions, and rclone-synced recordings successfully. |
+| Notes | Installed from project docs, recorded transmissions, rclone-synced recordings, served the dashboard/history view, ran the Wi-Fi/network timer, and validated the `161.265` SNR squelch setting. |
 
 ## Recommended Hardware Information to Capture
 
@@ -59,7 +59,7 @@ For each deployment, record:
 
 - One RTL-SDR can receive multiple nearby railway NFM channels when they fit inside the usable tuner bandwidth configured in `site.yaml`.
 - Strong local signals can still clip after demodulation or SOX gain. Use per-channel `SOX_VOLUME` overrides to tune recording loudness.
+- Quiet channels can false-open auto squelch during noise or interference events. Keep proven RTLSDR-Airband squelch values, such as `squelch_snr_threshold`, in `site.yaml` so generated config preserves them.
 - Poor power supplies and overheating can cause USB, SDR, or filesystem instability. Prefer a known-good power supply and basic cooling for unattended installs.
 - Antenna placement is often more important than SDR gain. Raise and clear the antenna before compensating with high gain.
 - Keep live Broadcastify credentials, rclone tokens, and exact private deployment details out of the public repository.
-
