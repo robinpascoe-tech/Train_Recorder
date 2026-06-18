@@ -143,7 +143,7 @@ sudo /opt/train-recorder/Scripts/site_config.sh apply
 sudo /opt/train-recorder/Scripts/site_config.sh doctor
 ```
 
-`generate` writes a preview to `/tmp/train-recorder-generated` by default. `diff` compares generated files with live files and redacts Broadcastify secrets in RTLSDR-Airband diffs. `apply` runs preflight checks, backs up replaced files, reconciles `vox@...` services, enables PulseAudio/RTLSDR-Airband, and enables the train-recorder timers.
+`generate` writes a preview to `/tmp/train-recorder-generated` by default. `diff` compares generated files with live files and redacts Broadcastify secrets in RTLSDR-Airband diffs. `apply` runs preflight checks, backs up replaced files, reconciles `vox@...` services, removes stale generated channel env files, disables the sync timer when `rclone_remote` is removed, and enables PulseAudio/RTLSDR-Airband plus the configured train-recorder timers.
 
 After applying a site config, run `sudo /opt/train-recorder/Scripts/site_config.sh doctor` for the read-only install and runtime validation check.
 
@@ -155,11 +155,14 @@ If `site.yaml` already exists, the wizard loads it and uses the current values a
 
 The VOX recorder is intentionally parameterized with environment variables so additional channels can be added without duplicating the recording loop. `vox@.service` starts one recorder instance per channel env file while `Scripts/vox_record.sh` holds the shared behavior. Each recorder service loads `common.env` first and its channel-specific env file second, so values such as `SOX_VOLUME` can be tuned per channel.
 
+`Scripts/site_config.sh` is now a thin shell wrapper around the testable Python implementation in `Scripts/site_config.py`. Keep behavior changes in the Python module so unit tests can cover parsing, generation, plan output, and apply reconciliation.
+
 GitHub Actions runs a shell lint workflow on pushes to `main` and pull requests. To run the same checks on a Linux host:
 
 ```bash
 bash -n Scripts/*.sh
 shellcheck --severity=error --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
 `SC1090` and `SC1091` are excluded because several scripts intentionally source runtime env files from `/etc/train-recorder`. CI currently fails only on error-level ShellCheck findings; warning and style cleanup can be handled separately without blocking operational fixes.

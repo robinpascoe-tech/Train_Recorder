@@ -29,6 +29,8 @@ Completed:
 - Read-only post-deploy validator for repeatable commit, service, timer, doctor, dashboard, Wi-Fi/network, summary, and warning-log checks.
 - Hardware watchdog planning notes for conservative host-level recovery, service policy review, soak testing, and rollback.
 - Dashboard history first pass with rolling JSON snapshots and 24-hour trend summaries.
+- `site_config.sh` refactored into a testable Python module with unit coverage for parsing, planning, apply reconciliation, and status helpers.
+- `site_config.sh apply` now cleans up stale generated channel env files and disables sync cleanly when `rclone_remote` is removed.
 
 Release readiness:
 
@@ -42,7 +44,6 @@ Future ideas:
 
 - Continue soaking the Raspberry Pi hardware watchdog configuration before adding service-level watchdog settings.
 - Expand Wi-Fi/network remediation only after observing the first-pass timer in production. Avoid reboot loops unless explicitly configured and tested.
-- Soak-test and harden `site_config.sh apply` with real frequency add/remove changes.
 - Continue monitoring SOX clipping warnings after longer soaks and adjust per-channel gain if needed.
 - Add optional runtime-only cleanup guidance for removing build dependencies after RTLSDR-Airband is built.
 - Add more hardware examples from other locations and antenna/SDR combinations.

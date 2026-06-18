@@ -6,11 +6,17 @@ This project follows a practical release process. Changes before the first publi
 
 ## Unreleased
 
+### Added
+
+- Unit-test harness for `site_config.py` and `status_json.py`, plus CI coverage for the Python test suite.
+
 ### Changed
 
 - SOX clipping checks now use configurable count and peak-sample thresholds so expected clipping remains visible without creating constant warnings.
 - Dashboard now shows recent recording save counts from the recorder journal and keeps clipping trend display separate from threshold-warning state.
 - Wi-Fi/network check state now preserves the most recent failure summary after recovery for dashboard and diagnostics visibility.
+- `site_config.sh` is now a thin wrapper around the testable `site_config.py` implementation.
+- `site_config.sh apply` now removes stale generated channel env files and disables sync cleanly when `rclone_remote` is removed.
 - Documentation freshness and optimization pass across README, install, operations, release, roadmap, watchdog, hardware, and agent handoff notes.
 
 ## v1.3.0 - 2026-06-17
