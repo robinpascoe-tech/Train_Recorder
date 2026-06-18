@@ -2,7 +2,7 @@
 
 ## Logs
 
-Train Recorder services write to the systemd journal. There are no project-managed flat log files by default.
+RailWave Pi services write to the systemd journal. There are no project-managed flat log files by default.
 
 Useful log commands:
 
@@ -212,7 +212,7 @@ For support or deeper troubleshooting, collect a sanitized diagnostics bundle:
 sudo /opt/train-recorder/Scripts/collect_diagnostics.sh
 ```
 
-The script writes a timestamped `.tar.gz` under `/tmp` by default. It gathers doctor output, status JSON, service states, timers, recent journals, package versions, PulseAudio sinks/sources, disk and log usage, recording counts and permissions, rclone reachability checks, and redacted copies of Train Recorder configs.
+The script writes a timestamped `.tar.gz` under `/tmp` by default. It gathers doctor output, status JSON, service states, timers, recent journals, package versions, PulseAudio sinks/sources, disk and log usage, recording counts and permissions, rclone reachability checks, and redacted copies of RailWave Pi configs.
 
 Known sensitive fields such as Broadcastify passwords, mountpoints, rclone tokens, and generic token/secret values are redacted from copied configs. Still review the bundle before sharing it publicly.
 
@@ -281,7 +281,7 @@ If `/var/log` is full, first find the large writers before increasing the tmpfs 
 /var/log/pcp
 ```
 
-PCP is not required for Train Recorder. Unless you intentionally use PCP metrics, disable it and remove its tmpfs logs:
+PCP is not required for RailWave Pi. Unless you intentionally use PCP metrics, disable it and remove its tmpfs logs:
 
 ```bash
 sudo systemctl disable --now pmcd pmlogger pmie pmproxy

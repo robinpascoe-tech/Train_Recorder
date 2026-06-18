@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small read-only Flask dashboard for Train Recorder."""
+"""Small read-only Flask dashboard for RailWave Pi."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def render_page() -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Train Recorder</title>
+  <title>RailWave Pi - Rail Radio Monitor & Archive</title>
   <style>
     :root {{
       color-scheme: light dark;
@@ -95,10 +95,32 @@ def render_page() -> str:
       gap: 16px;
       flex-wrap: wrap;
     }}
+    .brand {{
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }}
+    .brand-logo {{
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }}
+    .brand-copy {{
+      min-width: 0;
+    }}
     h1 {{
       margin: 0;
       font-size: clamp(1.35rem, 2.5vw, 2rem);
       font-weight: 700;
+      line-height: 1;
+    }}
+    .brand-copy p {{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 600;
     }}
     .status {{
       display: inline-flex;
@@ -276,7 +298,13 @@ def render_page() -> str:
 <body>
   <header>
     <div class="wrap top">
-      <h1>Train Recorder</h1>
+      <div class="brand">
+        <img class="brand-logo" src="/static/railwave-pi-logo.png" alt="RailWave Pi logo">
+        <div class="brand-copy">
+          <h1>RailWave Pi</h1>
+          <p>Rail Radio Monitor &amp; Archive</p>
+        </div>
+      </div>
       <div class="toolbar">
         <span id="generated">Loading</span>
         <button type="button" id="refresh">Refresh</button>

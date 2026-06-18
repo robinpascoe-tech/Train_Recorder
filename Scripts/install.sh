@@ -235,7 +235,7 @@ disable_user_pulseaudio() {
   fi
 
   "${SUDO[@]}" pkill -u "$RUN_USER" -x pulseaudio 2>/dev/null || true
-  echo "system-mode pulseaudio.service should be the only PulseAudio daemon used by Train Recorder."
+  echo "system-mode pulseaudio.service should be the only PulseAudio daemon used by RailWave Pi."
 }
 
 install_rclone() {
@@ -419,7 +419,7 @@ run_install_validation() {
   fi
 }
 
-echo "Train Recorder installer"
+echo "RailWave Pi installer"
 echo "Repo root:    $REPO_ROOT"
 echo "Install dir:  $INSTALL_DIR"
 echo "Config dir:   $CONFIG_DIR"

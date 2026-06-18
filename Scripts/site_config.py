@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Train Recorder site configuration tool."""
+"""RailWave Pi site configuration tool."""
 
 from __future__ import annotations
 
@@ -425,12 +425,12 @@ def generate_rtl_airband(data):
                 f"        server = {q(broadcastify.get('server', 'audio9.broadcastify.com'))};",
                 f"        port = {int(broadcastify.get('port', 80))};",
                 f"        mountpoint = {q(broadcastify.get('mountpoint', 'YOUR_MOUNTPOINT'))};",
-                f"        name = {q(broadcastify.get('name', data.get('site', {}).get('name', 'Train Recorder')))};",
+                f"        name = {q(broadcastify.get('name', data.get('site', {}).get('name', 'RailWave Pi')))};",
                 f"        genre = {q(broadcastify.get('genre', 'RAIL'))};",
                 f"        username = {q(broadcastify.get('username', 'source'))};",
                 f"        password = {q(broadcastify.get('password', 'YOUR_BROADCASTIFY_PASSWORD'))};",
                 f"        send_scan_freq_tags = {str(bool_value(broadcastify.get('send_scan_freq_tags'), False)).lower()};",
-                f"        description = {q(broadcastify.get('description', data.get('site', {}).get('name', 'Train Recorder')))};",
+                f"        description = {q(broadcastify.get('description', data.get('site', {}).get('name', 'RailWave Pi')))};",
                 "      }",
                 "    );",
                 "  }",
@@ -769,7 +769,7 @@ def wizard(path):
         channel_defaults = []
 
     channels = []
-    site_name = prompt("Site name", site_defaults.get("name", "Train Recorder"))
+    site_name = prompt("Site name", site_defaults.get("name", "RailWave Pi"))
     count = int(prompt("How many frequencies should be recorded", str(len(channel_defaults) or 2)))
     for idx in range(count):
         defaults = existing_channel(channel_defaults, idx)
@@ -923,7 +923,7 @@ def cmd_doctor(args):
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="site_config.sh",
-        description="Train Recorder site configuration tool",
+        description="RailWave Pi site configuration tool",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

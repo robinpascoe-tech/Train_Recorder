@@ -1,4 +1,4 @@
-# Example Train Recorder site definition.
+# Example RailWave Pi site definition.
 #
 # Copy to /etc/train-recorder/site.yaml and edit, or create it with:
 #   sudo /opt/train-recorder/Scripts/site_config.sh wizard

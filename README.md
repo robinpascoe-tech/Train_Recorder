@@ -1,10 +1,14 @@
-# Train Recorder
+# RailWave Pi - Rail Radio Monitor & Archive
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Raspberry Pi railway radio recorder using an RTL-SDR receiver, RTLSDR-Airband, PulseAudio null sinks, SOX voice-activated recording, and optional rclone offload.
+![RailWave Pi logo](docs/assets/railwave-pi-logo.png)
+
+RailWave Pi is a Raspberry Pi rail radio monitor and archive using an RTL-SDR receiver, RTLSDR-Airband, PulseAudio null sinks, SOX voice-activated recording, and optional rclone offload.
 
 The checked-in examples target an Ontario Northland Railway monitoring setup, but new installs should customize the site with `/etc/train-recorder/site.yaml`.
+
+For backward compatibility, installed paths, generated config directories, and systemd unit names still use the existing `train-recorder` identifiers.
 
 The default example setup:
 
@@ -235,3 +239,7 @@ Channel environment files also support:
 - Complete [docs/RELEASE.md](docs/RELEASE.md) before tagging a release.
 - Fill in hardware notes for the exact Raspberry Pi, RTL-SDR dongle, antenna, and power setup.
 - Add screenshots or sample sanitized logs if useful for troubleshooting.
+
+## Disclaimer
+
+This project is an independent, non-commercial hobbyist development. All product names, logos, and brands, including Raspberry Pi and Ontario Northland Railway, are property of their respective owners. Their use here does not imply affiliation, endorsement, or sponsorship.

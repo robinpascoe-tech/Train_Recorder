@@ -378,7 +378,7 @@ section() {
   printf '\n%s\n' "$1"
 }
 
-echo "Train Recorder Doctor"
+echo "RailWave Pi Doctor"
 echo "Generated: $(date)"
 echo "Host:      $(hostname)"
 

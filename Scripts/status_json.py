@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Emit read-only Train Recorder status as JSON."""
+"""Emit read-only RailWave Pi status as JSON."""
 
 from __future__ import annotations
 

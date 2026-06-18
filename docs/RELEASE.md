@@ -67,7 +67,7 @@ Use this checklist before tagging a public release.
 9. Create and push the tag:
 
    ```bash
-   git tag -a vX.Y.Z -m "Train Recorder vX.Y.Z"
+   git tag -a vX.Y.Z -m "RailWave Pi vX.Y.Z"
    git push origin vX.Y.Z
    ```
 

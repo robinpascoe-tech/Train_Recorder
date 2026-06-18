@@ -125,7 +125,7 @@ PY
 
 source_env
 
-echo "Train Recorder Deploy Validation"
+echo "RailWave Pi Deploy Validation"
 echo "Generated: $(date)"
 echo "Host:      $(hostname)"
 

@@ -305,7 +305,7 @@ def write_state(data: dict[str, Any]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Check Train Recorder network/Wi-Fi health")
+    parser = argparse.ArgumentParser(description="Check RailWave Pi network/Wi-Fi health")
     parser.add_argument("--json", action="store_true", help="print JSON instead of a short text summary")
     parser.add_argument("--remedy", action="store_true", help="try conservative recovery actions if checks fail")
     parser.add_argument("--no-write-state", action="store_true", help="do not write the state file")

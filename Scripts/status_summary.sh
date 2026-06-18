@@ -197,7 +197,7 @@ disk_summary() {
   printf '%-18s %s\n' "RAM disk:" "${temp_line:-unavailable}"
 }
 
-echo "Train Recorder Status"
+echo "RailWave Pi Status"
 echo "Generated:         $(date)"
 echo
 service_summary

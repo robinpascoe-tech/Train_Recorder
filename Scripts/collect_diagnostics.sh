@@ -86,7 +86,7 @@ source_runtime_env() {
 source_runtime_env
 
 cat >"$bundle_dir/README.txt" <<EOF
-Train Recorder diagnostics bundle
+RailWave Pi diagnostics bundle
 Generated: $(date)
 Host: $hostname_short
 

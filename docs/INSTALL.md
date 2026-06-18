@@ -2,6 +2,8 @@
 
 These notes assume a Raspberry Pi-style Linux host and an install path of `/opt/train-recorder`.
 
+RailWave Pi is the project name, while the installed path and service identifiers remain `train-recorder` for compatibility with existing deployments.
+
 ## Dependencies
 
 The installer can offer to install these packages for you:
@@ -175,7 +177,7 @@ sudo systemctl disable --now pmcd pmlogger pmie pmproxy
 sudo rm -rf /var/log/pcp
 ```
 
-PCP can quickly fill a small `/var/log` tmpfs with performance archives. It is not required by Train Recorder, RTLSDR-Airband, PulseAudio, SOX, or rclone. See [OPERATIONS.md](OPERATIONS.md) for checking log usage during long soaks.
+PCP can quickly fill a small `/var/log` tmpfs with performance archives. It is not required by RailWave Pi, RTLSDR-Airband, PulseAudio, SOX, or rclone. See [OPERATIONS.md](OPERATIONS.md) for checking log usage during long soaks.
 
 ## PulseAudio Access
 
@@ -196,7 +198,7 @@ sudo systemctl restart rtl_airband.service
 sudo systemctl restart 'vox@*.service'
 ```
 
-On desktop-capable Raspberry Pi OS images, installing PulseAudio can also enable a per-user PulseAudio service and socket for `pi`. Train Recorder does not use that user session daemon; it should use only the system-mode `pulseaudio.service`. The installer offers to disable the per-user service by masking:
+On desktop-capable Raspberry Pi OS images, installing PulseAudio can also enable a per-user PulseAudio service and socket for `pi`. RailWave Pi does not use that user session daemon; it should use only the system-mode `pulseaudio.service`. The installer offers to disable the per-user service by masking:
 
 ```text
 ~pi/.config/systemd/user/pulseaudio.service

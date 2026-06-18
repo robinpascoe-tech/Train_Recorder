@@ -191,7 +191,7 @@ def collect(lookback_hours: float, max_files: int, journal_hours: float) -> dict
 
 
 def print_text(payload: dict[str, Any]) -> None:
-    print("Train Recorder Recording Diagnostics")
+    print("RailWave Pi Recording Diagnostics")
     print(f"Output root: {payload['output_root']}")
     print(f"Lookback:    {payload['lookback_hours']} hours")
     print(f"Journal:     {payload['journal_hours']} hours")
@@ -215,7 +215,7 @@ def print_text(payload: dict[str, Any]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Summarize recent Train Recorder MP3 samples")
+    parser = argparse.ArgumentParser(description="Summarize recent RailWave Pi MP3 samples")
     parser.add_argument("--json", action="store_true", help="print JSON")
     parser.add_argument("--lookback-hours", type=float, default=float(os.environ.get("RECORDING_DIAGNOSTICS_LOOKBACK_HOURS", "24")))
     parser.add_argument("--journal-hours", type=float, default=float(os.environ.get("RECORDING_DIAGNOSTICS_JOURNAL_HOURS", "24")))

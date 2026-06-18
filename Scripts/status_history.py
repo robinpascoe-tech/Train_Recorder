@@ -141,7 +141,7 @@ def read_payload(retention_hours: int = DEFAULT_RETENTION_HOURS) -> dict[str, An
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Maintain Train Recorder status history")
+    parser = argparse.ArgumentParser(description="Maintain RailWave Pi status history")
     parser.add_argument("--json", action="store_true", help="print the current history as JSON")
     parser.add_argument("--no-write", action="store_true", help="do not append a new snapshot")
     parser.add_argument("--retention-hours", type=int, default=DEFAULT_RETENTION_HOURS)
