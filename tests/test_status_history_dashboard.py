@@ -84,6 +84,8 @@ class StatusHistoryTests(unittest.TestCase):
 
 class DashboardTests(unittest.TestCase):
     def setUp(self):
+        dashboard._STATUS_CACHE["payload"] = None
+        dashboard._STATUS_CACHE["expires_at"] = 0.0
         self.status_payload = {
             "generated_at": "2026-06-18T15:00:00+00:00",
             "overall": "warn",
