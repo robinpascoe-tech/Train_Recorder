@@ -214,7 +214,7 @@ def check_dashboard() -> dict[str, Any]:
     if not service_is_active("train-recorder-dashboard.service"):
         return check_result("dashboard", True, "dashboard service is not active", {"configured": False})
     try:
-        with urlopen(f"http://127.0.0.1:{DASHBOARD_PORT}/api/status", timeout=8) as response:
+        with urlopen(f"http://127.0.0.1:{DASHBOARD_PORT}/api/status", timeout=15) as response:
             ok = response.status == 200
             return check_result("dashboard", ok, f"dashboard HTTP {response.status}", {"configured": True, "port": DASHBOARD_PORT})
     except URLError as exc:

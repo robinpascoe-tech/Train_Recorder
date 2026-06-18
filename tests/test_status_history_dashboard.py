@@ -143,6 +143,31 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(status_data["history"], self.history_payload)
         self.assertEqual(history_data, self.history_payload)
 
+    def test_api_status_reuses_cached_snapshot_within_ttl(self):
+        payload = dict(self.status_payload)
+        with (
+            mock.patch.object(
+                dashboard.status_json,
+                "collect_status",
+                return_value=payload,
+            ) as collect_status,
+            mock.patch.object(
+                dashboard.status_history,
+                "read_payload",
+                return_value=self.history_payload,
+            ),
+            mock.patch.object(dashboard.time, "monotonic", side_effect=[100.0, 100.0]),
+        ):
+            dashboard._STATUS_CACHE["payload"] = None
+            dashboard._STATUS_CACHE["expires_at"] = 0.0
+            client = dashboard.app.test_client()
+            first = client.get("/api/status")
+            second = client.get("/api/status")
+
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(collect_status.call_count, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

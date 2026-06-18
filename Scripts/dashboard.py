@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import time
 from html import escape
 
 from flask import Flask, jsonify
@@ -14,9 +15,29 @@ import status_json
 
 app = Flask(__name__)
 
+DASHBOARD_STATUS_CACHE_SECONDS = float(os.environ.get("DASHBOARD_STATUS_CACHE_SECONDS", "10"))
+_STATUS_CACHE: dict[str, object] = {
+    "expires_at": 0.0,
+    "payload": None,
+}
+
+
+def dashboard_status(force: bool = False) -> dict:
+    now = time.monotonic()
+    cached = _STATUS_CACHE.get("payload")
+    expires_at = float(_STATUS_CACHE.get("expires_at", 0.0))
+    if not force and isinstance(cached, dict) and now < expires_at:
+        return dict(cached)
+
+    payload = status_json.collect_status()
+    payload["history"] = status_history.read_payload()
+    _STATUS_CACHE["payload"] = payload
+    _STATUS_CACHE["expires_at"] = now + max(0.0, DASHBOARD_STATUS_CACHE_SECONDS)
+    return dict(payload)
+
 
 def render_page() -> str:
-    status = status_json.collect_status()
+    status = dashboard_status()
     data = escape(status["overall"])
     return f"""<!doctype html>
 <html lang="en">
@@ -453,9 +474,7 @@ def index() -> str:
 
 @app.route("/api/status")
 def api_status():
-    status = status_json.collect_status()
-    status["history"] = status_history.read_payload()
-    return jsonify(status)
+    return jsonify(dashboard_status())
 
 
 @app.route("/api/history")
