@@ -9,6 +9,7 @@ This project follows a practical release process. Changes before the first publi
 ### Added
 
 - Unit-test harness for `site_config.py` and `status_json.py`, plus CI coverage for the Python test suite.
+- Unit coverage for `wifi_check.py`, `recording_diagnostics.py`, `status_history.py`, and dashboard API/render helpers.
 
 ### Changed
 

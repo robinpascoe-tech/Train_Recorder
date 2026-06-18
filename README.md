@@ -157,6 +157,8 @@ The VOX recorder is intentionally parameterized with environment variables so ad
 
 `Scripts/site_config.sh` is now a thin shell wrapper around the testable Python implementation in `Scripts/site_config.py`. Keep behavior changes in the Python module so unit tests can cover parsing, generation, plan output, and apply reconciliation.
 
+The Python test suite now covers `site_config.py`, `status_json.py`, `wifi_check.py`, `recording_diagnostics.py`, `status_history.py`, and the dashboard API/render helpers. That coverage is intentionally helper-focused so operator-visible regressions are caught without needing a live Pi in CI.
+
 GitHub Actions runs a shell lint workflow on pushes to `main` and pull requests. To run the same checks on a Linux host:
 
 ```bash
