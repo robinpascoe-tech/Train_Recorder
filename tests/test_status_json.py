@@ -14,9 +14,7 @@ class StatusJsonTests(unittest.TestCase):
             "1000 host unit: Saved /tmp/20260618_120000_160.545.mp3 (100 bytes)",
             "1005 host unit: Saved /tmp/20260618_120500_161.265.mp3 (200 bytes)",
         ]
-        with mock.patch.object(status_json, "journal_lines", return_value=lines), mock.patch.object(
-            status_json.time, "time", return_value=1010
-        ):
+        with mock.patch.object(status_json, "journal_lines", return_value=lines), mock.patch.object(status_json.time, "time", return_value=1010):
             summary = status_json.recent_recordings(["vox@freq160545.service"], 60, "_160.545")
 
         self.assertEqual(summary["count"], 1)

@@ -115,12 +115,7 @@ def yaml_quote(value):
     if value is None:
         return ""
     text = str(value)
-    if (
-        text == ""
-        or any(ch in text for ch in [":", "#", '"', "'"])
-        or text.lower() in ("true", "false", "null")
-        or re.match(r"^0\d+$", text)
-    ):
+    if text == "" or any(ch in text for ch in [":", "#", '"', "'"]) or text.lower() in ("true", "false", "null") or re.match(r"^0\d+$", text):
         return '"' + text.replace('"', '\\"') + '"'
     return text
 
@@ -261,9 +256,7 @@ def validate_site(data):
     bandwidth = float(sdr.get("bandwidth_mhz", 2.4))
     spread = max(freqs) - min(freqs)
     if spread > bandwidth:
-        raise SystemExit(
-            f"frequency spread {spread:.6f} MHz exceeds configured SDR bandwidth {bandwidth:.6f} MHz"
-        )
+        raise SystemExit(f"frequency spread {spread:.6f} MHz exceeds configured SDR bandwidth {bandwidth:.6f} MHz")
 
 
 def channel_name(channel):
@@ -483,7 +476,7 @@ def generate_rtl_airband(data):
                 f"  {mixer_name}: {{",
                 "    outputs: (",
                 "      {",
-                '        disable = false;',
+                "        disable = false;",
                 '        type = "icecast";',
                 f"        server = {q(broadcastify.get('server', 'audio9.broadcastify.com'))};",
                 f"        port = {int(broadcastify.get('port', 80))};",
@@ -606,10 +599,7 @@ def validate_generated_files(data, generated, install_dir=DEFAULT_INSTALL_DIR):
     repo_template = Path(install_dir) / "Service_Files" / "vox@.service"
     installed_template = SYSTEMD_DIR / "vox@.service"
     if not repo_template.is_file() and not installed_template.is_file():
-        raise SystemExit(
-            "preflight failed: required vox@.service template missing from "
-            f"{repo_template} and {installed_template}"
-        )
+        raise SystemExit(f"preflight failed: required vox@.service template missing from {repo_template} and {installed_template}")
 
     site = data.get("site", {})
     output_root = site.get("output_root", "/home/pi/Recordings")
@@ -779,7 +769,7 @@ def apply_config(data, generated, yes=False, config_dir=DEFAULT_CONFIG_DIR, inst
         print("apply failed while updating files; backup files are available for restore.")
         print_restore_notes(backup_root, backup_mapping)
         raise SystemExit(f"apply failed while updating files: {exc}") from exc
-    except SystemExit as exc:
+    except SystemExit:
         print("apply failed while updating files; backup files are available for restore.")
         print_restore_notes(backup_root, backup_mapping)
         raise
@@ -854,9 +844,7 @@ def wizard(path):
                 "Require recent-save health warning for this channel",
                 bool_value(defaults.get("health_check_recent_save"), idx == 0),
             ),
-            "max_save_age_minutes": int(
-                prompt("Max save age minutes", defaults.get("max_save_age_minutes", "1440" if idx == 0 else "4320"))
-            ),
+            "max_save_age_minutes": int(prompt("Max save age minutes", defaults.get("max_save_age_minutes", "1440" if idx == 0 else "4320"))),
             "afc": prompt_bool(
                 "Enable RTLSDR-Airband AFC for this channel",
                 bool_value(defaults.get("afc"), idx == 0),
@@ -879,13 +867,9 @@ def wizard(path):
                 "channel": prompt("Channel to stream", default_channel),
                 "server": prompt("Icecast server", broadcastify_defaults.get("server", "audio9.broadcastify.com")),
                 "port": int(prompt("Icecast port", broadcastify_defaults.get("port", "80"))),
-                "mountpoint": prompt_secret(
-                    "Icecast mountpoint", broadcastify_defaults.get("mountpoint", "YOUR_MOUNTPOINT")
-                ),
+                "mountpoint": prompt_secret("Icecast mountpoint", broadcastify_defaults.get("mountpoint", "YOUR_MOUNTPOINT")),
                 "username": prompt("Icecast username", broadcastify_defaults.get("username", "source")),
-                "password": prompt_secret(
-                    "Icecast password", broadcastify_defaults.get("password", "YOUR_PASSWORD")
-                ),
+                "password": prompt_secret("Icecast password", broadcastify_defaults.get("password", "YOUR_PASSWORD")),
                 "name": prompt("Feed name", broadcastify_defaults.get("name", site_name)),
                 "genre": prompt("Genre", broadcastify_defaults.get("genre", "RAIL")),
                 "description": prompt("Description", broadcastify_defaults.get("description", site_name)),

@@ -252,18 +252,8 @@ class PlanAndApplyTests(unittest.TestCase):
         self.assertFalse((config_dir / "oldchan.env").exists())
         self.assertFalse((config_dir / "sync.env").exists())
         self.assertTrue((config_dir / "freq160545.env").exists())
-        self.assertTrue(
-            any(
-                command[-3:] == ["disable", "--now", "train-recorder-sync.timer"]
-                for command, _ in commands
-            )
-        )
-        self.assertTrue(
-            any(
-                command[-3:] == ["disable", "--now", "vox@oldchan.service"]
-                for command, _ in commands
-            )
-        )
+        self.assertTrue(any(command[-3:] == ["disable", "--now", "train-recorder-sync.timer"] for command, _ in commands))
+        self.assertTrue(any(command[-3:] == ["disable", "--now", "vox@oldchan.service"] for command, _ in commands))
 
         backup_root = next((config_dir / "backups").iterdir())
         self.assertTrue((backup_root / "oldchan.env").exists())
@@ -313,9 +303,7 @@ class PlanAndApplyTests(unittest.TestCase):
             mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]),
             mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]),
             mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]),
-            mock.patch.object(
-                site_config, "copy_with_backup", side_effect=flaky_copy
-            ),
+            mock.patch.object(site_config, "copy_with_backup", side_effect=flaky_copy),
             contextlib.redirect_stdout(stdout),
         ):
             with self.assertRaises(SystemExit) as raised:
@@ -406,9 +394,7 @@ class PlanAndApplyTests(unittest.TestCase):
                     install_dir=fixture["install_dir"],
                 )
 
-        self.assertIn(
-            "refusing to remove non-file path during apply", str(raised.exception)
-        )
+        self.assertIn("refusing to remove non-file path during apply", str(raised.exception))
         self.assertIn(
             "apply failed while updating files; backup files are available for restore.",
             stdout.getvalue(),

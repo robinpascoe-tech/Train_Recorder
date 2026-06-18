@@ -7,9 +7,7 @@ from unittest import mock
 from support import load_script_module
 
 
-status_json_module = load_script_module(
-    "Scripts/status_json.py", "train_recorder_status_json_for_dashboard"
-)
+status_json_module = load_script_module("Scripts/status_json.py", "train_recorder_status_json_for_dashboard")
 sys.modules["status_json"] = status_json_module
 status_history = load_script_module("Scripts/status_history.py", "train_recorder_status_history")
 sys.modules["status_history"] = status_history

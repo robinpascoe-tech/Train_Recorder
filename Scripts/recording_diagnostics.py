@@ -76,13 +76,15 @@ def recent_save_events(channel: str, suffix: str, journal_hours: float) -> list[
             if key in seen:
                 continue
             seen.add(key)
-            events.append({
-                "time": line.split(maxsplit=1)[0],
-                "path": match.group(1),
-                "name": Path(match.group(1)).name,
-                "bytes": int(match.group(2)),
-                "unit": unit,
-            })
+            events.append(
+                {
+                    "time": line.split(maxsplit=1)[0],
+                    "path": match.group(1),
+                    "name": Path(match.group(1)).name,
+                    "bytes": int(match.group(2)),
+                    "unit": unit,
+                }
+            )
     return sorted(events, key=lambda item: item.get("time", ""))
 
 
@@ -174,15 +176,17 @@ def collect(lookback_hours: float, max_files: int, journal_hours: float) -> dict
         files = mp3_files(root, suffix, lookback_hours)
         samples = [analyze_file(path) for path in files[:max_files]]
         save_events = recent_save_events(channel, suffix, journal_hours)
-        payload["channels"].append({
-            "name": channel,
-            "frequency_mhz": channel_env.get("FREQUENCY_MHZ", ""),
-            "output_suffix": suffix,
-            "matching_files": len(files),
-            "summary": summarize_samples(samples),
-            "recent_saves": summarize_events(save_events),
-            "samples": samples,
-        })
+        payload["channels"].append(
+            {
+                "name": channel,
+                "frequency_mhz": channel_env.get("FREQUENCY_MHZ", ""),
+                "output_suffix": suffix,
+                "matching_files": len(files),
+                "summary": summarize_samples(samples),
+                "recent_saves": summarize_events(save_events),
+                "samples": samples,
+            }
+        )
     return payload
 
 

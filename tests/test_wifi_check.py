@@ -75,9 +75,7 @@ class WifiCheckTests(unittest.TestCase):
         with (
             mock.patch.object(wifi_check, "runtime_env", return_value={}),
             mock.patch.object(wifi_check, "load_state", return_value=previous),
-            mock.patch.object(
-                wifi_check, "default_gateway", return_value="192.168.3.1"
-            ),
+            mock.patch.object(wifi_check, "default_gateway", return_value="192.168.3.1"),
             mock.patch.object(
                 wifi_check,
                 "wifi_status",
@@ -87,9 +85,7 @@ class WifiCheckTests(unittest.TestCase):
                     "connected": True,
                 },
             ),
-            mock.patch.object(
-                wifi_check, "ip_addresses", return_value=["192.168.3.50"]
-            ),
+            mock.patch.object(wifi_check, "ip_addresses", return_value=["192.168.3.50"]),
             mock.patch.object(wifi_check, "check_gateway", return_value=checks[1]),
             mock.patch.object(wifi_check, "check_dns", return_value=checks[2]),
             mock.patch.object(wifi_check, "check_rclone", return_value=checks[3]),

@@ -6,13 +6,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
 import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-
-sys.dont_write_bytecode = True
 
 import status_json
 
@@ -32,11 +29,7 @@ def parse_time(value: str) -> datetime | None:
 def compact_snapshot(status: dict[str, Any]) -> dict[str, Any]:
     latest_network = status.get("network", {}).get("latest_check", {})
     checks = [item for item in status.get("checks", []) if isinstance(item, dict)]
-    operational_issues = [
-        item
-        for item in checks
-        if not item.get("ok") and item.get("name") != "SOX clipping"
-    ]
+    operational_issues = [item for item in checks if not item.get("ok") and item.get("name") != "SOX clipping"]
     operational_failures = sum(1 for item in operational_issues if item.get("level") == "fail")
     operational_warnings = sum(1 for item in operational_issues if item.get("level") == "warn")
     operational_overall = "fail" if operational_failures else "warn" if operational_warnings else "ok"
@@ -163,10 +156,7 @@ def main() -> int:
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         summary = payload["summary"]
-        print(
-            "history snapshots={snapshots} failures={failure_snapshots} warnings={warning_snapshots} "
-            "wifi_failures={wifi_failure_snapshots} max_pending={max_pending_recordings}".format(**summary)
-        )
+        print("history snapshots={snapshots} failures={failure_snapshots} warnings={warning_snapshots} wifi_failures={wifi_failure_snapshots} max_pending={max_pending_recordings}".format(**summary))
     return 0
 
 

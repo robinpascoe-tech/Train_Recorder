@@ -289,14 +289,16 @@ def recent_recordings(units: list[str], minutes: int, output_suffix: str) -> dic
         if key in seen:
             continue
         seen.add(key)
-        events.append({
-            "epoch": epoch,
-            "iso": datetime.fromtimestamp(epoch, timezone.utc).isoformat(),
-            "age_seconds": max(0, int(time.time() - epoch)),
-            "path": file_path,
-            "name": Path(file_path).name,
-            "bytes": int(match.group(2)),
-        })
+        events.append(
+            {
+                "epoch": epoch,
+                "iso": datetime.fromtimestamp(epoch, timezone.utc).isoformat(),
+                "age_seconds": max(0, int(time.time() - epoch)),
+                "path": file_path,
+                "name": Path(file_path).name,
+                "bytes": int(match.group(2)),
+            }
+        )
     events.sort(key=lambda item: item["epoch"])
     latest = events[-1] if events else None
     return {
@@ -504,10 +506,7 @@ def collect_status() -> dict[str, Any]:
         "SOX clipping",
         "warn",
         bool(clipping["ok"]),
-        (
-            f"{clipping['count']} warnings, max {clipping['max_samples']} samples "
-            f"(warn at {clipping_warn_count}+ warnings or {clipping_warn_max_samples}+ samples)"
-        ),
+        (f"{clipping['count']} warnings, max {clipping['max_samples']} samples (warn at {clipping_warn_count}+ warnings or {clipping_warn_max_samples}+ samples)"),
     )
 
     failures = [item for item in checks if not item["ok"] and item["level"] == "fail"]
@@ -536,7 +535,7 @@ def collect_status() -> dict[str, Any]:
                 "service": dashboard_service,
                 "flask_available": python_module_available("flask"),
                 "api_path": "/api/status",
-            }
+            },
         },
         "config": {
             "config_dir": str(CONFIG_DIR),
