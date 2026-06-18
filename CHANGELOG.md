@@ -6,6 +6,8 @@ This project follows a practical release process. Changes before the first publi
 
 ## Unreleased
 
+## v1.4.0 - 2026-06-18
+
 ### Added
 
 - Unit-test harness for `site_config.py` and `status_json.py`, plus CI coverage for the Python test suite.
@@ -22,6 +24,13 @@ This project follows a practical release process. Changes before the first publi
 - `site_config.sh` now requires PyYAML instead of falling back to a handwritten YAML subset parser, and `install.sh` ensures `python3-yaml` is installed.
 - `pulseaudio.service` now retries once on failure with rate limiting, and `rtl_airband.service` now retries conservatively with rate limiting plus `PartOf=pulseaudio.service` so explicit PulseAudio restarts also recycle the SDR demodulator.
 - Documentation freshness and optimization pass across README, install, operations, release, roadmap, watchdog, hardware, and agent handoff notes.
+
+### Validated
+
+- Python unit tests now pass locally across `site_config.py`, `status_json.py`, `wifi_check.py`, `recording_diagnostics.py`, `status_history.py`, and dashboard helpers.
+- GitHub Actions now runs Python tests plus Ruff lint/format checks alongside the existing shell checks.
+- The Trixie Pi recorder passed `validate_deploy.sh` after deploying the new PulseAudio and RTLSDR-Airband restart policies.
+- Real-Pi restart smoke testing confirmed that `pulseaudio.service` recovered from a forced crash after one delayed restart, and `rtl_airband.service` recovered from both a PulseAudio recycle and a direct forced crash using the configured restart delay.
 
 ## v1.3.0 - 2026-06-17
 
