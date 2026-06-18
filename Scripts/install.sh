@@ -246,6 +246,16 @@ install_dashboard() {
   install_packages python3-flask
 }
 
+install_site_config_dependencies() {
+  if python3 -c "import yaml" >/dev/null 2>&1; then
+    echo "PyYAML already available for site_config.sh"
+    return
+  fi
+
+  echo "PyYAML is required for site_config.sh; installing python3-yaml."
+  install_packages python3-yaml
+}
+
 ensure_dashboard_dependencies() {
   if python3 -c "import flask" >/dev/null 2>&1; then
     return
@@ -418,8 +428,10 @@ echo "This installer is conservative: it does not overwrite existing env files,"
 echo "RTLSDR-Airband config, PulseAudio config, or rclone credentials without asking."
 
 if ask_yes_no "Install/update apt helper packages used by the installer?"; then
-  install_packages rsync git ca-certificates
+  install_packages rsync git ca-certificates python3-yaml
 fi
+
+install_site_config_dependencies
 
 if ask_yes_no "Install SOX with MP3 support?"; then
   install_sox
@@ -524,10 +536,11 @@ echo "  8. Optional quick status views:"
 echo "     sudo $INSTALL_DIR/Scripts/status_summary.sh"
 echo "     sudo $INSTALL_DIR/Scripts/health_check.sh"
 echo "     $INSTALL_DIR/Scripts/status_json.py"
-echo "  9. Optional dashboard:"
+echo "  9. site_config.sh requires PyYAML; the installer ensures python3-yaml is installed."
+echo " 10. Optional dashboard:"
 echo "     sudo apt install python3-flask"
 echo "     sudo systemctl enable --now train-recorder-dashboard.service"
-echo " 10. Optional Wi-Fi/network check timer:"
+echo " 11. Optional Wi-Fi/network check timer:"
 echo "     sudo systemctl enable --now train-recorder-wifi-check.timer"
-echo " 11. Optional dashboard status history timer:"
+echo " 12. Optional dashboard status history timer:"
 echo "     sudo systemctl enable --now train-recorder-status-history.timer"

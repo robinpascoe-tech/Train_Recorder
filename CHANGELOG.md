@@ -19,6 +19,7 @@ This project follows a practical release process. Changes before the first publi
 - `site_config.sh` is now a thin wrapper around the testable `site_config.py` implementation.
 - `site_config.sh apply` now removes stale generated channel env files and disables sync cleanly when `rclone_remote` is removed.
 - `site_config.sh apply` now prints restore guidance for file-update failures as well as `systemctl` failures after backups have been created.
+- `site_config.sh` now requires PyYAML instead of falling back to a handwritten YAML subset parser, and `install.sh` ensures `python3-yaml` is installed.
 - Documentation freshness and optimization pass across README, install, operations, release, roadmap, watchdog, hardware, and agent handoff notes.
 
 ## v1.3.0 - 2026-06-17

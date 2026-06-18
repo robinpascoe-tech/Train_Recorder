@@ -229,6 +229,8 @@ sudo /opt/train-recorder/Scripts/site_config.sh doctor
 
 The wizard writes `/etc/train-recorder/site.yaml`. If that file already exists, the wizard loads it and uses the current values as prompt defaults so later frequency or site changes can be made incrementally. The generator reads that file and writes a preview under `/tmp/train-recorder-generated` by default. `plan` shows service-level changes, and `diff` shows generated file changes with Broadcastify mountpoint/password values redacted. `apply` runs preflight checks, backs up replaced files under `/etc/train-recorder/backups/<timestamp>/`, updates RTLSDR-Airband and PulseAudio configs, enables/restarts the configured `vox@...` services, and enables the health, cleanup, and sync timers when applicable. `doctor` is the read-only validation step after apply; it checks services, timers, PulseAudio sources, paths, permissions, packages, rclone reachability, known legacy-service pitfalls, PCP, raspiBackup hooks, and SOX clipping against the configured warning thresholds. You can also copy `Config/site.example.yaml` to `/etc/train-recorder/site.yaml` and edit it manually.
 
+`site_config.sh` now requires a real YAML parser. On Debian and Raspberry Pi OS, install `python3-yaml` if you run the tool before running `Scripts/install.sh`; the installer ensures that dependency is present during a normal install flow.
+
 For machine-readable status, run:
 
 ```bash

@@ -66,6 +66,34 @@ def sample_data(*, remote="onedrive:ONR/test", channels=None, output_root="/tmp/
 
 
 class ValidateSiteTests(unittest.TestCase):
+    def test_load_site_requires_pyyaml(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "site.yaml"
+            path.write_text("channels:\n  - frequency_mhz: 160.545\n")
+
+            real_import = __import__
+
+            def fake_import(name, *args, **kwargs):
+                if name == "yaml":
+                    raise ModuleNotFoundError("No module named 'yaml'")
+                return real_import(name, *args, **kwargs)
+
+            with mock.patch("builtins.__import__", side_effect=fake_import):
+                with self.assertRaises(SystemExit) as raised:
+                    site_config.load_site(path)
+
+        self.assertIn("PyYAML is required for site_config.sh", str(raised.exception))
+
+    def test_load_site_reports_invalid_yaml(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "site.yaml"
+            path.write_text("site:\n  name: [broken\nchannels:\n  - frequency_mhz: 160.545\n")
+
+            with self.assertRaises(SystemExit) as raised:
+                site_config.load_site(path)
+
+        self.assertIn("invalid YAML in", str(raised.exception))
+
     def test_rejects_duplicate_frequency(self):
         data = sample_data(
             channels=[

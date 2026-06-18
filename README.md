@@ -82,6 +82,10 @@ AGENTS.md                    Context for future coding agents and maintainers.
    sudo Scripts/install.sh
    ```
 
+   `site_config.sh` requires PyYAML. The installer ensures the Debian package
+   `python3-yaml` is present so `/etc/train-recorder/site.yaml` is always parsed
+   with a real YAML parser.
+
 3. Configure rclone as the `pi` user if cloud offload is enabled.
 4. Create or edit `/etc/train-recorder/site.yaml`:
 
@@ -149,6 +153,12 @@ After applying a site config, run `sudo /opt/train-recorder/Scripts/site_config.
 
 For automation or the optional dashboard, use `sudo /opt/train-recorder/Scripts/site_config.sh doctor --json`.
 
+If you run `site_config.sh` before the installer, install PyYAML first:
+
+```bash
+sudo apt install python3-yaml
+```
+
 If `site.yaml` already exists, the wizard loads it and uses the current values as defaults. Sensitive Broadcastify values are preserved without printing them in the prompt.
 
 ## Development Notes
@@ -166,6 +176,7 @@ GitHub Actions runs a shell lint workflow on pushes to `main` and pull requests.
 ```bash
 bash -n Scripts/*.sh
 shellcheck --severity=error --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
+python3 -m pip install Flask PyYAML
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 

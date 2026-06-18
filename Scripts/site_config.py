@@ -26,81 +26,25 @@ PULSE_SYSTEM_PA = Path("/etc/pulse/system.pa")
 SYSTEMD_DIR = Path("/etc/systemd/system")
 
 
-def parse_scalar(value):
-    value = value.strip()
-    if value == "":
-        return ""
-    if value[0:1] in ("'", '"') and value[-1:] == value[0]:
-        return value[1:-1]
-    if value.lower() in ("true", "yes", "on"):
-        return True
-    if value.lower() in ("false", "no", "off"):
-        return False
-    if value.lower() in ("null", "none", "~"):
-        return None
+def load_yaml_module():
     try:
-        if re.match(r"^-?\d+$", value):
-            return int(value)
-        if re.match(r"^-?\d+\.\d+$", value):
-            return float(value)
-    except ValueError:
-        pass
-    return value
-
-
-def simple_yaml_load(path):
-    root = {}
-    current_key = None
-    current_item = None
-
-    for raw in Path(path).read_text().splitlines():
-        line = raw.split("#", 1)[0].rstrip()
-        if not line.strip():
-            continue
-
-        indent = len(line) - len(line.lstrip(" "))
-        text = line.strip()
-
-        if indent == 0:
-            if text.endswith(":"):
-                key = text[:-1].strip()
-                root[key] = [] if key == "channels" else {}
-                current_key = key
-                current_item = None
-            else:
-                key, value = text.split(":", 1)
-                root[key.strip()] = parse_scalar(value)
-                current_key = None
-                current_item = None
-        elif current_key == "channels" and indent == 2 and text.startswith("- "):
-            current_item = {}
-            root["channels"].append(current_item)
-            rest = text[2:].strip()
-            if rest:
-                key, value = rest.split(":", 1)
-                current_item[key.strip()] = parse_scalar(value)
-        elif current_key == "channels" and indent >= 4 and current_item is not None:
-            key, value = text.split(":", 1)
-            current_item[key.strip()] = parse_scalar(value)
-        elif current_key and isinstance(root.get(current_key), dict):
-            key, value = text.split(":", 1)
-            root[current_key][key.strip()] = parse_scalar(value)
-        else:
-            raise ValueError(f"Cannot parse line: {raw}")
-
-    return root
+        import yaml  # type: ignore
+    except ModuleNotFoundError as exc:
+        raise SystemExit("PyYAML is required for site_config.sh. Install python3-yaml and rerun.") from exc
+    return yaml
 
 
 def load_site(path):
     path = Path(path)
     if not path.exists():
         raise SystemExit(f"site config not found: {path}")
-    try:
-        import yaml  # type: ignore
 
+    yaml = load_yaml_module()
+    try:
         data = yaml.safe_load(path.read_text())
-    except Exception:
-        data = simple_yaml_load(path)
+    except yaml.YAMLError as exc:  # type: ignore[attr-defined]
+        raise SystemExit(f"invalid YAML in {path}: {exc}") from exc
+
     validate_site(data)
     return data
 
