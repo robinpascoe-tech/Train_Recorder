@@ -6,6 +6,10 @@ This project follows a practical release process. Changes before the first publi
 
 ## Unreleased
 
+### Changed
+
+- Documentation updated after the v1.4.0 release to align release notes, roadmap, install dependencies, architecture notes, hardware notes, and agent handoff context with the current product state.
+
 ## v1.4.0 - 2026-06-18
 
 ### Added

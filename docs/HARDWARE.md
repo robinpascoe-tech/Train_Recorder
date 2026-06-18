@@ -25,7 +25,7 @@ Fill in or update these details from the installed site:
 
 ### Fresh Install Validation Pi
 
-Status: fresh install validated on Raspberry Pi OS Trixie and used for v1.3.0 production validation.
+Status: fresh install validated on Raspberry Pi OS Trixie and used for v1.4.0 production validation.
 
 | Item | Details |
 | --- | --- |
@@ -38,7 +38,7 @@ Status: fresh install validated on Raspberry Pi OS Trixie and used for v1.3.0 pr
 | Power supply | Raspberry Pi Micro-USB Power Adapter |
 | Cooling/enclosure | Raspberry Pi Aluminum Heatsink Case |
 | Network | Built-in Wifi |
-| Notes | Installed from project docs, recorded transmissions, rclone-synced recordings, served the dashboard/history view, ran the Wi-Fi/network timer, and validated the `161.265` SNR squelch setting. |
+| Notes | Installed from project docs, recorded transmissions, rclone-synced recordings, served the dashboard/history view, ran the Wi-Fi/network timer, validated the `161.265` SNR squelch setting, and smoke-tested the v1.4.0 PulseAudio/RTLSDR-Airband restart policy. |
 
 ## Recommended Hardware Information to Capture
 

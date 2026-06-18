@@ -171,16 +171,18 @@ The Python test suite now covers `site_config.py`, `status_json.py`, `wifi_check
 
 Failure-oriented tests now cover `site_config.py apply` paths for missing runtime directories, partial file-copy failures, `systemctl` failures, stale non-file targets, and restore-note output after backups are created.
 
-GitHub Actions runs a shell lint workflow on pushes to `main` and pull requests. To run the same checks on a Linux host:
+GitHub Actions runs shell syntax/ShellCheck, Python unit tests, and Ruff lint/format checks on pushes to `main` and pull requests. To run the same checks on a Linux host:
 
 ```bash
 bash -n Scripts/*.sh
 shellcheck --severity=error --external-sources --exclude=SC1090,SC1091 Scripts/*.sh
 python3 -m pip install Flask PyYAML
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_*.py' -v
+ruff check Scripts tests
+ruff format --check Scripts tests
 ```
 
-`SC1090` and `SC1091` are excluded because several scripts intentionally source runtime env files from `/etc/train-recorder`. CI currently fails only on error-level ShellCheck findings; warning and style cleanup can be handled separately without blocking operational fixes.
+`SC1090` and `SC1091` are excluded because several scripts intentionally source runtime env files from `/etc/train-recorder`.
 
 Useful variables:
 

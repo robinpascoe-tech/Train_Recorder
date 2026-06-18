@@ -31,6 +31,11 @@ Completed:
 - Dashboard history first pass with rolling JSON snapshots and 24-hour trend summaries.
 - `site_config.sh` refactored into a testable Python module with unit coverage for parsing, planning, apply reconciliation, and status helpers.
 - `site_config.sh apply` now cleans up stale generated channel env files and disables sync cleanly when `rclone_remote` is removed.
+- Failure-oriented `site_config.sh apply` tests for missing runtime paths, partial file update failures, `systemctl` failures, stale non-file targets, and restore-note output.
+- Python CI coverage for unit tests plus Ruff lint and format checks alongside ShellCheck.
+- PyYAML-only `site_config.sh` parsing, with `install.sh` ensuring `python3-yaml` is installed.
+- Conservative `pulseaudio.service` and `rtl_airband.service` restart policies with systemd rate limiting.
+- Real-Pi smoke testing for forced PulseAudio and RTLSDR-Airband crashes, including successful recovery and clean deploy validation afterward.
 
 Release readiness:
 
@@ -38,12 +43,16 @@ Release readiness:
 - v1.1.0 tagged and released.
 - v1.2.0 release notes prepared after an 18-hour clean dashboard soak on the fresh Trixie Pi.
 - v1.3.0 tagged and released with dashboard history, recording diagnostics, watchdog/security docs, and per-channel RTLSDR-Airband squelch generation.
+- v1.4.0 tagged and released with Python site_config refactor, broader test coverage, PyYAML-only site parsing, Ruff CI, apply hardening, and conservative core-service restart policies.
 - Continue using [RELEASE.md](RELEASE.md) before future tags.
 
 Future ideas:
 
-- Continue soaking the Raspberry Pi hardware watchdog configuration before adding service-level watchdog settings.
+- Continue soaking the Raspberry Pi hardware watchdog configuration before adding any service-level `WatchdogSec=` notification policy.
+- During a maintenance window, deliberately exhaust the `pulseaudio.service` and `rtl_airband.service` start-limit bursts on test or physically accessible hardware to confirm repeated failures stop retrying as intended.
+- Decide whether `validate_deploy.sh` should warn when the host hardware watchdog is disabled after the plan has been adopted for a site.
 - Expand Wi-Fi/network remediation only after observing the first-pass timer in production. Avoid reboot loops unless explicitly configured and tested.
 - Continue monitoring SOX clipping warnings after longer soaks and adjust per-channel gain if needed.
 - Add optional runtime-only cleanup guidance for removing build dependencies after RTLSDR-Airband is built.
 - Add more hardware examples from other locations and antenna/SDR combinations.
+- Update GitHub Actions versions or workflow configuration to remove the non-blocking Node 20 deprecation warning from `actions/checkout@v4` and `actions/setup-python@v5`.

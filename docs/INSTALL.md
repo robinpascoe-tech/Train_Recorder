@@ -12,9 +12,10 @@ The installer can offer to install these packages for you:
 - PulseAudio
 - SOX with MP3 and PulseAudio support
 - rclone, optional
+- python3-yaml, required by `site_config.sh`
 - python3-flask, required when enabling the optional read-only web dashboard
 
-During fresh Raspberry Pi OS Trixie validation, the dashboard needed `python3-flask` on a minimal image. The Wi-Fi/network check did not require an extra project-specific package; it uses standard Python libraries plus installed system tools when present. Rclone is only needed for its remote-reachability check when offload is configured.
+During fresh Raspberry Pi OS Trixie validation, generated site configuration needed `python3-yaml` and the dashboard needed `python3-flask` on a minimal image. The installer ensures `python3-yaml` is present during the normal install flow. The Wi-Fi/network check does not require an extra project-specific package; it uses standard Python libraries plus installed system tools when present. Rclone is only needed for its remote-reachability check when offload is configured.
 
 ## Install Project Files
 
@@ -328,6 +329,8 @@ sudo systemctl enable --now train-recorder-status-history.timer
 ```
 
 The VOX recorder services and sync service run as the `pi` user. This keeps generated recordings and rclone/OneDrive credentials in the same user context, so root-owned recordings and recursive `chmod 777` cron workarounds should not be needed.
+
+The included `pulseaudio.service` and `rtl_airband.service` use conservative restart policies with systemd rate limiting. PulseAudio retries once after an unexpected failure, while RTLSDR-Airband retries a few times for transient SDR or PulseAudio disruption. Repeated failures remain visible instead of retrying forever; see [WATCHDOG.md](WATCHDOG.md) for the soak-tested policy and rollback notes.
 
 Check status and logs:
 

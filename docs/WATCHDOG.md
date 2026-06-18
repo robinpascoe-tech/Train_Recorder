@@ -78,7 +78,7 @@ sudo /opt/train-recorder/Scripts/validate_deploy.sh
 
 ## Phase 2: Soak-Test Host Watchdog Only
 
-After enabling the host watchdog, continue soaking before adding any service-level watchdog settings:
+After enabling the host watchdog, continue soaking before adding any service-level `WatchdogSec=` notification policy:
 
 - confirm the Pi does not reboot unexpectedly
 - confirm dashboard, doctor, and deploy validation remain green
