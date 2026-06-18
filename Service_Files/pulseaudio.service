@@ -1,10 +1,13 @@
 [Unit]
 Description=PulseAudio system server
+StartLimitIntervalSec=10min
+StartLimitBurst=2
 
 [Service]
 Type=notify
 ExecStart=pulseaudio --daemonize=no --system --realtime --log-target=journal
+Restart=on-failure
+RestartSec=15s
 
 [Install]
 WantedBy=multi-user.target
-

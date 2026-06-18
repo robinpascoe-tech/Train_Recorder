@@ -14,12 +14,21 @@ The preferred recovery order is:
 - `vox@<channel>.service` already uses `Restart=on-failure` with a 30 second delay. This is appropriate because SOX recorder processes can restart without rewriting live config.
 - `train-recorder-dashboard.service` already uses `Restart=on-failure` with a 10 second delay. This is appropriate because the dashboard is read-only.
 - `train-recorder-sync.service`, `train-recorder-health.service`, `train-recorder-cleanup.service`, and `train-recorder-wifi-check.service` are one-shot services run by timers. Their next timer run is the retry path.
-- `rtl_airband.service` currently uses `Restart=no` because startup failures are usually misconfiguration or SDR device failure. Changing this needs a separate soak test; blind restart loops could hide a broken SDR or bad config.
-- `pulseaudio.service` has no explicit restart policy in the project unit. If PulseAudio exits, downstream health checks and recorder services should fail clearly.
+- `pulseaudio.service` now uses `Restart=on-failure` with `RestartSec=15s`, `StartLimitIntervalSec=10min`, and `StartLimitBurst=2`. This gives one automatic retry after a crash, then leaves the unit failed for operator review if the retry also fails.
+- `rtl_airband.service` now uses `Restart=on-failure` with `RestartSec=30s`, `StartLimitIntervalSec=15min`, and `StartLimitBurst=4`. This gives a few retries for transient SDR or PulseAudio disruption, then stops retrying until an operator intervenes. The unit also uses `PartOf=pulseaudio.service` so an explicit PulseAudio restart restarts RTLSDR-Airband as well.
 
 ## Current Production Status
 
 Phase 1 host-watchdog enablement has been tested on the Trixie Pi with console and physical access available. The disruptive watchdog test confirmed that the Pi rebooted when watchdog keepalives stopped, and the recorder stack validated cleanly after reboot. Keep the rollback steps below handy before enabling the same policy on any additional remote recorder.
+
+On 2026-06-18, Phase 3 service restart smoke testing was performed on the same Pi after enabling the conservative restart policy:
+
+- killing `pulseaudio.service` with `SIGKILL` triggered one delayed automatic restart after 15 seconds
+- the PulseAudio restart also restarted `rtl_airband.service` cleanly via `PartOf=pulseaudio.service`
+- killing `rtl_airband.service` with `SIGKILL` triggered one delayed automatic restart after 30 seconds
+- `validate_deploy.sh` passed before and after the live test
+
+The live test confirmed single-failure recovery. It did not intentionally exhaust `StartLimitBurst` on production hardware; repeated-failure soak testing should still be done cautiously during a maintenance window.
 
 The current host-level override is:
 
@@ -85,14 +94,24 @@ journalctl --list-boots
 sudo /opt/train-recorder/Scripts/validate_deploy.sh
 ```
 
-## Phase 3: Optional Service Policy Review
+## Phase 3: Service Policy Review
 
-Only after the host watchdog is stable, review service restart behavior:
+After host-watchdog soak testing stayed stable, the recorder moved to a conservative service restart policy:
 
-- Consider `Restart=on-failure` for `pulseaudio.service` only if PulseAudio exits are observed and restarts recover cleanly.
-- Revisit `rtl_airband.service` only with a deliberate SDR-failure test. If restart is enabled, use rate limiting such as `StartLimitIntervalSec` and `StartLimitBurst` so a missing SDR does not spin forever.
+- `pulseaudio.service` should attempt one restart after an unexpected exit. If the restart also fails inside the 10 minute start-limit window, systemd stops retrying. This keeps a bad `system.pa` or other startup failure visible instead of retrying forever.
+- `rtl_airband.service` should attempt a few retries after unexpected exit so quick SDR unplug/replug or PulseAudio disruption can self-heal. If those retries fail inside the 15 minute start-limit window, systemd stops retrying and leaves the failure visible.
+- Use `systemctl reset-failed pulseaudio.service rtl_airband.service` after fixing a bad config or replacing failed hardware so the rate limiter is cleared before retrying.
+- Keep service watchdog notifications disabled for these units. They do not need `WatchdogSec=` to benefit from the host hardware watchdog or from conservative restart policies.
 - Avoid `WatchdogSec=` on shell scripts and one-shot timer services. They do not send systemd watchdog notifications.
 - Do not use the hardware watchdog to compensate for known bad config, bad SDR hardware, or failed network credentials.
+
+Useful live checks for the restart policy:
+
+```bash
+systemctl show pulseaudio.service -p ActiveState -p NRestarts -p Restart -p RestartUSec -p StartLimitIntervalUSec -p StartLimitBurst
+systemctl show rtl_airband.service -p ActiveState -p NRestarts -p Restart -p RestartUSec -p StartLimitIntervalUSec -p StartLimitBurst
+journalctl -u pulseaudio.service -u rtl_airband.service --since today
+```
 
 ## Rollback
 
@@ -111,8 +130,7 @@ sudo systemctl daemon-reload
 sudo /opt/train-recorder/Scripts/validate_deploy.sh
 ```
 
-## Open Decisions
+## Remaining Follow-Up
 
-- Whether `pulseaudio.service` should gain `Restart=on-failure`.
-- Whether `rtl_airband.service` should remain `Restart=no` or use conservative restart rate limiting after SDR unplug/replug testing.
-- Whether deploy validation should warn when the host watchdog is disabled after the plan has been adopted for a site.
+- Continue real-Pi soak testing around deliberate SDR unplug/replug and PulseAudio crash simulation, and record whether the current retry windows are too short or too generous.
+- Decide whether deploy validation should warn when the host watchdog is disabled after the plan has been adopted for a site.
