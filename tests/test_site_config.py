@@ -235,10 +235,12 @@ class PlanAndApplyTests(unittest.TestCase):
             commands.append((command, check))
             return SimpleNamespace(returncode=0)
 
-        with mock.patch.object(site_config, "RTL_AIRBAND_CONF", rtl_path), \
-            mock.patch.object(site_config, "PULSE_SYSTEM_PA", pulse_path), \
-            mock.patch.object(site_config, "SYSTEMD_DIR", systemd_dir), \
-            mock.patch.object(site_config, "run", side_effect=fake_run):
+        with (
+            mock.patch.object(site_config, "RTL_AIRBAND_CONF", rtl_path),
+            mock.patch.object(site_config, "PULSE_SYSTEM_PA", pulse_path),
+            mock.patch.object(site_config, "SYSTEMD_DIR", systemd_dir),
+            mock.patch.object(site_config, "run", side_effect=fake_run),
+        ):
             site_config.apply_config(
                 data,
                 generated_dir,
@@ -250,8 +252,18 @@ class PlanAndApplyTests(unittest.TestCase):
         self.assertFalse((config_dir / "oldchan.env").exists())
         self.assertFalse((config_dir / "sync.env").exists())
         self.assertTrue((config_dir / "freq160545.env").exists())
-        self.assertTrue(any(command[-3:] == ["disable", "--now", "train-recorder-sync.timer"] for command, _ in commands))
-        self.assertTrue(any(command[-3:] == ["disable", "--now", "vox@oldchan.service"] for command, _ in commands))
+        self.assertTrue(
+            any(
+                command[-3:] == ["disable", "--now", "train-recorder-sync.timer"]
+                for command, _ in commands
+            )
+        )
+        self.assertTrue(
+            any(
+                command[-3:] == ["disable", "--now", "vox@oldchan.service"]
+                for command, _ in commands
+            )
+        )
 
         backup_root = next((config_dir / "backups").iterdir())
         self.assertTrue((backup_root / "oldchan.env").exists())
@@ -262,9 +274,11 @@ class PlanAndApplyTests(unittest.TestCase):
         self.addCleanup(fixture["temp_dir"].cleanup)
         fixture["temp_path"].rmdir()
 
-        with mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]), \
-            mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]), \
-            mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]):
+        with (
+            mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]),
+            mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]),
+            mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]),
+        ):
             with self.assertRaises(SystemExit) as raised:
                 site_config.apply_config(
                     fixture["data"],
@@ -295,11 +309,15 @@ class PlanAndApplyTests(unittest.TestCase):
             return original_copy(src, dest, backup_dir)
 
         stdout = io.StringIO()
-        with mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]), \
-            mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]), \
-            mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]), \
-            mock.patch.object(site_config, "copy_with_backup", side_effect=flaky_copy), \
-            contextlib.redirect_stdout(stdout):
+        with (
+            mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]),
+            mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]),
+            mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]),
+            mock.patch.object(
+                site_config, "copy_with_backup", side_effect=flaky_copy
+            ),
+            contextlib.redirect_stdout(stdout),
+        ):
             with self.assertRaises(SystemExit) as raised:
                 site_config.apply_config(
                     data,
@@ -310,9 +328,15 @@ class PlanAndApplyTests(unittest.TestCase):
                 )
 
         output = stdout.getvalue()
-        self.assertIn("apply failed while updating files; backup files are available for restore.", output)
+        self.assertIn(
+            "apply failed while updating files; backup files are available for restore.",
+            output,
+        )
         self.assertIn("Restore notes:", output)
-        self.assertIn("apply failed while updating files: simulated copy failure", str(raised.exception))
+        self.assertIn(
+            "apply failed while updating files: simulated copy failure",
+            str(raised.exception),
+        )
         backup_root = next((config_dir / "backups").iterdir())
         self.assertTrue((backup_root / "common.env").exists())
 
@@ -333,11 +357,13 @@ class PlanAndApplyTests(unittest.TestCase):
             return SimpleNamespace(returncode=0)
 
         stdout = io.StringIO()
-        with mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]), \
-            mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]), \
-            mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]), \
-            mock.patch.object(site_config, "run", side_effect=fake_run), \
-            contextlib.redirect_stdout(stdout):
+        with (
+            mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]),
+            mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]),
+            mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]),
+            mock.patch.object(site_config, "run", side_effect=fake_run),
+            contextlib.redirect_stdout(stdout),
+        ):
             with self.assertRaises(SystemExit) as raised:
                 site_config.apply_config(
                     data,
@@ -350,7 +376,10 @@ class PlanAndApplyTests(unittest.TestCase):
         output = stdout.getvalue()
         self.assertIn("apply failed; backup files are available for restore.", output)
         self.assertIn("Restore notes:", output)
-        self.assertIn("apply failed while running: sudo systemctl restart rtl_airband.service", str(raised.exception))
+        self.assertIn(
+            "apply failed while running: sudo systemctl restart rtl_airband.service",
+            str(raised.exception),
+        )
         backup_root = next((config_dir / "backups").iterdir())
         self.assertTrue((backup_root / "rtl_airband.conf").exists())
 
@@ -362,10 +391,12 @@ class PlanAndApplyTests(unittest.TestCase):
         stale.mkdir()
 
         stdout = io.StringIO()
-        with mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]), \
-            mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]), \
-            mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]), \
-            contextlib.redirect_stdout(stdout):
+        with (
+            mock.patch.object(site_config, "RTL_AIRBAND_CONF", fixture["rtl_path"]),
+            mock.patch.object(site_config, "PULSE_SYSTEM_PA", fixture["pulse_path"]),
+            mock.patch.object(site_config, "SYSTEMD_DIR", fixture["systemd_dir"]),
+            contextlib.redirect_stdout(stdout),
+        ):
             with self.assertRaises(SystemExit) as raised:
                 site_config.apply_config(
                     fixture["data"],
@@ -375,8 +406,13 @@ class PlanAndApplyTests(unittest.TestCase):
                     install_dir=fixture["install_dir"],
                 )
 
-        self.assertIn("refusing to remove non-file path during apply", str(raised.exception))
-        self.assertIn("apply failed while updating files; backup files are available for restore.", stdout.getvalue())
+        self.assertIn(
+            "refusing to remove non-file path during apply", str(raised.exception)
+        )
+        self.assertIn(
+            "apply failed while updating files; backup files are available for restore.",
+            stdout.getvalue(),
+        )
 
 
 if __name__ == "__main__":

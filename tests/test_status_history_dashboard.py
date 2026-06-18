@@ -7,7 +7,9 @@ from unittest import mock
 from support import load_script_module
 
 
-status_json_module = load_script_module("Scripts/status_json.py", "train_recorder_status_json_for_dashboard")
+status_json_module = load_script_module(
+    "Scripts/status_json.py", "train_recorder_status_json_for_dashboard"
+)
 sys.modules["status_json"] = status_json_module
 status_history = load_script_module("Scripts/status_history.py", "train_recorder_status_history")
 sys.modules["status_history"] = status_history
@@ -94,7 +96,13 @@ class DashboardTests(unittest.TestCase):
             "checks": [],
             "channels": [],
             "storage": {"pending_recordings": {"count": 0, "total_bytes": 0}, "filesystems": []},
-            "network": {"hostname": "recorder", "ip_addresses": [], "wifi_ssid": "", "wifi_connected": False, "latest_check": {"available": False}},
+            "network": {
+                "hostname": "recorder",
+                "ip_addresses": [],
+                "wifi_ssid": "",
+                "wifi_connected": False,
+                "latest_check": {"available": False},
+            },
             "runtime": {"uptime_seconds": 1234},
             "events": {"sync": None, "cleanup": None, "health": None},
             "config": {"vox_channels": []},
@@ -114,8 +122,18 @@ class DashboardTests(unittest.TestCase):
         self.assertNotIn('<script>alert("x")</script>', html)
 
     def test_api_status_and_history_return_expected_payloads(self):
-        with mock.patch.object(dashboard.status_json, "collect_status", return_value=dict(self.status_payload)), \
-            mock.patch.object(dashboard.status_history, "read_payload", return_value=self.history_payload):
+        with (
+            mock.patch.object(
+                dashboard.status_json,
+                "collect_status",
+                return_value=dict(self.status_payload),
+            ),
+            mock.patch.object(
+                dashboard.status_history,
+                "read_payload",
+                return_value=self.history_payload,
+            ),
+        ):
             client = dashboard.app.test_client()
             status_response = client.get("/api/status")
             history_response = client.get("/api/history")

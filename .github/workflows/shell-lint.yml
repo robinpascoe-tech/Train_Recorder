@@ -46,3 +46,27 @@ jobs:
 
       - name: Run unit tests
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+
+  python-quality:
+    name: Python Lint and Format
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Python quality tools
+        run: python3 -m pip install ruff
+
+      - name: Run Ruff lint checks
+        run: python3 -m ruff check Scripts tests
+
+      - name: Run Ruff format checks
+        run: python3 -m ruff format --check Scripts tests
