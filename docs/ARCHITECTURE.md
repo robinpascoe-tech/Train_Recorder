@@ -26,7 +26,7 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `install.sh` is a conservative Raspberry Pi installer. It can install prerequisite packages, optionally build RTLSDR-Airband from source, copy project files, seed missing local configs, install systemd units, configure PulseAudio access groups, and set up optional tmpfs mounts. On a fresh install it prepares the host but skips service start prompts until `/etc/train-recorder/site.yaml` exists, so services are not started against placeholder config.
 
-`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, show redacted diffs, reconcile live `vox@...` services, and run the doctor checks. `apply` is the activation step for generated installs: it enables/restarts PulseAudio, RTLSDR-Airband, the configured recorder services, and the train-recorder timers. The YAML file is the desired state; generated files are artifacts. If `site.yaml` already exists, the wizard uses it as the default source for prompts and preserves sensitive Broadcastify values without printing them.
+`site_config.sh` manages site-specific generated configuration. It can run an interactive wizard, generate `rtl_airband.conf`, `system.pa`, `common.env`, `sync.env`, and channel env files from `site.yaml`, show an apply plan, show redacted diffs, reconcile live `vox@...` services, and run the doctor checks. `apply` is the activation step for generated installs: it enables/restarts PulseAudio, RTLSDR-Airband, the configured recorder services, and the train-recorder timers. The YAML file is the desired state; generated files are artifacts. If `site.yaml` already exists, the wizard uses it as the default source for prompts and preserves sensitive Broadcastify values without printing them. Per-channel RTLSDR-Airband options such as `squelch_snr_threshold`, `squelch_threshold`, `bandwidth`, and `ctcss` live in each `channels` entry and are generated into the matching `rtl_airband.conf` channel block.
 
 `rtl_airband.service` starts RTLSDR-Airband and reads the installed RTL-Airband config.
 
@@ -44,7 +44,7 @@ RTLSDR-Airband is excellent at receiving multiple nearby NFM channels from one R
 
 `status_summary.sh` is a read-only operator report. It summarizes service state, last recording saves, recent sync and cleanup success, pending local MP3s, clipping warnings, and disk usage.
 
-`recording_diagnostics.py` is a read-only sample-quality report. It scans recent local MP3s by channel suffix and uses `soxi`/`sox stat` on a bounded number of newest files to summarize durations, sizes, RMS amplitude, and peak amplitude for volume and VOX tuning.
+`recording_diagnostics.py` is a read-only sample-quality report. It scans recent local MP3s by channel suffix and uses `soxi`/`sox stat` on a bounded number of newest files to summarize durations, sizes, RMS amplitude, and peak amplitude for volume and VOX tuning. It also summarizes recent journal save events so activity remains visible after rclone moves local files.
 
 `validate_deploy.sh` is a read-only post-deploy validation checklist. It combines git state, core services, timers, doctor, dashboard endpoints, Wi-Fi/network status, operator summary, and recent warning-level logs into one repeatable command.
 

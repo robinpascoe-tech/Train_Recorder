@@ -196,6 +196,10 @@ def write_site_yaml(data, path):
             "max_save_age_minutes",
             "afc",
             "stream_ampfactor",
+            "squelch_snr_threshold",
+            "squelch_threshold",
+            "bandwidth",
+            "ctcss",
         ]:
             if key not in channel:
                 continue
@@ -500,9 +504,13 @@ def generate_rtl_airband(data):
                 f"      freq = {channel['frequency_mhz']};",
                 f"      modulation = {q(channel.get('modulation', 'nfm'))};",
                 f"      afc = {1 if bool_value(channel.get('afc'), False) else 0};",
-                "      outputs: (",
             ]
         )
+        for key in ["squelch_snr_threshold", "squelch_threshold", "bandwidth", "ctcss"]:
+            if channel.get(key) not in (None, ""):
+                value = q(channel[key]) if key == "ctcss" else channel[key]
+                lines.append(f"      {key} = {value};")
+        lines.append("      outputs: (")
         for out_idx, output in enumerate(outputs):
             lines.append("        {")
             lines.extend(output)
@@ -774,7 +782,7 @@ def wizard(path):
                 bool_value(defaults.get("afc"), idx == 0),
             ),
         }
-        for key in ["sox_volume", "stream_ampfactor"]:
+        for key in ["sox_volume", "stream_ampfactor", "squelch_snr_threshold", "squelch_threshold", "bandwidth", "ctcss"]:
             if key in defaults:
                 channel[key] = defaults[key]
         channels.append(channel)

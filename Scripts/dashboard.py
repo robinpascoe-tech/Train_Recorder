@@ -407,10 +407,11 @@ def render_page() -> str:
     function renderHistory(history) {{
       const summary = history.summary || {{}};
       const snapshots = summary.snapshots || 0;
+      const latestOverall = summary.latest_operational_overall || summary.latest_overall;
       document.getElementById('history').innerHTML = [
         hist('Samples', snapshots, `${{history.retention_hours || 24}}h window`),
-        hist('Last Sample', age(summary.latest_age_seconds), summary.latest_overall || 'none', cls(summary.latest_overall)),
-        hist('Warning Samples', summary.warning_snapshots || 0, 'any warning', summary.warning_snapshots ? 'warn' : 'ok'),
+        hist('Last Sample', age(summary.latest_age_seconds), latestOverall || 'none', cls(latestOverall)),
+        hist('Operational Warnings', summary.operational_warning_snapshots || 0, 'excluding clipping', summary.operational_warning_snapshots ? 'warn' : 'ok'),
         hist('Pending Peak', summary.max_pending_recordings || 0, 'local MP3 files'),
         hist('Clipping Samples', summary.clipping_snapshots || 0, `${{summary.clipping_total || 0}} total warnings`, summary.clipping_snapshots ? 'warn' : 'ok')
       ].join('');

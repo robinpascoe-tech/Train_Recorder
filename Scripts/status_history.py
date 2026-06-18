@@ -31,9 +31,21 @@ def parse_time(value: str) -> datetime | None:
 
 def compact_snapshot(status: dict[str, Any]) -> dict[str, Any]:
     latest_network = status.get("network", {}).get("latest_check", {})
+    checks = [item for item in status.get("checks", []) if isinstance(item, dict)]
+    operational_issues = [
+        item
+        for item in checks
+        if not item.get("ok") and item.get("name") != "SOX clipping"
+    ]
+    operational_failures = sum(1 for item in operational_issues if item.get("level") == "fail")
+    operational_warnings = sum(1 for item in operational_issues if item.get("level") == "warn")
+    operational_overall = "fail" if operational_failures else "warn" if operational_warnings else "ok"
     return {
         "generated_at": status.get("generated_at"),
         "overall": status.get("overall"),
+        "operational_overall": operational_overall,
+        "operational_failures": operational_failures,
+        "operational_warnings": operational_warnings,
         "failures": status.get("summary", {}).get("failures", 0),
         "warnings": status.get("summary", {}).get("warnings", 0),
         "sync_age_seconds": (status.get("events", {}).get("sync") or {}).get("age_seconds"),
@@ -86,6 +98,8 @@ def write_history(snapshots: list[dict[str, Any]], path: Path = HISTORY_FILE, re
 def summarize(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
     failures = sum(1 for item in snapshots if item.get("failures", 0))
     warnings = sum(1 for item in snapshots if item.get("warnings", 0))
+    operational_failures = sum(1 for item in snapshots if item.get("operational_failures", 0))
+    operational_warnings = sum(1 for item in snapshots if item.get("operational_warnings", 0))
     wifi_failures = sum(1 for item in snapshots if item.get("wifi_check_overall") == "fail")
     clipping_snapshots = sum(1 for item in snapshots if item.get("clipping_count", 0))
     max_pending = max((int(item.get("pending_recordings") or 0) for item in snapshots), default=0)
@@ -100,8 +114,11 @@ def summarize(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
         "latest_generated_at": latest.get("generated_at"),
         "latest_age_seconds": latest_age,
         "latest_overall": latest.get("overall"),
+        "latest_operational_overall": latest.get("operational_overall", latest.get("overall")),
         "failure_snapshots": failures,
         "warning_snapshots": warnings,
+        "operational_failure_snapshots": operational_failures,
+        "operational_warning_snapshots": operational_warnings,
         "wifi_failure_snapshots": wifi_failures,
         "clipping_snapshots": clipping_snapshots,
         "max_pending_recordings": max_pending,

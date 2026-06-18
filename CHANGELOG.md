@@ -14,6 +14,9 @@ This project follows a practical release process. Changes before the first publi
 - Dashboard history recorder, timer, API endpoint, and history panel for 24-hour operational trends.
 - Read-only recording sample diagnostics for MP3 duration, size, RMS amplitude, and peak amplitude during recorder tuning.
 - Clearer dashboard history cards with last sample age and non-zero trend indicators.
+- Per-channel RTLSDR-Airband squelch options in generated config, including the soaked `161.265` SNR squelch setting.
+- Recording diagnostics now includes recent journal save counts and byte totals after rclone moves local MP3 files.
+- Dashboard history now separates operational warning samples from clipping trend samples.
 
 ## v1.2.0 - 2026-06-16
 

@@ -188,13 +188,18 @@ Useful variables:
 | `CLIPPING_WINDOW_MINUTES` | `1440` | Journal lookback window used by `status_summary.sh` for clipping warnings. |
 | `JOURNAL_WINDOW_MINUTES` | `10080` | Journal lookback window used by `status_summary.sh` for last-event summaries. |
 | `RECORDING_DIAGNOSTICS_LOOKBACK_HOURS` | `24` | MP3 lookback window used by `recording_diagnostics.py`. |
+| `RECORDING_DIAGNOSTICS_JOURNAL_HOURS` | `24` | Journal lookback window used by `recording_diagnostics.py` for recent save events after rclone moves local files. |
 | `RECORDING_DIAGNOSTICS_MAX_FILES` | `20` | Per-channel sample limit used by `recording_diagnostics.py`. |
 
-Channel env files also support:
+Channel settings also support:
 
 | Variable | Purpose |
 | --- | --- |
 | `FREQUENCY_MHZ` | Human-readable channel frequency for reports. |
+| `squelch_snr_threshold` | Optional RTLSDR-Airband per-channel SNR squelch threshold generated into `rtl_airband.conf`. |
+| `squelch_threshold` | Optional RTLSDR-Airband per-channel absolute squelch threshold. |
+| `bandwidth` | Optional RTLSDR-Airband per-channel bandwidth limit. |
+| `ctcss` | Optional RTLSDR-Airband per-channel CTCSS tone. |
 | `HEALTH_CHECK_RECENT_SAVE` | Enables or disables recent-save health warnings for that channel. |
 | `MAX_SAVE_AGE_MINUTES` | Recent-save lookback window for that channel. |
 | `JOURNAL_UNITS` | Optional space-separated journal units to search for that channel, useful during migrations. |

@@ -44,16 +44,29 @@ sudo /opt/train-recorder/Scripts/recording_diagnostics.py
 sudo /opt/train-recorder/Scripts/recording_diagnostics.py --json
 ```
 
-The report scans recent local MP3 files under `OUTPUT_ROOT`, grouped by each channel `OUTPUT_SUFFIX`, and runs bounded `soxi`/`sox stat` checks on the newest samples. It reports file counts, duration, size, average RMS amplitude, and maximum peak amplitude.
+The report scans recent local MP3 files under `OUTPUT_ROOT`, grouped by each channel `OUTPUT_SUFFIX`, and runs bounded `soxi`/`sox stat` checks on the newest samples. It reports file counts, duration, size, average RMS amplitude, and maximum peak amplitude. Because rclone usually moves recordings quickly, it also reads recent recorder journal `Saved ...` events so save counts and byte totals remain visible after local files are gone.
 
 Defaults:
 
 ```text
 RECORDING_DIAGNOSTICS_LOOKBACK_HOURS=24
+RECORDING_DIAGNOSTICS_JOURNAL_HOURS=24
 RECORDING_DIAGNOSTICS_MAX_FILES=20
 ```
 
 Because rclone normally moves completed recordings out of the local spool, run this shortly after transmissions or temporarily widen the lookback only when local files are expected to remain available.
+
+## RTLSDR-Airband Squelch Tuning
+
+Quiet channels can false-open auto squelch during noise or interference events. For `161.265`, the current production setting is:
+
+```yaml
+channels:
+  - name: freq161265
+    squelch_snr_threshold: 14
+```
+
+The generator also supports optional per-channel `squelch_threshold`, `bandwidth`, and `ctcss` fields. Tune one channel at a time and use `site_config.sh diff` before `apply` so manual live changes do not drift from `/etc/train-recorder/site.yaml`.
 
 ## Doctor Check
 
