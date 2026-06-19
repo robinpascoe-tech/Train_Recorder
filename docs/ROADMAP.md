@@ -4,7 +4,7 @@ Completed:
 
 - Initial SOX volume tuning to reduce clipping while preserving intelligibility. Per-channel `SOX_VOLUME` overrides are supported, and the current production config lowers `freq160545` one notch below the shared default.
 - Recording sample diagnostics for recent MP3 count, duration, size, RMS amplitude, and peak amplitude.
-- Per-channel RTLSDR-Airband squelch options in generated config, with `161.265` using `squelch_snr_threshold: 14` after soak testing.
+- Per-channel RTLSDR-Airband squelch options in generated config, with `161.265` now using `squelch_snr_threshold: 15` after additional soak tuning.
 - Dashboard history separates operational warnings from clipping trend warnings.
 - Production SOX/PulseAudio architecture soak tested on the original recorder Pi with templated `vox@...` services, rclone sync, health checks, cleanup, and raspiBackup adjustments.
 - Fresh Raspberry Pi OS Trixie minimal install validated on a Raspberry Pi 3, including package install, site configuration, recording, and rclone sync.
@@ -38,6 +38,7 @@ Completed:
 - Real-Pi smoke testing for forced PulseAudio and RTLSDR-Airband crashes, including successful recovery and clean deploy validation afterward.
 - `validate_deploy.sh` now warns when the systemd host hardware watchdog is disabled.
 - Wi-Fi/network remedy mode now supports opt-in reboot after repeated core connectivity failures, with a success-cleared latch to avoid reboot loops during persistent outages.
+- RailWave Pi branding, logo integration, and dashboard header updates are in place while deployed `train-recorder` paths and unit names remain stable for compatibility.
 
 Release readiness:
 
@@ -50,9 +51,12 @@ Release readiness:
 
 Future ideas:
 
-- Continue soaking the Raspberry Pi hardware watchdog configuration before adding any service-level `WatchdogSec=` notification policy.
+- Continue soaking the Raspberry Pi hardware watchdog configuration before adding any service-level `WatchdogSec=` notification policy or automatically enabling Wi-Fi remedy reboots on production timers.
 - During a maintenance window, deliberately exhaust the `pulseaudio.service` and `rtl_airband.service` start-limit bursts on test or physically accessible hardware to confirm repeated failures stop retrying as intended.
 - Continue monitoring SOX clipping warnings after longer soaks and adjust per-channel gain if needed.
+- Add dashboard surfacing for unusually long recordings, repeated false-opens, or other per-channel anomaly signals to make squelch tuning more proactive.
+- Add a `site_config.sh` export/import or backup helper for portable sanitized site definitions and easier recorder replacement.
+- Add an optional authenticated dashboard deployment pattern, such as documented reverse-proxy examples for Tailscale, Caddy, or nginx.
+- Add a bootstrap/provisioning checklist or script for fresh Pi setup in WSL-backed development environments so new recorder builds are more repeatable.
 - Add optional runtime-only cleanup guidance for removing build dependencies after RTLSDR-Airband is built.
 - Add more hardware examples from other locations and antenna/SDR combinations.
-- Update GitHub Actions versions or workflow configuration to remove the non-blocking Node 20 deprecation warning from `actions/checkout@v4` and `actions/setup-python@v5`.

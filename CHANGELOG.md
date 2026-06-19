@@ -8,9 +8,11 @@ This project follows a practical release process. Changes before the first publi
 
 ### Changed
 
+- RailWave Pi branding is now reflected across the README, dashboard header, and user-facing documentation while keeping deployed `train-recorder` paths and unit names for compatibility.
 - Documentation updated after the v1.4.0 release to align release notes, roadmap, install dependencies, architecture notes, hardware notes, and agent handoff context with the current product state.
 - `validate_deploy.sh` now warns when `RuntimeWatchdogSec` is disabled so watchdog-adopting sites surface that drift during routine validation.
 - `wifi_check.py --remedy` now supports opt-in reboot after repeated core connectivity failures, while latching the reboot path until a successful later check clears it.
+- The documented and example `161.265` RTLSDR-Airband SNR squelch setting now uses `15` after additional false-open soak tuning.
 
 ## v1.4.0 - 2026-06-18
 

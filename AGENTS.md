@@ -1,5 +1,7 @@
 # Agent Handoff Notes
 
+RailWave Pi is the public project name. Deployed paths, generated config directories, and systemd unit names still use the existing `train-recorder` identifiers for compatibility with already-installed sites.
+
 ## Project Purpose
 
 This repository maintains a Raspberry Pi railway radio recorder for two conventional NFM channels using one RTL-SDR dongle.
@@ -70,7 +72,7 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 - `Scripts/doctor.sh` is the read-only validation command. Prefer `sudo /opt/train-recorder/Scripts/site_config.sh doctor`; diagnostics bundles include the same doctor output under `commands/doctor`.
 - `Scripts/status_json.py` powers `sudo /opt/train-recorder/Scripts/site_config.sh doctor --json` and the optional Flask dashboard. Keep dashboard/status automation read-only unless the user explicitly asks for control actions.
 - `Scripts/dashboard.py` is an optional LAN-oriented Flask dashboard served by `train-recorder-dashboard.service` on port `8080` by default. Do not expose it directly to the internet without a separate authentication and TLS layer.
-- `Scripts/wifi_check.py` writes `/var/lib/train-recorder/wifi-check.json` for the dashboard and diagnostics bundle. `train-recorder-wifi-check.timer` runs check-only mode by default; `--remedy` is manual/explicit and should stay conservative.
+- `Scripts/wifi_check.py` writes `/var/lib/train-recorder/wifi-check.json` for the dashboard and diagnostics bundle. `train-recorder-wifi-check.timer` runs check-only mode by default unless `WIFI_CHECK_REMEDY=true` is set in `common.env`. Remedy mode remains conservative: reboot is opt-in via `WIFI_CHECK_ALLOW_REBOOT=true`, requires repeated core network failures, and latches until a later successful check clears it so persistent outages do not cause reboot loops.
 - New recorder services should use the templated `vox@.service` naming convention. Legacy `vox.service` and `vox2.service` existed for the original two-channel install, but new/generated configs should enable `vox@<channel-env-name>.service`.
 - `site_config.sh apply` now reconciles stale generated channel env files and disables `train-recorder-sync.timer` when `rclone_remote` is removed, so local-only sites do not keep an orphaned sync configuration.
 - The old cron entry for `/home/pi/sync.sh` was replaced by `train-recorder-sync.timer`.
@@ -84,8 +86,8 @@ Do not commit SSH keys, passwords, Broadcastify credentials, or rclone tokens.
 - `pulseaudio.service` has conservative failure restart enabled: one delayed retry in a 10 minute window. `rtl_airband.service` has conservative failure restart enabled: a few delayed retries in a 15 minute window, plus `PartOf=pulseaudio.service` so explicit PulseAudio restarts also recycle RTLSDR-Airband. If a bad config or missing SDR trips the rate limiter, fix the root cause and use `systemctl reset-failed pulseaudio.service rtl_airband.service` before retrying.
 - SOX clipping warnings have been observed. Shared `SOX_VOLUME` is `4`; production `freq160545.env` has been lowered to `SOX_VOLUME=2` after soak testing, while `freq161265` currently uses the shared default.
 - Clipping counts are expected to be visible in status/dashboard output; warning state is controlled by `CLIPPING_WARN_COUNT` and `CLIPPING_WARN_MAX_SAMPLES` in the shared env.
-- Channel env files load after `common.env`, so `SOX_VOLUME` can be tuned per channel. For RTLSDR-Airband-side false-open tuning, keep per-channel fields such as `squelch_snr_threshold` in `/etc/train-recorder/site.yaml`; current production desired state uses `squelch_snr_threshold: 14` for `freq161265`.
-- v1.4.0 is released and deployed to the Trixie Pi. It includes dashboard history, recording diagnostics, hardware watchdog docs/phase 1, per-channel RTLSDR-Airband squelch generation, the Python `site_config.py` refactor with unit coverage, PyYAML-only site parsing, Ruff/Python CI checks, apply hardening, and conservative PulseAudio/RTLSDR-Airband restart policies.
+- Channel env files load after `common.env`, so `SOX_VOLUME` can be tuned per channel. For RTLSDR-Airband-side false-open tuning, keep per-channel fields such as `squelch_snr_threshold` in `/etc/train-recorder/site.yaml`; current production desired state uses `squelch_snr_threshold: 15` for `freq161265`.
+- v1.4.0 is released and deployed to the Trixie Pi. Current `main` also includes the RailWave Pi rebrand/logo pass, `validate_deploy.sh` host-watchdog warnings, and opt-in Wi-Fi remedy reboot gating with loop protection.
 
 ## Safe Deployment Pattern
 

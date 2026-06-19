@@ -79,7 +79,7 @@ Use this checklist before tagging a public release.
 
 - Original production Pi: upgraded production SOX/PulseAudio architecture, templated `vox@...` services, rclone sync, cleanup, and health timers.
 - Fresh Raspberry Pi OS Trixie Pi: validated from a minimal install through package setup, site configuration, recording, rclone sync, doctor, diagnostics bundle collection, dashboard, Wi-Fi/network check timer, status history, and recording diagnostics.
-- v1.4.0 has been deployed to the Trixie Pi with `freq161265` desired and live RTLSDR-Airband config both using `squelch_snr_threshold = 14`, PyYAML-backed site configuration, Python/Ruff CI checks, and conservative restart policies for PulseAudio and RTLSDR-Airband.
+- The current Trixie Pi deployment uses `freq161265` desired and live RTLSDR-Airband config both at `squelch_snr_threshold = 15`, with PyYAML-backed site configuration, Python/Ruff CI checks, RuntimeWatchdogSec enabled, deploy-validation watchdog checks, and opt-in Wi-Fi remedy reboot gating available but still disabled by default.
 
 ## Historical Release Notes
 

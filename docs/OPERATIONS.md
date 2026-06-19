@@ -67,7 +67,7 @@ Quiet channels can false-open auto squelch during noise or interference events. 
 ```yaml
 channels:
   - name: freq161265
-    squelch_snr_threshold: 14
+    squelch_snr_threshold: 15
 ```
 
 The generator also supports optional per-channel `squelch_threshold`, `bandwidth`, and `ctcss` fields. Tune one channel at a time and use `site_config.sh diff` before `apply` so manual live changes do not drift from `/etc/train-recorder/site.yaml`.
@@ -201,6 +201,8 @@ Manual remedy mode is available:
 ```bash
 sudo /opt/train-recorder/Scripts/wifi_check.py --remedy
 ```
+
+Set `WIFI_CHECK_REMEDY=true` in `/etc/train-recorder/common.env` if you want the timer to run in remedy mode instead of check-only mode.
 
 Use remedy mode cautiously. It attempts conservative local recovery actions first. Reboot is disabled by default. If you explicitly set `WIFI_CHECK_ALLOW_REBOOT=true`, remedy mode may request one reboot after `WIFI_CHECK_REBOOT_FAILURE_THRESHOLD` consecutive failures affecting core connectivity checks (`ip-address`, `gateway`, or `dns`). It then latches that reboot attempt until a successful later check clears the latch, which avoids reboot loops during a persistent outage such as an unplugged router.
 

@@ -205,6 +205,7 @@ Useful variables:
 | `CHECK_RECENT_LOCAL_RECORDINGS` | `false` | Enables an optional warning when no recent MP3s remain under `OUTPUT_ROOT`; keep disabled when rclone moves files away quickly. |
 | `CHECK_RECENT_SYNC_SUCCESS` | `true` | Fail health checks when `train-recorder-sync.service` has not finished recently. |
 | `MAX_SYNC_SUCCESS_AGE_MINUTES` | `30` | Recent-success window for the rclone sync service. |
+| `WIFI_CHECK_REMEDY` | `false` | Lets `train-recorder-wifi-check.timer` run `wifi_check.py` in remedy mode instead of check-only mode. |
 | `WIFI_CHECK_ALLOW_REBOOT` | `false` | Allows `wifi_check.py --remedy` to request a reboot after repeated core network failures; keep disabled unless the site has been explicitly tested for this behavior. |
 | `WIFI_CHECK_REBOOT_FAILURE_THRESHOLD` | `3` | Consecutive failed Wi-Fi/network checks required before remedy mode may request one reboot. |
 | `RCLONE_MIN_AGE` | `15s` | Minimum file age before `sync.sh` allows rclone to move a completed MP3. |
@@ -229,7 +230,7 @@ Channel environment files also support:
 
 | Field | Purpose |
 | --- | --- |
-| `squelch_snr_threshold` | Optional per-channel SNR squelch threshold. The `161.265` example uses `14` after soak testing. |
+| `squelch_snr_threshold` | Optional per-channel SNR squelch threshold. The `161.265` example uses `15` after additional soak tuning. |
 | `squelch_threshold` | Optional per-channel absolute squelch threshold. More gain/site dependent than SNR squelch. |
 | `bandwidth` | Optional per-channel bandwidth limit. |
 | `ctcss` | Optional per-channel CTCSS tone when the channel tone is known. |
