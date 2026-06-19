@@ -205,6 +205,8 @@ Useful variables:
 | `CHECK_RECENT_LOCAL_RECORDINGS` | `false` | Enables an optional warning when no recent MP3s remain under `OUTPUT_ROOT`; keep disabled when rclone moves files away quickly. |
 | `CHECK_RECENT_SYNC_SUCCESS` | `true` | Fail health checks when `train-recorder-sync.service` has not finished recently. |
 | `MAX_SYNC_SUCCESS_AGE_MINUTES` | `30` | Recent-success window for the rclone sync service. |
+| `WIFI_CHECK_ALLOW_REBOOT` | `false` | Allows `wifi_check.py --remedy` to request a reboot after repeated core network failures; keep disabled unless the site has been explicitly tested for this behavior. |
+| `WIFI_CHECK_REBOOT_FAILURE_THRESHOLD` | `3` | Consecutive failed Wi-Fi/network checks required before remedy mode may request one reboot. |
 | `RCLONE_MIN_AGE` | `15s` | Minimum file age before `sync.sh` allows rclone to move a completed MP3. |
 | `CLIPPING_WINDOW_MINUTES` | `1440` | Journal lookback window used by status, doctor, and dashboard clipping summaries. |
 | `CLIPPING_WARN_COUNT` | `50` | Warning threshold for SOX clipping messages within the clipping window; set `0` to disable the count threshold. |

@@ -412,7 +412,7 @@ The timer runs every 5 minutes and does not attempt recovery by default. The sta
 sudo /opt/train-recorder/Scripts/wifi_check.py --remedy
 ```
 
-Remedy mode attempts only local network recovery steps supported by the installed tools, such as `wpa_cli reconnect` or restarting an active `dhcpcd`/`wpa_supplicant` service. It does not reboot the Pi.
+Remedy mode attempts local network recovery steps supported by the installed tools, such as `wpa_cli reconnect` or restarting an active `dhcpcd`/`wpa_supplicant` service. Reboot is disabled by default. If you explicitly set `WIFI_CHECK_ALLOW_REBOOT=true`, remedy mode may request one reboot after `WIFI_CHECK_REBOOT_FAILURE_THRESHOLD` consecutive core network failures. After that reboot attempt, the script will not request another reboot until a later successful check clears the latch.
 
 ## Optional rclone Offload
 

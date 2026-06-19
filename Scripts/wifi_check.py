@@ -23,6 +23,7 @@ STATE_FILE = Path(os.environ.get("WIFI_CHECK_STATE", str(STATE_DIR / "wifi-check
 RUN_USER = os.environ.get("RUN_USER", "pi")
 DASHBOARD_PORT = int(os.environ.get("DASHBOARD_PORT", "8080"))
 DNS_TEST_HOST = os.environ.get("WIFI_CHECK_DNS_HOST", "rclone.org")
+CORE_NETWORK_FAILURES = {"ip-address", "gateway", "dns"}
 
 
 def read_env_file(path: Path) -> dict[str, str]:
@@ -81,6 +82,21 @@ def bool_env(name: str, default: bool = False) -> bool:
     if value is None:
         return default
     return value.lower() in {"1", "true", "yes", "on"}
+
+
+def bool_value(value: str | None, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return value.lower() in {"1", "true", "yes", "on"}
+
+
+def int_value(value: str | None, default: int) -> int:
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
 
 
 def ip_addresses() -> list[str]:
@@ -171,6 +187,18 @@ def failure_snapshot(checks: list[dict[str, Any]], generated_at: str) -> dict[st
     }
 
 
+def consecutive_failures(previous_state: dict[str, Any], failures: list[dict[str, Any]]) -> int:
+    if not failures:
+        return 0
+    previous_count = previous_state.get("summary", {}).get("consecutive_failures", 0)
+    if previous_state.get("overall") != "fail":
+        return 1
+    try:
+        return max(0, int(previous_count)) + 1
+    except (TypeError, ValueError):
+        return 1
+
+
 def check_gateway(gateway: str) -> dict[str, Any]:
     if not gateway:
         return check_result("gateway", False, "no default gateway")
@@ -227,6 +255,63 @@ def service_is_active(name: str) -> bool:
     return run_cmd(["systemctl", "is-active", name])["stdout"] == "active"
 
 
+def reboot_policy(
+    env: dict[str, str],
+    previous_state: dict[str, Any],
+    failures: list[dict[str, Any]],
+    consecutive_failure_count: int,
+) -> dict[str, Any]:
+    allowed = bool_value(env.get("WIFI_CHECK_ALLOW_REBOOT"), False)
+    threshold = max(1, int_value(env.get("WIFI_CHECK_REBOOT_FAILURE_THRESHOLD"), 3))
+    core_failures = [item.get("name", "") for item in failures if item.get("name") in CORE_NETWORK_FAILURES]
+    previously_latched = bool(previous_state.get("remedy", {}).get("reboot_latched_until_success", False))
+
+    policy = {
+        "allowed": allowed,
+        "requested": False,
+        "threshold": threshold,
+        "reason": "",
+        "reboot_latched_until_success": False,
+        "core_failures": core_failures,
+    }
+
+    if not failures:
+        policy["reason"] = "no failures; reboot latch cleared"
+        return policy
+
+    if not allowed:
+        policy["reason"] = "reboot disabled"
+        return policy
+
+    if not core_failures:
+        policy["reboot_latched_until_success"] = previously_latched
+        policy["reason"] = "non-core failure; reboot not considered"
+        return policy
+
+    if previously_latched:
+        policy["reboot_latched_until_success"] = True
+        policy["reason"] = "reboot already attempted; waiting for a successful check before retrying"
+        return policy
+
+    if consecutive_failure_count < threshold:
+        policy["reason"] = f"waiting for {threshold} consecutive failed checks before reboot ({consecutive_failure_count}/{threshold})"
+        return policy
+
+    policy["requested"] = True
+    policy["reboot_latched_until_success"] = True
+    policy["reason"] = f"reboot requested after {consecutive_failure_count} consecutive failed checks"
+    return policy
+
+
+def trigger_reboot() -> dict[str, Any]:
+    result = run_cmd(["systemctl", "reboot"], timeout=15)
+    return {
+        "action": "systemctl reboot",
+        "ok": result["ok"],
+        "output": result["stdout"] or result["stderr"] or "reboot requested",
+    }
+
+
 def remedy_actions() -> list[dict[str, Any]]:
     actions: list[dict[str, Any]] = []
 
@@ -268,9 +353,19 @@ def collect(remedy: bool = False) -> dict[str, Any]:
         check_dashboard(),
     ]
     failures = [item for item in checks if not item["ok"]]
+    consecutive_failure_count = consecutive_failures(previous_state, failures)
     actions: list[dict[str, Any]] = []
+    policy = reboot_policy(env, previous_state, failures, consecutive_failure_count)
     if remedy and failures:
         actions = remedy_actions()
+        if policy["allowed"]:
+            actions.append(
+                {
+                    "action": "reboot gate",
+                    "ok": policy["requested"],
+                    "output": policy["reason"],
+                }
+            )
 
     overall = "fail" if failures else "ok"
     last_failure = failure_snapshot(checks, generated_at) or previous_state.get("last_failure")
@@ -287,9 +382,22 @@ def collect(remedy: bool = False) -> dict[str, Any]:
             "wifi_ssid_source": wifi["source"],
             "wifi_connected": wifi["connected"],
         },
-        "summary": {"failures": len(failures), "checks": len(checks), "actions": len(actions)},
+        "summary": {
+            "failures": len(failures),
+            "checks": len(checks),
+            "actions": len(actions),
+            "consecutive_failures": consecutive_failure_count,
+        },
         "checks": checks,
         "actions": actions,
+        "remedy": {
+            "requested": remedy,
+            "reboot_allowed": policy["allowed"],
+            "reboot_requested": policy["requested"],
+            "reboot_latched_until_success": policy["reboot_latched_until_success"],
+            "reboot_failure_threshold": policy["threshold"],
+            "reboot_reason": policy["reason"],
+        },
         "last_failure": last_failure,
     }
 
@@ -315,6 +423,13 @@ def main() -> int:
     data = collect(remedy=remedy)
     if not args.no_write_state:
         write_state(data)
+
+    if data["remedy"]["reboot_requested"]:
+        reboot_action = trigger_reboot()
+        data["actions"].append(reboot_action)
+        data["summary"]["actions"] = len(data["actions"])
+        if not args.no_write_state:
+            write_state(data)
 
     if args.json:
         print(json.dumps(data, indent=2, sort_keys=True))

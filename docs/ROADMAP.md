@@ -37,6 +37,7 @@ Completed:
 - Conservative `pulseaudio.service` and `rtl_airband.service` restart policies with systemd rate limiting.
 - Real-Pi smoke testing for forced PulseAudio and RTLSDR-Airband crashes, including successful recovery and clean deploy validation afterward.
 - `validate_deploy.sh` now warns when the systemd host hardware watchdog is disabled.
+- Wi-Fi/network remedy mode now supports opt-in reboot after repeated core connectivity failures, with a success-cleared latch to avoid reboot loops during persistent outages.
 
 Release readiness:
 
@@ -51,7 +52,6 @@ Future ideas:
 
 - Continue soaking the Raspberry Pi hardware watchdog configuration before adding any service-level `WatchdogSec=` notification policy.
 - During a maintenance window, deliberately exhaust the `pulseaudio.service` and `rtl_airband.service` start-limit bursts on test or physically accessible hardware to confirm repeated failures stop retrying as intended.
-- Expand Wi-Fi/network remediation only after observing the first-pass timer in production. Avoid reboot loops unless explicitly configured and tested.
 - Continue monitoring SOX clipping warnings after longer soaks and adjust per-channel gain if needed.
 - Add optional runtime-only cleanup guidance for removing build dependencies after RTLSDR-Airband is built.
 - Add more hardware examples from other locations and antenna/SDR combinations.

@@ -202,7 +202,7 @@ Manual remedy mode is available:
 sudo /opt/train-recorder/Scripts/wifi_check.py --remedy
 ```
 
-Use remedy mode cautiously. It attempts conservative local recovery actions only and does not reboot the Pi.
+Use remedy mode cautiously. It attempts conservative local recovery actions first. Reboot is disabled by default. If you explicitly set `WIFI_CHECK_ALLOW_REBOOT=true`, remedy mode may request one reboot after `WIFI_CHECK_REBOOT_FAILURE_THRESHOLD` consecutive failures affecting core connectivity checks (`ip-address`, `gateway`, or `dns`). It then latches that reboot attempt until a successful later check clears the latch, which avoids reboot loops during a persistent outage such as an unplugged router.
 
 ## Diagnostics Bundle
 
