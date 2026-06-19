@@ -27,6 +27,7 @@ On 2026-06-18, Phase 3 service restart smoke testing was performed on the same P
 - the PulseAudio restart also restarted `rtl_airband.service` cleanly via `PartOf=pulseaudio.service`
 - killing `rtl_airband.service` with `SIGKILL` triggered one delayed automatic restart after 30 seconds
 - `validate_deploy.sh` passed before and after the live test
+- `validate_deploy.sh` should now warn if `RuntimeWatchdogSec` is disabled on a site that has adopted the host watchdog plan
 
 The live test confirmed single-failure recovery. It did not intentionally exhaust `StartLimitBurst` on production hardware; repeated-failure soak testing should still be done cautiously during a maintenance window.
 
@@ -133,4 +134,3 @@ sudo /opt/train-recorder/Scripts/validate_deploy.sh
 ## Remaining Follow-Up
 
 - Continue real-Pi soak testing around deliberate SDR unplug/replug and PulseAudio crash simulation, and record whether the current retry windows are too short or too generous.
-- Decide whether deploy validation should warn when the host watchdog is disabled after the plan has been adopted for a site.

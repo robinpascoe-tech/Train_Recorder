@@ -112,6 +112,13 @@ status_history_timer_enabled() {
   systemctl is-enabled --quiet train-recorder-status-history.timer 2>/dev/null
 }
 
+runtime_watchdog_enabled() {
+  local value
+
+  value="$(systemctl show --value --property=RuntimeWatchdogUSec 2>/dev/null || true)"
+  [[ -n "$value" && "$value" != "0" ]]
+}
+
 http_ok() {
   local url="$1"
   python3 - "$url" <<'PY'
@@ -166,6 +173,13 @@ if status_history_timer_enabled; then
   run_required "train-recorder-status-history.timer active" timer_active train-recorder-status-history.timer
 else
   warn "train-recorder-status-history.timer not enabled"
+fi
+
+section "Host Watchdog"
+if runtime_watchdog_enabled; then
+  ok "systemd RuntimeWatchdogSec enabled"
+else
+  warn "systemd RuntimeWatchdogSec disabled"
 fi
 
 section "Doctor"
